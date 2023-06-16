@@ -5,6 +5,6 @@ interface OpenApiProps {
   fileType?: 'yaml' | 'json';
 }
 
-export function OpenApi(props: OpenApiProps) {
+export function OpenApi({fileType = "json", schema}: OpenApiProps) {
   return <div>Open Api</div>
 }
