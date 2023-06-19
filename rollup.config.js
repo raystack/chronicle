@@ -1,7 +1,10 @@
-const typescript = require('@rollup/plugin-typescript');
+const typescript = require("@rollup/plugin-typescript");
 const pkg = require("./package.json");
 const postcss = require("rollup-plugin-postcss");
 const { nodeResolve } = require("@rollup/plugin-node-resolve");
+const nodePolyfills = require("rollup-plugin-polyfill-node");
+const commonjs = require("@rollup/plugin-commonjs");
+const json = require("@rollup/plugin-json");
 
 module.exports = {
   input: "src/index.tsx",
@@ -18,7 +21,12 @@ module.exports = {
     },
   ],
   plugins: [
-    nodeResolve(),
+    nodePolyfills(),
+    nodeResolve({
+      browser: true
+    }),
+    json(),
+    commonjs(),
     postcss({
       extract: true,
       modules: true,

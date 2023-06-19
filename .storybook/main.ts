@@ -1,4 +1,6 @@
 import type { StorybookConfig } from "@storybook/react-vite";
+import { nodePolyfills } from 'vite-plugin-node-polyfills'
+
 const config: StorybookConfig = {
   stories: ["../src/**/*.stories.@(js|jsx|ts|tsx)"],
   addons: [
@@ -8,10 +10,17 @@ const config: StorybookConfig = {
   ],
   framework: {
     name: "@storybook/react-vite",
-    options: {},
+    options: {
+      
+    },
   },
   docs: {
     autodocs: "tag",
   },
+  viteFinal: (config) => {
+    const plugins = config.plugins || []
+    config.plugins = [...plugins,  nodePolyfills()]
+    return config
+  }
 };
 export default config;
