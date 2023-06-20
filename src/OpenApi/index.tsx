@@ -1,11 +1,11 @@
 import React, {  useEffect, useState } from 'react';
-import { OpenAPIV3} from 'openapi-types'
 import styles from './styles.module.scss'
 import RequestPanel from './RequestPanel';
 import { ItemDefinition, ItemGroupDefinition, Request} from 'postman-collection'
 import {convert} from 'openapi-to-postmanv2'
 import { promisify } from 'util';
 import ApiURL from './ApiUrl';
+import ResponsePanel from './ResponsePanel';
 
 const convertAsync = promisify(convert)
 interface OpenApiProps {
@@ -62,6 +62,7 @@ export function OpenApi({fileType = "json", schema}: OpenApiProps) {
          <div className={styles.apiDataSection}>
           <ApiURL api={api} />
           <RequestPanel api={api}/>
+          <ResponsePanel api={api} />
          </div>
       </div>
       })

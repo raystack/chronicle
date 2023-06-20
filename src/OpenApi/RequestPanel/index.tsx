@@ -51,7 +51,6 @@ export default function RequestPanel({api}: RequestPanelProps) {
       {languagesWithApiData.map(lang => {
         return <TabsPrimitive.Content value={lang.id} key={lang.id}>
           <pre lang={lang.lang}>{lang.data}</pre>
-        {lang.label}
         </TabsPrimitive.Content>
       })}
   </TabsPrimitive.Root>
