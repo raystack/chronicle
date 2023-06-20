@@ -24,19 +24,3 @@
 .apiDataSection {
   flex: 1
 }
-
-.apiMethodAndPath {
-  display: flex;
-  background-color: black;
-  color: white;
-  align-items: center;
-
-  .apiMethod {
-    padding: 8px;
-    text-transform: uppercase;
-  }
-
-  .apiPath {
-    padding: 8px;
-  }
-}
