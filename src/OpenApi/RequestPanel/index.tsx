@@ -1,10 +1,18 @@
 import React, { useMemo } from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
 import { type ItemDefinition, Request } from "postman-collection";
-// @ts-ignore
+// @ts-expect-error : TS definitions is not available for the package.
 import * as codegen from "postman-code-generators";
 
-const languages = [
+interface Language {
+    id: string;
+    lang: string;
+    variant: string;
+    label: string;
+    data?: string;
+}
+
+const languages: Language[] = [
     {
         id: "curl",
         lang: "curl",
@@ -33,8 +41,10 @@ export default function RequestPanel({ api }: RequestPanelProps) {
     const languagesWithApiData = useMemo(() => {
         return languages.map((lang) => {
             const request = api.request != null ? new Request(api.request) : {};
-            codegen.convert(lang.lang, lang.variant, request, {}, (err: any, data: any) => {
-                lang.data = data;
+            codegen.convert(lang.lang, lang.variant, request, {}, (err: Error, data: string) => {
+                if (!err) {
+                    lang.data = data;
+                }
             });
             return lang;
         });

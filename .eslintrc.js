@@ -4,8 +4,9 @@ module.exports = {
     es2021: true,
   },
   extends: [
-    "standard-with-typescript",
+    "eslint:recommended",
     "plugin:react/recommended",
+    "plugin:@typescript-eslint/recommended",
     "prettier",
   ],
   overrides: [
@@ -24,16 +25,15 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
-    project: ["tsconfig.json"],
   },
   plugins: [
     "react",
   ],
   rules: {
-    quotes: [2, "double", { avoidEscape: true }],
-    semi: [2, "always"],
-    "comma-dangle": ["error", "always-multiline"],
-    "@typescript-eslint/explicit-function-return-type": "off",
+    // quotes: [2, "double", { avoidEscape: true }],
+    // semi: [2, "always"],
+    // "comma-dangle": ["error", "always-multiline"],
+    // "@typescript-eslint/explicit-function-return-type": "off",
   },
   settings: {
     react: {

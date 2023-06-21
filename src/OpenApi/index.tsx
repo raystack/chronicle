@@ -11,7 +11,7 @@ interface OpenApiProps {
     fileType?: "yaml" | "json";
 }
 
-export function OpenApi({ fileType = "json", schema }: OpenApiProps) {
+export function OpenApi({ schema }: OpenApiProps) {
     const apiDefinitions = useApiDefinitions({ schema });
     return (
         <div className={styles.openapiWrapper}>
