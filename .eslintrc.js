@@ -6,6 +6,7 @@ module.exports = {
   extends: [
     "standard-with-typescript",
     "plugin:react/recommended",
+    "prettier",
   ],
   overrides: [
     {
@@ -23,6 +24,7 @@ module.exports = {
   parserOptions: {
     ecmaVersion: "latest",
     sourceType: "module",
+    project: ["tsconfig.json"],
   },
   plugins: [
     "react",
@@ -31,5 +33,11 @@ module.exports = {
     quotes: [2, "double", { avoidEscape: true }],
     semi: [2, "always"],
     "comma-dangle": ["error", "always-multiline"],
+    "@typescript-eslint/explicit-function-return-type": "off",
+  },
+  settings: {
+    react: {
+      version: "detect",
+    },
   },
 };

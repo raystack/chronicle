@@ -1,1 +1,1 @@
-export {OpenApi} from './OpenApi'
+export { OpenApi } from "./OpenApi";

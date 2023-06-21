@@ -1,0 +1,11 @@
+.openapiWrapper {
+  background-color: 'grey';
+}
+
+.apiBlock {
+  display: flex;
+}
+
+.apiDataSection {
+  flex: 1
+}
