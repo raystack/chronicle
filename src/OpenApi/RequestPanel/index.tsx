@@ -31,6 +31,12 @@ const languages: Language[] = [
         variant: "Native",
         label: "golang",
     },
+    {
+        id: "nodejs",
+        lang: "nodejs",
+        variant: "Native",
+        label: "nodejs",
+    },
 ];
 
 interface RequestPanelProps {
@@ -40,7 +46,7 @@ interface RequestPanelProps {
 export default function RequestPanel({ api }: RequestPanelProps) {
     const languagesWithApiData = useMemo(() => {
         return languages.map((lang) => {
-            const request = api.request != null ? new Request(api.request) : {};
+            const request = api;
             codegen.convert(lang.lang, lang.variant, request, {}, (err: Error, data: string) => {
                 if (!err) {
                     lang.data = data;
