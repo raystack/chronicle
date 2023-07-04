@@ -1,0 +1,40 @@
+.paramsListWrapper {
+  width: 100%;
+}
+
+.paramsListTitle {
+  font-size: 18px;
+}
+
+.paramsList {
+  display: flex;
+  flex-direction: column;
+}
+
+.paramsListItem {
+  display: flex;
+  flex-direction: column;
+  border-bottom: 0.5px solid rgb(60, 60, 60);
+  padding: 8px;
+}
+
+.paramTitle {
+  font-size: 16px;
+  margin-right: 8px;
+  font-weight: 700;
+}
+
+.paramType {
+  font-size: 16px;
+  margin-right: 8px;
+  font-weight: 300;
+}
+
+.paramRequired {
+  font-size: 16px;
+  color: red;
+}
+
+.paramDescription {
+  margin-top: 8px;
+}

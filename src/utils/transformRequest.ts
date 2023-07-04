@@ -106,6 +106,11 @@ export function transformOpenApiRequestToPostman(data: PathData, schema: OpenAPI
     const body = getBodyRef(data).filter((b) => b.type === "application/json");
     const refs = resolveRef(body, schema);
     const bodies = refs.map((ref) => getExampleBody(ref));
+    const queryParams =
+        data.operationData.parameters?.filter((param) => (param as OpenAPIV3.ParameterObject).in === "query") || [];
+
+    const headerParams =
+        data.operationData.parameters?.filter((param) => (param as OpenAPIV3.ParameterObject).in === "header") || [];
 
     const url = schema.servers?.length ? schema.servers[0].url + data.path : data.path;
     const req = new Request({ url, method: data.method });
@@ -119,6 +124,28 @@ export function transformOpenApiRequestToPostman(data: PathData, schema: OpenAPI
         req.body = new RequestBody({
             mode: "raw",
             raw: JSON.stringify(bodies[0]),
+        });
+    }
+
+    if (queryParams.length) {
+        req.addQueryParams(
+            queryParams.map((q) => {
+                const query = q as OpenAPIV3.ParameterObject;
+                return {
+                    key: query.name,
+                    value: "test",
+                };
+            }),
+        );
+    }
+
+    if (headerParams.length) {
+        headerParams.forEach((param) => {
+            const header = param as OpenAPIV3.ParameterObject;
+            req.addHeader({
+                key: header.name,
+                value: "",
+            });
         });
     }
 

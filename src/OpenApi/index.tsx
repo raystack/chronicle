@@ -7,6 +7,7 @@ import ApiInfo from "./ApiInfo";
 import jsYaml from "js-yaml";
 import { OpenAPIV3 } from "openapi-types";
 import SwaggerParser from "@apidevtools/swagger-parser";
+import { ApiParams } from "./ApiParams";
 
 interface OpenApiProps {
     schema: string;
@@ -65,7 +66,10 @@ export function OpenApi({ schema, fileType }: OpenApiProps) {
                 paths.map((path) => {
                     return (
                         <div className={styles.apiBlock} key={path.key}>
-                            <ApiInfo schema={parsedSchema} path={path.path} method={path.method} />
+                            <div className={styles.apiDataSection}>
+                                <ApiInfo schema={parsedSchema} path={path.path} method={path.method} />
+                                <ApiParams schema={parsedSchema} path={path.path} method={path.method} />
+                            </div>
                             <div className={styles.apiDataSection}>
                                 <ApiURL path={path.path} method={path.method} />
                                 <RequestPanel schema={parsedSchema} path={path.path} method={path.method} />
