@@ -1,11 +1,11 @@
-import { OpenAPIV3, OpenAPI, OpenAPIV2 } from "openapi-types";
-import { Request, Url } from "postman-collection";
+import { OpenAPIV3 } from "openapi-types";
+import { Request } from "postman-collection";
 import * as _ from "lodash";
 export interface PathData {
     key: string;
     path: string;
     method: OpenAPIV3.HttpMethods;
-    operationData: OpenAPI.Operation;
+    operationData: OpenAPIV3.OperationObject;
 }
 
 interface BodyRefAndType {
@@ -13,7 +13,7 @@ interface BodyRefAndType {
     ref: string;
 }
 
-function getRefObject(ref: string, schema: OpenAPI.Document, seen: Record<string, boolean> = {}) {
+function getRefObject(ref: string, schema: OpenAPIV3.Document, seen: Record<string, boolean> = {}) {
     if (typeof ref !== "string") {
         return {};
     }
@@ -30,12 +30,12 @@ function getRefObject(ref: string, schema: OpenAPI.Document, seen: Record<string
             return decodeURIComponent(elem.replace(/~1/g, "/").replace(/~0/g, "~"));
         });
 
-    if (savedSchema.length < 2) {
+    if (savedSchema.length < 3) {
         console.warn(`ref ${ref} not found.`);
         return {};
     }
 
-    if (savedSchema[0] !== "components" && savedSchema[0] !== "paths" && savedSchema[0] !== "definitions") {
+    if (savedSchema[0] !== "components" && savedSchema[0] !== "paths") {
         return {};
     }
     const refObj = _.get(schema, savedSchema);
@@ -52,37 +52,8 @@ function getRefObject(ref: string, schema: OpenAPI.Document, seen: Record<string
     return refObj;
 }
 
-function getV2BodyRef(operationData: OpenAPIV2.OperationObject): BodyRefAndType[] {
-    const { consumes = [], parameters = [] } = operationData;
-
-    if (consumes.length) {
-        if (consumes[0] === "multipart/form-data") {
-            return [];
-        } else if (consumes[0] === "application/json") {
-            return parameters
-                ?.filter((p) => {
-                    const param = p as OpenAPIV2.InBodyParameterObject;
-                    return param.in === "body";
-                })
-                .map((p) => {
-                    const param = p as OpenAPIV2.InBodyParameterObject;
-                    return {
-                        type: "application/json",
-                        ref: param.schema.$ref || "",
-                    };
-                });
-        } else {
-            return [];
-        }
-    }
-    return [];
-}
-
 function getBodyRef(data: PathData): BodyRefAndType[] {
-    const opsDataV3 = data.operationData as OpenAPIV3.OperationObject;
-    const opsDataV2 = data.operationData as OpenAPIV2.OperationObject;
-
-    const reqBody = opsDataV3.requestBody as OpenAPIV3.RequestBodyObject;
+    const reqBody = data.operationData.requestBody as OpenAPIV3.RequestBodyObject;
 
     const refs = reqBody?.content
         ? Object.entries(reqBody.content).map((ent) => {
@@ -92,33 +63,22 @@ function getBodyRef(data: PathData): BodyRefAndType[] {
                   ref: schema.$ref,
               };
           })
-        : getV2BodyRef(opsDataV2);
+        : [];
     return refs;
 }
 
-function resolveRef(refs: BodyRefAndType[], schema: OpenAPI.Document) {
+function resolveRef(refs: BodyRefAndType[], schema: OpenAPIV3.Document) {
     return refs.map((ref) => {
         return getRefObject(ref.ref, schema);
     });
 }
 
-export function transformOpenApiRequestToPostman(data: PathData, schema: OpenAPI.Document) {
-    const v3schema = schema as OpenAPIV3.Document;
-    const v2schema = schema as OpenAPIV2.Document;
-
+export function transformOpenApiRequestToPostman(data: PathData, schema: OpenAPIV3.Document) {
     const body = getBodyRef(data);
 
     const refs = resolveRef(body, schema);
 
-    const url = schema
-        ? v3schema.servers
-            ? v3schema.servers[0].url + data.path
-            : new Url({
-                  path: v2schema.basePath + data.path,
-                  host: v2schema?.host,
-                  protocol: v2schema.schemes ? v2schema.schemes[0] : "http",
-              })
-        : data.path;
+    const url = schema.servers?.length ? schema.servers[0].url + data.path : data.path;
     const req = new Request({ url, method: data.method });
     // if (Array.isArray(data.operationData.parameters) && data.operationData.parameters.length) {
     //     const body = data.operationData.parameters.find((o) => );

@@ -5,7 +5,7 @@ import ApiURL from "./ApiUrl";
 import ResponsePanel from "./ResponsePanel";
 import ApiInfo from "./ApiInfo";
 import jsYaml from "js-yaml";
-import { OpenAPI, OpenAPIV3 } from "openapi-types";
+import { OpenAPIV3 } from "openapi-types";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { transformOpenApiRequestToPostman } from "../utils/transformRequest";
 
@@ -18,16 +18,16 @@ interface PathData {
     key: string;
     path: string;
     method: OpenAPIV3.HttpMethods;
-    operationData: OpenAPI.Operation;
+    operationData: OpenAPIV3.OperationObject;
 }
 
 export function OpenApi({ schema, fileType }: OpenApiProps) {
-    const [parsedSchema, setParsedSchema] = useState<OpenAPI.Document | null>(null);
+    const [parsedSchema, setParsedSchema] = useState<OpenAPIV3.Document | null>(null);
 
     useEffect(() => {
         const updateParsedSchema = async () => {
-            const schemaObj: OpenAPI.Document = fileType === "json" ? JSON.parse(schema) : jsYaml.load(schema);
-            const parsedSchemaObj = await SwaggerParser.parse(schemaObj, {
+            const schemaObj: OpenAPIV3.Document = fileType === "json" ? JSON.parse(schema) : jsYaml.load(schema);
+            const parsedSchemaObj = (await SwaggerParser.parse(schemaObj, {
                 resolve: { file: true, external: true, http: true },
                 dereference: { circular: true },
                 parse: {
@@ -35,7 +35,7 @@ export function OpenApi({ schema, fileType }: OpenApiProps) {
                     yaml: true,
                     text: true,
                 },
-            });
+            })) as OpenAPIV3.Document;
             setParsedSchema(parsedSchemaObj);
         };
 
