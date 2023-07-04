@@ -49,6 +49,8 @@ function getRefObject(ref: string, schema: OpenAPIV3.Document, seen: Record<stri
         Object.keys(refObj.properties).forEach((key) => {
             if (_.has(refObj.properties[key], "$ref")) {
                 refObj.properties[key] = getRefObject(refObj.properties[key].$ref, schema, seen);
+            } else if (_.has(refObj, ["properties", key, "items", "$ref"])) {
+                refObj.properties[key].items = getRefObject(refObj.properties[key].items.$ref, schema, seen);
             }
         });
     }
@@ -78,13 +80,24 @@ function resolveRef(refs: BodyRefAndType[], schema: OpenAPIV3.Document) {
     });
 }
 
-function getExampleBody(ref: any) {
+function getExampleBody(ref: any): any {
     if (ref.type === "object") {
         const properties = ref.properties || {};
         return Object.keys(properties).reduce((acc, key) => {
-            acc[key] = properties[key].example;
+            acc[key] = getExampleBody(properties[key]);
             return acc;
         }, {} as any);
+    } else if (ref.type === "array") {
+        const items = ref.items || {};
+        return [getExampleBody(items)];
+    } else if (ref.type === "string") {
+        const example = ref.example || "randomString";
+        return example;
+    } else if (ref.type === "integer") {
+        const example = ref.example || 0;
+        return example;
+    } else if (_.has(ref, ["example"])) {
+        return ref.example;
     }
     return {};
 }
@@ -97,7 +110,6 @@ export function transformOpenApiRequestToPostman(data: PathData, schema: OpenAPI
     const url = schema.servers?.length ? schema.servers[0].url + data.path : data.path;
     const req = new Request({ url, method: data.method });
 
-    console.log(bodies);
     if (body.length) {
         req.addHeader({
             key: "Content-Type",
