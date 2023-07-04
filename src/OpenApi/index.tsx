@@ -7,7 +7,6 @@ import ApiInfo from "./ApiInfo";
 import jsYaml from "js-yaml";
 import { OpenAPIV3 } from "openapi-types";
 import SwaggerParser from "@apidevtools/swagger-parser";
-import { transformOpenApiRequestToPostman } from "../utils/transformRequest";
 
 interface OpenApiProps {
     schema: string;
@@ -60,24 +59,22 @@ export function OpenApi({ schema, fileType }: OpenApiProps) {
         return paths;
     }, [parsedSchema]);
 
-    const defs = useMemo(() => {
-        return parsedSchema ? paths.map((p) => transformOpenApiRequestToPostman(p, parsedSchema)) : [];
-    }, [paths]);
-
     return (
         <div className={styles.openapiWrapper}>
-            {defs.map((api) => {
-                return (
-                    <div className={styles.apiBlock} key={api.id}>
-                        <ApiInfo api={api} />
-                        <div className={styles.apiDataSection}>
-                            <ApiURL api={api} />
-                            <RequestPanel api={api} />
-                            <ResponsePanel api={api} />
+            {parsedSchema &&
+                paths.map((path) => {
+                    return (
+                        <div className={styles.apiBlock} key={path.key}>
+                            <ApiInfo schema={parsedSchema} path={path.path} method={path.method} />
+                            <div className={styles.apiDataSection}>
+                                <ApiURL path={path.path} method={path.method} />
+                                <RequestPanel schema={parsedSchema} path={path.path} method={path.method} />
+                                {/* 
+                            <ResponsePanel api={api} /> */}
+                            </div>
                         </div>
-                    </div>
-                );
-            })}
+                    );
+                })}
         </div>
     );
 }

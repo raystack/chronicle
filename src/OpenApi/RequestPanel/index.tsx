@@ -1,8 +1,10 @@
 import React, { useMemo } from "react";
 import * as TabsPrimitive from "@radix-ui/react-tabs";
-import { type ItemDefinition, Request } from "postman-collection";
 // @ts-expect-error : TS definitions is not available for the package.
 import * as codegen from "postman-code-generators";
+import * as _ from "lodash";
+import { OpenAPIV3 } from "openapi-types";
+import { transformOpenApiRequestToPostman } from "../../utils/transformRequest";
 
 interface Language {
     id: string;
@@ -40,13 +42,16 @@ const languages: Language[] = [
 ];
 
 interface RequestPanelProps {
-    api: ItemDefinition;
+    schema: OpenAPIV3.Document;
+    path: string;
+    method: OpenAPIV3.HttpMethods;
 }
 
-export default function RequestPanel({ api }: RequestPanelProps) {
+export default function RequestPanel({ schema, path, method }: RequestPanelProps) {
     const languagesWithApiData = useMemo(() => {
+        const operationData: OpenAPIV3.OperationObject = _.get(schema.paths, [path, method]);
+        const request = transformOpenApiRequestToPostman({ path, method, operationData }, schema);
         return languages.map((lang) => {
-            const request = api;
             codegen.convert(lang.lang, lang.variant, request, {}, (err: Error, data: string) => {
                 if (!err) {
                     lang.data = data;
@@ -54,7 +59,7 @@ export default function RequestPanel({ api }: RequestPanelProps) {
             });
             return lang;
         });
-    }, []);
+    }, [path, method, schema]);
 
     return (
         <TabsPrimitive.Root defaultValue={languages[0].id}>

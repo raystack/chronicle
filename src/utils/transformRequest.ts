@@ -2,7 +2,6 @@ import { OpenAPIV3 } from "openapi-types";
 import { Request, RequestBody } from "postman-collection";
 import * as _ from "lodash";
 export interface PathData {
-    key: string;
     path: string;
     method: OpenAPIV3.HttpMethods;
     operationData: OpenAPIV3.OperationObject;

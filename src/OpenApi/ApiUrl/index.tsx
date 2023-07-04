@@ -1,6 +1,7 @@
-import React, { useMemo } from "react";
+import React from "react";
 import styles from "./styles.module.css";
-import { type ItemDefinition } from "postman-collection";
+import { OpenAPIV3 } from "openapi-types";
+import * as _ from "lodash";
 
 const MethodColorsMap: Record<string, string> = {
     get: "green",
@@ -14,28 +15,16 @@ const MethodColorsMap: Record<string, string> = {
 };
 
 interface ApiURLProps {
-    api: ItemDefinition;
+    path: string;
+    method: OpenAPIV3.HttpMethods;
 }
 
-export default function ApiURL({ api }: ApiURLProps) {
-    const method = api.request?.method?.toLowerCase() ?? "";
-    const path = useMemo(() => {
-        return typeof api.request?.url === "object"
-            ? Array.isArray(api.request.url?.path)
-                ? api.request.url?.path.reduce((acc, p) => {
-                      const value = p.startsWith(":") ? "{" + p.slice(1) + "}" : p;
-                      return acc + "/" + value;
-                  }, "")
-                : api.request.url?.path
-            : api.request?.url;
-    }, [api.request]);
+export default function ApiURL({ path, method }: ApiURLProps) {
     return (
         <div className={styles.apiMethodAndPath}>
-            {method !== "" ? (
-                <div className={styles.apiMethod} style={{ backgroundColor: MethodColorsMap[method] }}>
-                    {method}
-                </div>
-            ) : null}
+            <div className={styles.apiMethod} style={{ backgroundColor: MethodColorsMap[method] }}>
+                {method}
+            </div>
             <div className={styles.apiPath}>{path}</div>
         </div>
     );
