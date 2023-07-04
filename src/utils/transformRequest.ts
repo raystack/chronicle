@@ -1,5 +1,5 @@
 import { OpenAPIV3 } from "openapi-types";
-import { Request } from "postman-collection";
+import { Request, RequestBody } from "postman-collection";
 import * as _ from "lodash";
 export interface PathData {
     key: string;
@@ -45,9 +45,15 @@ function getRefObject(ref: string, schema: OpenAPIV3.Document, seen: Record<stri
     }
 
     seen[ref] = true;
-    if (refObj.$ref) {
-        return getRefObject(refObj.$ref, schema, seen);
+
+    if (_.has(refObj, "properties")) {
+        Object.keys(refObj.properties).forEach((key) => {
+            if (_.has(refObj.properties[key], "$ref")) {
+                refObj.properties[key] = getRefObject(refObj.properties[key].$ref, schema, seen);
+            }
+        });
     }
+
     seen[ref] = false;
     return refObj;
 }
@@ -73,21 +79,35 @@ function resolveRef(refs: BodyRefAndType[], schema: OpenAPIV3.Document) {
     });
 }
 
-export function transformOpenApiRequestToPostman(data: PathData, schema: OpenAPIV3.Document) {
-    const body = getBodyRef(data);
+function getExampleBody(ref: any) {
+    if (ref.type === "object") {
+        const properties = ref.properties || {};
+        return Object.keys(properties).reduce((acc, key) => {
+            acc[key] = properties[key].example;
+            return acc;
+        }, {} as any);
+    }
+    return {};
+}
 
+export function transformOpenApiRequestToPostman(data: PathData, schema: OpenAPIV3.Document) {
+    const body = getBodyRef(data).filter((b) => b.type === "application/json");
     const refs = resolveRef(body, schema);
+    const bodies = refs.map((ref) => getExampleBody(ref));
 
     const url = schema.servers?.length ? schema.servers[0].url + data.path : data.path;
     const req = new Request({ url, method: data.method });
-    // if (Array.isArray(data.operationData.parameters) && data.operationData.parameters.length) {
-    //     const body = data.operationData.parameters.find((o) => );
-    // }
 
+    console.log(bodies);
     if (body.length) {
         req.addHeader({
             key: "Content-Type",
-            value: body[0].type,
+            value: "application/json",
+        });
+
+        req.body = new RequestBody({
+            mode: "raw",
+            raw: JSON.stringify(bodies[0]),
         });
     }
 
