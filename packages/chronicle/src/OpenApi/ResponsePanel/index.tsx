@@ -43,8 +43,6 @@ export default function ResponsePanel({ schema, path, method }: ResponsePanelPro
         }, [] as RespWithBody[]);
     }, [operationData]);
 
-    console.log(respWithBody);
-
     return respWithBody.length ? (
         <div>
             <span>Response Body</span>

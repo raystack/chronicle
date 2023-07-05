@@ -10,14 +10,19 @@ module.exports = {
   input: "src/index.tsx",
   output: [
     {
-      file: pkg.main,
-      format: "cjs",
-      sourcemap: true
+      dir: "dist",
+      format: "es",
+      preserveModules: true,
+      preserveModulesRoot: "src",
+      sourcemap: true,
     },
     {
-      file: pkg.module,
-      format: "es",
-      sourcemap: true
+      dir: "dist",
+      format: "cjs",
+      preserveModules: true,
+      preserveModulesRoot: "src",
+      sourcemap: true,
+      entryFileNames: "[name].cjs",
     },
   ],
   plugins: [
@@ -35,5 +40,5 @@ module.exports = {
       tsconfig: "tsconfig.json",
     })
   ],
-  external: ["react", "react-dom"],
+  external: [/node_modules/],
 };

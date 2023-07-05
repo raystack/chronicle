@@ -1,76 +1,30 @@
 {
-  "name": "@raystack/chronicle",
+  "name": "chronicle",
   "version": "0.0.1",
-  "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
-  "files": [
-    "dist"
-  ],
+  "description": "",
+  "main": "index.js",
   "scripts": {
-    "build": "rollup -c",
-    "test": "vitest",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "lint": "eslint . --ext .ts,.tsx"
+    "build": "turbo run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
-  "license": "Apache-2.0",
   "repository": {
     "type": "git",
     "url": "git+ssh://git@github.com/raystack/chronicle.git"
   },
+  "author": "",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/raystack/chronicle/issues"
   },
   "homepage": "https://github.com/raystack/chronicle#readme",
-  "description": "",
+  "workspaces": [
+    "./packages/*",
+    "./example/*"
+  ],
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.2",
-    "@rollup/plugin-json": "^6.0.0",
-    "@rollup/plugin-node-resolve": "^15.1.0",
-    "@rollup/plugin-typescript": "^11.1.1",
-    "@storybook/addon-essentials": "^7.0.22",
-    "@storybook/addon-interactions": "^7.0.22",
-    "@storybook/addon-links": "^7.0.22",
-    "@storybook/blocks": "^7.0.22",
-    "@storybook/react": "^7.0.22",
-    "@storybook/react-vite": "^7.0.22",
-    "@storybook/testing-library": "^0.2.0",
-    "@types/js-yaml": "^4.0.5",
-    "@types/node": "^20.3.1",
-    "@types/openapi-to-postmanv2": "^3.2.0",
-    "@types/postman-collection": "^3.5.7",
-    "@types/react": "^18.2.13",
-    "@types/statuses": "^2.0.1",
-    "@typescript-eslint/eslint-plugin": "^5.60.0",
-    "eslint": "^8.43.0",
-    "eslint-config-prettier": "^8.8.0",
-    "eslint-plugin-react": "^7.32.2",
-    "prop-types": "^15.8.1",
-    "react-dom": "^18.2.0",
-    "rollup": "^3.25.1",
-    "rollup-plugin-polyfill-node": "^0.12.0",
-    "rollup-plugin-postcss": "^4.0.2",
-    "storybook": "^7.0.22",
-    "tslib": "^2.5.3",
-    "typescript": "^5.0.4",
-    "typescript-plugin-css-modules": "^5.0.1",
-    "vite-plugin-node-polyfills": "^0.9.0",
-    "vitest": "^0.32.2"
+    "turbo": "^1.10.7"
   },
   "dependencies": {
-    "@apidevtools/json-schema-ref-parser": "^10.1.0",
-    "@apidevtools/swagger-parser": "^10.1.0",
-    "@radix-ui/react-icons": "^1.3.0",
-    "@radix-ui/react-select": "^1.2.2",
-    "@radix-ui/react-tabs": "^1.0.4",
-    "js-yaml": "^4.1.0",
-    "openapi-to-postmanv2": "^4.14.0",
-    "openapi-types": "^12.1.3",
-    "postman-code-generators": "^1.7.2",
-    "postman-collection": "^4.1.7",
-    "react": "^18.2.0",
-    "statuses": "^2.0.1"
+    "@raystack/chronicle": "^0.0.1"
   }
 }
