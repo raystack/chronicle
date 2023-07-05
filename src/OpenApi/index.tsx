@@ -8,6 +8,7 @@ import jsYaml from "js-yaml";
 import { OpenAPIV3 } from "openapi-types";
 import SwaggerParser from "@apidevtools/swagger-parser";
 import { ApiParams } from "./ApiParams";
+import StatusTable from "./StatusTable";
 
 interface OpenApiProps {
     schema: string;
@@ -69,12 +70,12 @@ export function OpenApi({ schema, fileType }: OpenApiProps) {
                             <div className={styles.apiDataSection}>
                                 <ApiInfo schema={parsedSchema} path={path.path} method={path.method} />
                                 <ApiParams schema={parsedSchema} path={path.path} method={path.method} />
+                                <StatusTable schema={parsedSchema} path={path.path} method={path.method} />
                             </div>
                             <div className={styles.apiDataSection}>
                                 <ApiURL path={path.path} method={path.method} />
                                 <RequestPanel schema={parsedSchema} path={path.path} method={path.method} />
-                                {/* 
-                            <ResponsePanel api={api} /> */}
+                                <ResponsePanel schema={parsedSchema} path={path.path} method={path.method} />
                             </div>
                         </div>
                     );

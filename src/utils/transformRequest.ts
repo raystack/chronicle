@@ -12,7 +12,7 @@ interface BodyRefAndType {
     ref: string;
 }
 
-function getRefObject(ref: string, schema: OpenAPIV3.Document, seen: Record<string, boolean> = {}) {
+export function getRefObject(ref: string, schema: OpenAPIV3.Document, seen: Record<string, boolean> = {}) {
     if (typeof ref !== "string") {
         return {};
     }
@@ -80,7 +80,7 @@ function resolveRef(refs: BodyRefAndType[], schema: OpenAPIV3.Document) {
     });
 }
 
-function getExampleBody(ref: any): any {
+export function getExampleBody(ref: any): any {
     if (ref.type === "object") {
         const properties = ref.properties || {};
         return Object.keys(properties).reduce((acc, key) => {

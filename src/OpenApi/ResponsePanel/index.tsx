@@ -1,39 +1,54 @@
-import { type ItemDefinition } from "postman-collection";
+import { OpenAPIV3 } from "openapi-types";
 import React, { useMemo } from "react";
-import * as TabsPrimitive from "@radix-ui/react-tabs";
+import * as _ from "lodash";
+import { getExampleBody, getRefObject } from "../../utils/transformRequest";
 
 interface ResponsePanelProps {
-    api: ItemDefinition;
+    schema: OpenAPIV3.Document;
+    path: string;
+    method: OpenAPIV3.HttpMethods;
 }
-export default function ResponsePanel({ api }: ResponsePanelProps) {
-    const responses = useMemo(() => {
-        return Array.isArray(api.response) ? api.response : [];
-    }, [api.response]);
 
-    const defaultValue = responses?.[0]?.code.toString();
-    return (
-        <TabsPrimitive.Root defaultValue={defaultValue}>
-            <TabsPrimitive.List className="TabsList" aria-label="Manage your account">
-                {responses.map((resp) => {
-                    const statusCode = resp.code.toString();
-                    return (
-                        <TabsPrimitive.Trigger className="TabsTrigger" value={statusCode} key={statusCode}>
-                            {statusCode}
-                        </TabsPrimitive.Trigger>
-                    );
-                })}
-            </TabsPrimitive.List>
-            {responses.map((resp) => {
-                const statusCode = resp.code.toString();
-                const lang = resp.header?.some((h) => h.key === "Content-Type" && h.value === "application/json")
-                    ? "json"
-                    : "text";
-                return (
-                    <TabsPrimitive.Content value={statusCode} key={statusCode}>
-                        {resp.body ? <pre lang={lang}>{resp.body}</pre> : "empty"}
-                    </TabsPrimitive.Content>
-                );
-            })}
-        </TabsPrimitive.Root>
-    );
+interface RespWithBody {
+    status: string;
+    body: any;
+}
+
+export default function ResponsePanel({ schema, path, method }: ResponsePanelProps) {
+    const operationData: OpenAPIV3.OperationObject = _.get(schema.paths, [path, method]);
+
+    const respWithBody = useMemo(() => {
+        const respObj = _.get(operationData, "responses", {});
+        return Object.entries(respObj).reduce((acc, resp) => {
+            const data = resp[1] as OpenAPIV3.ResponseObject;
+            if (_.has(data, ["content", "application/json"])) {
+                const contentSchema = _.get(data, ["content", "application/json", "schema"]);
+                if (contentSchema.$ref) {
+                    const refValue = getRefObject(contentSchema.$ref, schema);
+                    const body = getExampleBody(refValue);
+                    acc.push({
+                        status: resp[0],
+                        body,
+                    });
+                } else if (contentSchema.type === "array" && _.has(contentSchema, ["items", "$ref"])) {
+                    const refValue = getRefObject(contentSchema.$ref, schema);
+                    const body = getExampleBody(refValue);
+                    acc.push({
+                        status: resp[0],
+                        body: [body],
+                    });
+                }
+            }
+            return acc;
+        }, [] as RespWithBody[]);
+    }, [operationData]);
+
+    console.log(respWithBody);
+
+    return respWithBody.length ? (
+        <div>
+            <span>Response Body</span>
+            <pre lang="json">{JSON.stringify(respWithBody[0].body, null, 4)}</pre>
+        </div>
+    ) : null;
 }

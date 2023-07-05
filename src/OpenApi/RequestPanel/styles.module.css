@@ -37,3 +37,10 @@
   position: relative;
   user-select: none;
 }
+
+.Code {
+  width: 100%;
+  padding: 8px;
+  white-space: pre-wrap;
+  word-wrap: break-word;  
+}

@@ -94,7 +94,13 @@ export default function RequestPanel({ schema, path, method }: RequestPanelProps
                     </SelectPrimitive.Portal>
                 </SelectPrimitive.Root>
             </div>
-            <div>{selectedLang ? <pre lang={selectedLang.lang}>{selectedLang.data}</pre> : null}</div>
+            <div>
+                {selectedLang ? (
+                    <pre lang={selectedLang.lang} className={styles.Code}>
+                        {selectedLang.data}
+                    </pre>
+                ) : null}
+            </div>
         </div>
     );
 }
