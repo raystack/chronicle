@@ -12,7 +12,7 @@ export const getStaticProps = async () => {
 
 export default function Home({ schema }: { schema: any }) {
     return (
-        <main className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}>
+        <main className={`p-24 ${inter.className}`}>
             <OpenApi schema={schema} />
         </main>
     );
