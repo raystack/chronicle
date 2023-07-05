@@ -4,6 +4,7 @@
 
 .apiBlock {
   display: flex;
+  margin-bottom: 24px;
 }
 
 .apiDataSection {

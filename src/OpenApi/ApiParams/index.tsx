@@ -17,7 +17,7 @@ interface ParamsListProps {
 function ParamsList({ title, params }: ParamsListProps) {
     return params.length ? (
         <div className={styles.paramsListWrapper}>
-            <h3 className={styles.paramsListTitle}>{title}</h3>
+            <span className={styles.paramsListTitle}>{title}</span>
             <div className={styles.paramsList}>
                 {params.map((param) => {
                     const { name, schema = {}, required, description } = param;
@@ -45,12 +45,13 @@ export function ApiParams({ schema, path, method }: ApiParamsProps) {
     const queryParams = operationData.parameters?.filter((p) => (p as OpenAPIV3.ParameterObject).in === "query") || [];
     const pathParams = operationData.parameters?.filter((p) => (p as OpenAPIV3.ParameterObject).in === "path") || [];
 
-    return (
+    const showParams = headers.length || queryParams.length || pathParams.length;
+    return showParams ? (
         <div>
-            <h2>Params</h2>
+            <span className={styles.title}>Params</span>
             <ParamsList title="Path Params" params={pathParams as OpenAPIV3.ParameterObject[]} />
             <ParamsList title="Headers" params={headers as OpenAPIV3.ParameterObject[]} />
             <ParamsList title="Query Params" params={queryParams as OpenAPIV3.ParameterObject[]} />
         </div>
-    );
+    ) : null;
 }
