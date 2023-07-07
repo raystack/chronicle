@@ -6,6 +6,7 @@ interface LinkItem {
     href?: string;
     label: string;
     external?: boolean;
+    icon?: ReactElement;
 }
 
 interface GroupItem {
@@ -31,7 +32,13 @@ function MenuList({ items, level = 0, itemComponent = <a /> }: MenuListProps) {
 
     const ItemComponent = ({ item }: { item: LinkItem }) => {
         const href = item.href || "#";
-        return React.cloneElement(itemComponent, { children: item.label, href: href, className: styles.sidebarItem });
+        const children = (
+            <>
+                {item.icon}
+                {item.label}
+            </>
+        );
+        return React.cloneElement(itemComponent, { children: children, href: href, className: styles.sidebarItem });
     };
 
     return (

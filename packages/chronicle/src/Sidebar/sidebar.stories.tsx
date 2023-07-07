@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/react";
 import * as Sidebar from "./";
+import { SunIcon } from "@radix-ui/react-icons";
+import React from "react";
 
 const meta: Meta<typeof Sidebar.Root> = {
     title: "Sidebar",
@@ -20,6 +22,7 @@ const items = [
             {
                 label: "Intro 2",
                 href: "/2",
+                icon: <SunIcon />,
             },
             {
                 label: "Install",

@@ -21,4 +21,8 @@
   text-decoration: none;
   color: unset;
   margin: 4px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 4px;
 }
