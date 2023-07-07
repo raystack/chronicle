@@ -1,0 +1,14 @@
+.apiInfoSection {
+  flex: 1;
+  margin-bottom: 16px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.description {
+  font-size: 16px;
+}

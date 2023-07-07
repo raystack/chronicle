@@ -1,0 +1,30 @@
+{
+  "name": "chronicle",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "turbo run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/raystack/chronicle.git"
+  },
+  "author": "",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/raystack/chronicle/issues"
+  },
+  "homepage": "https://github.com/raystack/chronicle#readme",
+  "workspaces": [
+    "./packages/*",
+    "./example/*"
+  ],
+  "devDependencies": {
+    "turbo": "^1.10.7"
+  },
+  "dependencies": {
+    "@raystack/chronicle": "^0.0.1"
+  }
+}
