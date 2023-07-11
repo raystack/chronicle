@@ -2,11 +2,13 @@ import React, { ReactNode } from "react";
 import styles from "./styles.module.css";
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import { CaretDownIcon } from "@radix-ui/react-icons";
+import clsx from "clsx";
 
 interface NavbarProps {
     logo?: ReactNode | string;
     leftActionItems?: ReactNode[];
     rightActionItems?: ReactNode[];
+    className?: string;
 }
 
 interface MenuProps {
@@ -35,9 +37,9 @@ export function Menu({ label, items, menuPosition }: MenuProps) {
     );
 }
 
-export function Root({ logo, leftActionItems = [], rightActionItems = [] }: NavbarProps) {
+export function Root({ logo, leftActionItems = [], rightActionItems = [], className }: NavbarProps) {
     return (
-        <header className={styles.Navbar}>
+        <header className={clsx(styles.Navbar, className)}>
             <div style={{ display: "flex" }}>
                 <div className={styles.Logo}>{logo}</div>
                 <NavigationMenu.Root>
