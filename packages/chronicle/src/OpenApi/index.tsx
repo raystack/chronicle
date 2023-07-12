@@ -39,7 +39,7 @@ export function Root({ schema }: OpenApiProps) {
             {schema &&
                 paths.map((path) => {
                     return (
-                        <div className={styles.apiBlock} key={path.key}>
+                        <section className={styles.apiBlock} key={path.key} id={path.key}>
                             <div className={styles.apiDataSection}>
                                 <ApiInfo schema={schema} path={path.path} method={path.method} />
                                 <ApiParams schema={schema} path={path.path} method={path.method} />
@@ -50,7 +50,7 @@ export function Root({ schema }: OpenApiProps) {
                                 <RequestPanel schema={schema} path={path.path} method={path.method} />
                                 <ResponsePanel schema={schema} path={path.path} method={path.method} />
                             </div>
-                        </div>
+                        </section>
                     );
                 })}
         </div>
