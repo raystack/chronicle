@@ -1,0 +1,59 @@
+.Navbar {
+  width: 100%;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  box-sizing: border-box;
+}
+
+.Logo {
+  display: flex;
+  align-items: center;
+  margin-right: 16px;
+}
+
+.ActionItem {
+  margin: 0 4px;
+  display: inline-flex;
+}
+
+.List {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  position: relative;
+}
+
+.NavigationMenuTrigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2px;
+}
+
+.NavigationMenuContent {
+  position: absolute;
+  width: max-content;
+  animation-duration: 250ms;
+  animation-timing-function: ease;
+  border: 0.5px solid rgba(0,0,0,0.1);
+  top: calc(100% + 2px);
+  padding: 8px;
+  background-color: white;
+}
+
+.NavigationMenuContentList {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.NavigationMenuContentListItem {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 6px 16px;
+  text-decoration: none;
+}
