@@ -7,31 +7,15 @@ import ApiInfo from "./ApiInfo";
 import { OpenAPIV3 } from "openapi-types";
 import { ApiParams } from "./ApiParams";
 import StatusTable from "./StatusTable";
+import { getApiPaths } from "../utils/parseSchema";
 
 interface OpenApiProps {
     schema: OpenAPIV3.Document;
 }
 
-interface PathData {
-    key: string;
-    path: string;
-    method: OpenAPIV3.HttpMethods;
-}
-
 export function Root({ schema }: OpenApiProps) {
     const paths = useMemo(() => {
-        const paths: PathData[] = [];
-        for (const path in schema?.paths) {
-            const methodsMap = schema?.paths[path];
-            for (const method in methodsMap) {
-                paths.push({
-                    key: `${method}-${path}`,
-                    path: path,
-                    method: method as OpenAPIV3.HttpMethods,
-                });
-            }
-        }
-        return paths;
+        return getApiPaths(schema);
     }, [schema]);
 
     return (
@@ -39,7 +23,7 @@ export function Root({ schema }: OpenApiProps) {
             {schema &&
                 paths.map((path) => {
                     return (
-                        <div className={styles.apiBlock} key={path.key}>
+                        <section className={styles.apiBlock} key={path.key} id={path.key}>
                             <div className={styles.apiDataSection}>
                                 <ApiInfo schema={schema} path={path.path} method={path.method} />
                                 <ApiParams schema={schema} path={path.path} method={path.method} />
@@ -50,7 +34,7 @@ export function Root({ schema }: OpenApiProps) {
                                 <RequestPanel schema={schema} path={path.path} method={path.method} />
                                 <ResponsePanel schema={schema} path={path.path} method={path.method} />
                             </div>
-                        </div>
+                        </section>
                     );
                 })}
         </div>

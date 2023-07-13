@@ -1,6 +1,7 @@
 import React, { ReactElement, useState } from "react";
 import styles from "./styles.module.css";
 import * as _ from "lodash";
+import clsx from "clsx";
 
 interface LinkItem {
     href?: string;
@@ -19,6 +20,7 @@ export type SidebarItem = LinkItem | GroupItem;
 interface SidebarProps {
     items: SidebarItem[];
     itemComponent?: ReactElement;
+    className?: string;
 }
 
 interface MenuListProps {
@@ -69,9 +71,9 @@ function SubMenu({ subMenu, level = 0 }: { subMenu: GroupItem; level?: number })
     );
 }
 
-export function Root({ items, itemComponent = <a /> }: SidebarProps) {
+export function Root({ items, itemComponent = <a />, className }: SidebarProps) {
     return (
-        <aside className={styles.Sidebar}>
+        <aside className={clsx(styles.Sidebar, className)}>
             <MenuList items={items} itemComponent={itemComponent} />
         </aside>
     );

@@ -1,0 +1,25 @@
+.TocLinksList {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 8px 0;
+}
+
+.TocLink {
+  margin: 4px;
+  text-decoration: none;
+}
+
+.TocWrapperHeading {
+  margin-block-start: 0;
+  margin-block-end: 0;
+  font-size: 1.2em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.TocWrapper {
+  display: flex;
+  flex-direction: column;
+  padding: 4px;
+}

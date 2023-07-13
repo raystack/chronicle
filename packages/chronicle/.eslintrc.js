@@ -1,34 +1,23 @@
 module.exports = {
   env: {
     browser: true,
-    es2021: true,
+    es2021: true
   },
-  extends: [
-    "eslint:recommended",
-    "plugin:react/recommended",
-    "plugin:@typescript-eslint/recommended",
-    "prettier",
-  ],
-  overrides: [
-    {
-      env: {
-        node: true,
-      },
-      files: [
-        ".eslintrc.{js,cjs}",
-      ],
-      parserOptions: {
-        sourceType: "script",
-      },
+  extends: ["eslint:recommended", "plugin:react/recommended", "plugin:@typescript-eslint/recommended", "prettier", "plugin:storybook/recommended"],
+  overrides: [{
+    env: {
+      node: true
     },
-  ],
+    files: [".eslintrc.{js,cjs}"],
+    parserOptions: {
+      sourceType: "script"
+    }
+  }],
   parserOptions: {
     ecmaVersion: "latest",
-    sourceType: "module",
+    sourceType: "module"
   },
-  plugins: [
-    "react",
-  ],
+  plugins: ["react"],
   rules: {
     // quotes: [2, "double", { avoidEscape: true }],
     // semi: [2, "always"],
@@ -37,7 +26,7 @@ module.exports = {
   },
   settings: {
     react: {
-      version: "detect",
-    },
-  },
+      version: "detect"
+    }
+  }
 };
