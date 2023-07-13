@@ -7,31 +7,15 @@ import ApiInfo from "./ApiInfo";
 import { OpenAPIV3 } from "openapi-types";
 import { ApiParams } from "./ApiParams";
 import StatusTable from "./StatusTable";
+import { getApiPaths } from "../utils/parseSchema";
 
 interface OpenApiProps {
     schema: OpenAPIV3.Document;
 }
 
-interface PathData {
-    key: string;
-    path: string;
-    method: OpenAPIV3.HttpMethods;
-}
-
 export function Root({ schema }: OpenApiProps) {
     const paths = useMemo(() => {
-        const paths: PathData[] = [];
-        for (const path in schema?.paths) {
-            const methodsMap = schema?.paths[path];
-            for (const method in methodsMap) {
-                paths.push({
-                    key: `${method}-${path}`,
-                    path: path,
-                    method: method as OpenAPIV3.HttpMethods,
-                });
-            }
-        }
-        return paths;
+        return getApiPaths(schema);
     }, [schema]);
 
     return (
