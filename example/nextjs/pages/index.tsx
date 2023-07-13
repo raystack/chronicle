@@ -1,8 +1,10 @@
-import { OpenApi, Sidebar, utils, Navbar } from "@raystack/chronicle";
+import { OpenApi, Sidebar, utils, Navbar, Toc } from "@raystack/chronicle";
 import { readApiYaml } from "../utils/index";
 import { Inter } from "next/font/google";
 import { SidebarConfig, readSidebarConfig } from "@/utils/sidebar";
 import Link from "next/link";
+import { OpenAPIV3 } from "openapi-types";
+import { getApiPaths } from "@raystack/chronicle/dist/utils/parseSchema";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -13,7 +15,11 @@ export const getStaticProps = async () => {
     return { props: { schema, sidebarConfig } };
 };
 
-export default function Home({ schema, sidebarConfig }: { schema: any; sidebarConfig: SidebarConfig }) {
+export default function Home({ schema, sidebarConfig }: { schema: OpenAPIV3.Document; sidebarConfig: SidebarConfig }) {
+    const headingsLink = getApiPaths(schema).map((path) => ({
+        label: path.data.summary || path.data.description || "",
+        href: "#" + path.key,
+    }));
     return (
         <div className="flex flex-col">
             <Navbar.Root
@@ -37,12 +43,13 @@ export default function Home({ schema, sidebarConfig }: { schema: any; sidebarCo
                 ]}
             />
             <div className="mt-[48px]">
-                <div className="h-screen border-white border-r fixed">
-                    <Sidebar.Root items={sidebarConfig.items} />
-                </div>
-                <main className={`p-24 ${inter.className} ml-[280px] w-[calc(100vw_-_280px)]`}>
+                <Sidebar.Root items={sidebarConfig.items} className="h-screen border-white border-r fixed" />
+                <main className={`p-24 ${inter.className} mx-[280px] w-[calc(100vw_-_560px)]`}>
                     <OpenApi.Root schema={schema} />
                 </main>
+                <aside className="h-screen border-white border-l fixed right-0 top-[48px] p-4">
+                    <Toc.Root items={headingsLink} className="w-[240px]" />
+                </aside>
             </div>
         </div>
     );
