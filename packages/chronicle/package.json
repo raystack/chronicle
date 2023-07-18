@@ -2,13 +2,15 @@
   "name": "@raystack/chronicle",
   "version": "0.0.1",
   "main": "dist/index.js",
-  "module": "dist/index.es.js",
-  "types": "dist/index.d.ts",
+  "module": "dist/client.js",
+  "types": "dist/client.d.ts",
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "node tasks/build.mjs",
+    "build:client": "rollup -c",
+    "build:cli": "node tasks/build.mjs",
+    "build": "npm run build:client && npm run build:cli",
     "test": "vitest",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",

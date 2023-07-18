@@ -1,3 +1,3 @@
-import { parseSchema } from "./parseSchema";
+import { parseSchema, getApiPaths } from "./parseSchema";
 
-export { parseSchema };
+export { parseSchema, getApiPaths };

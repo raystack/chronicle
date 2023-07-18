@@ -1,13 +1,19 @@
-const typescript = require("@rollup/plugin-typescript");
-const pkg = require("./package.json");
-const postcss = require("rollup-plugin-postcss");
-const { nodeResolve } = require("@rollup/plugin-node-resolve");
-const nodePolyfills = require("rollup-plugin-polyfill-node");
-const commonjs = require("@rollup/plugin-commonjs");
-const json = require("@rollup/plugin-json");
 
-module.exports = {
-  input: "src/index.tsx",
+import typescript from "@rollup/plugin-typescript";
+import postcss from "rollup-plugin-postcss";
+import { nodeResolve } from "@rollup/plugin-node-resolve";
+import nodePolyfills from "rollup-plugin-polyfill-node";
+import commonjs from "@rollup/plugin-commonjs";
+import json from "@rollup/plugin-json";
+import path from 'node:path'
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
+export default {
+  input: "src/client.tsx",
   output: [
     {
       dir: "dist",
@@ -33,7 +39,7 @@ module.exports = {
     json(),
     commonjs(),
     postcss({
-      extract: true,
+      extract: path.join(__dirname, 'dist', 'style.css'),
       modules: true,
     }),
     typescript({
