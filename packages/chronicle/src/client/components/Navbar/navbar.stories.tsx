@@ -1,6 +1,6 @@
 import React from "react";
 import type { Meta, StoryObj } from "@storybook/react";
-import * as Navbar from "./";
+import * as Navbar from ".";
 import { SunIcon } from "@radix-ui/react-icons";
 
 const meta: Meta<typeof Navbar.Root> = {

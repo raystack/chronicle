@@ -5,7 +5,7 @@ import styles from "./styles.module.css";
 import * as codegen from "postman-code-generators";
 import * as _ from "lodash";
 import { OpenAPIV3 } from "openapi-types";
-import { transformOpenApiRequestToPostman } from "../../utils/transformRequest";
+import { transformOpenApiRequestToPostman } from "../../../utils/transformRequest";
 
 interface Language {
     id: string;

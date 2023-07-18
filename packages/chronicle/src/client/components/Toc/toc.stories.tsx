@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import * as Toc from "./";
+import * as Toc from ".";
 
 const meta: Meta<typeof Toc.Root> = {
     title: "Toc",

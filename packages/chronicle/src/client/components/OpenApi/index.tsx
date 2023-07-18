@@ -7,7 +7,7 @@ import ApiInfo from "./ApiInfo";
 import { OpenAPIV3 } from "openapi-types";
 import { ApiParams } from "./ApiParams";
 import StatusTable from "./StatusTable";
-import { getApiPaths } from "../utils/parseSchema";
+import { getApiPaths } from "../../utils/parseSchema";
 
 interface OpenApiProps {
     schema: OpenAPIV3.Document;
