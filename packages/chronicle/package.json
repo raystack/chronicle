@@ -1,16 +1,16 @@
 {
   "name": "@raystack/chronicle",
   "version": "0.0.1",
-  "main": "dist/index.js",
-  "module": "dist/client.js",
-  "types": "dist/client.d.ts",
   "files": [
-    "dist"
+    "dist",
+    "client.js",
+    "client.d.ts"
   ],
   "scripts": {
+    "clean:dist": "rimraf dist",
     "build:client": "rollup -c",
     "build:cli": "node tasks/build.mjs",
-    "build": "npm run build:client && npm run build:cli",
+    "build": "npm run clean:dist && npm run build:client",
     "test": "vitest",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
@@ -56,6 +56,7 @@
     "globby": "^13.2.2",
     "prop-types": "^15.8.1",
     "react-dom": "^18.2.0",
+    "rimraf": "^5.0.1",
     "rollup": "^3.25.1",
     "rollup-plugin-polyfill-node": "^0.12.0",
     "rollup-plugin-postcss": "^4.0.2",

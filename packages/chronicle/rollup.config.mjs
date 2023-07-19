@@ -13,7 +13,7 @@ const __dirname = path.dirname(__filename);
 
 
 export default {
-  input: "src/client.tsx",
+  input: "src/client/index.tsx",
   output: [
     {
       dir: "dist",
@@ -21,15 +21,7 @@ export default {
       preserveModules: true,
       preserveModulesRoot: "src",
       sourcemap: true,
-    },
-    {
-      dir: "dist",
-      format: "cjs",
-      preserveModules: true,
-      preserveModulesRoot: "src",
-      sourcemap: true,
-      entryFileNames: "[name].cjs",
-    },
+    }
   ],
   plugins: [
     nodePolyfills(),
@@ -39,10 +31,12 @@ export default {
     json(),
     commonjs(),
     postcss({
-      extract: path.join(__dirname, 'dist', 'style.css'),
+      extract: path.join(__dirname, 'dist', 'client', 'style.css'),
       modules: true,
     }),
     typescript({
+      declaration: true,
+      outDir: path.join(__dirname, 'dist', 'client'),
       tsconfig: "tsconfig.json",
     })
   ],
