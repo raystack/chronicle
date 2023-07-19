@@ -88,6 +88,7 @@
     "postman-code-generators": "^1.7.2",
     "postman-collection": "^4.1.7",
     "react": "^18.2.0",
+    "simple-git": "^3.19.1",
     "statuses": "^2.0.1"
   }
 }

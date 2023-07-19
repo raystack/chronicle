@@ -1,4 +1,4 @@
-interface DocRepoConfig {
+export interface DocRepoConfig {
     org: string;
     name: string;
     tag: string;
@@ -8,5 +8,8 @@ interface DocRepoConfig {
 export interface SiteConfig {
     siteUrl: string;
     title: string;
+    imagesDir: string;
+    tempDir?: string;
+    docsDir?: string;
     docsSources: DocRepoConfig[];
 }
