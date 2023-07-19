@@ -15,6 +15,9 @@ async function transform(filePath) {
         .transform(content, {
             sourceMaps: true,
             isModule: true,
+            module: {
+                type: "commonjs"
+            },
             jsc: {
                 parser: {
                     syntax: "typescript",

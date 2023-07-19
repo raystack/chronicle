@@ -29,5 +29,10 @@
     "node_modules",
     "dist",
     "**/*.stories.tsx"
-  ]
+  ],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  }
 }
