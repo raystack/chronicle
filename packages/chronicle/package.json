@@ -16,6 +16,9 @@
     "build-storybook": "storybook build",
     "lint": "eslint . --ext .ts,.tsx"
   },
+  "bin": {
+    "chronicle": "./dist/bin/chronicle.js"
+  },
   "author": "",
   "license": "Apache-2.0",
   "repository": {

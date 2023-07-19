@@ -41,7 +41,7 @@ async function transform(filePath) {
 }
 
 async function main() {
-    const filePaths = await globby("src/client/**/*.(ts|tsx)");
+    const filePaths = await globby("src/bin/**/*.(ts|tsx)");
     filePaths.forEach(transform)
 }
 
