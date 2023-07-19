@@ -13,6 +13,7 @@ export async function fetchDoc(config: SiteConfig) {
             return copyToDocs(repo, tempDir, docsDir);
         }),
     );
+    await removeDir(tempDir);
 }
 
 async function cloneRepo(repo: DocRepoConfig, tempDir: string) {
