@@ -17,8 +17,13 @@ export async function fetchDoc(config: SiteConfig) {
 }
 
 async function cloneRepo(repo: DocRepoConfig, tempDir: string) {
+    const GIT_USERNAME = process.env.GIT_USERNAME;
+    const GIT_TOKEN = process.env.GIT_TOKEN;
     const git = simpleGit({});
-    const repoPath = `https://github.com/${repo.org}/${repo.name}.git`;
+    const repoPath =
+        GIT_USERNAME && GIT_TOKEN
+            ? `https://${GIT_USERNAME}:${GIT_TOKEN}@github.com/${repo.org}/${repo.name}.git`
+            : `https://github.com/${repo.org}/${repo.name}.git`;
 
     const cloneOptions = {
         "--branch": repo.tag,
