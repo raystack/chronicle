@@ -1,7 +1,7 @@
 import { OpenAPIV3 } from "openapi-types";
 import React, { useMemo } from "react";
 import * as _ from "lodash";
-import { getExampleBody, getRefObject } from "../../utils/transformRequest";
+import { getExampleBody, getRefObject } from "../../../utils/transformRequest";
 
 interface ResponsePanelProps {
     schema: OpenAPIV3.Document;

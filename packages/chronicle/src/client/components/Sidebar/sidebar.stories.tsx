@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react";
-import * as Sidebar from "./";
+import * as Sidebar from ".";
 import { SunIcon } from "@radix-ui/react-icons";
 import React from "react";
 

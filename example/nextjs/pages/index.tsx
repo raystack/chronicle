@@ -1,10 +1,9 @@
-import { OpenApi, Sidebar, utils, Navbar, Toc } from "@raystack/chronicle";
+import { OpenApi, Sidebar, Navbar, Toc, utils } from "@raystack/chronicle/client";
 import { readApiYaml } from "../utils/index";
 import { Inter } from "next/font/google";
 import { SidebarConfig, readSidebarConfig } from "@/utils/sidebar";
 import Link from "next/link";
 import { OpenAPIV3 } from "openapi-types";
-import { getApiPaths } from "@raystack/chronicle/dist/utils/parseSchema";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,7 +15,7 @@ export const getStaticProps = async () => {
 };
 
 export default function Home({ schema, sidebarConfig }: { schema: OpenAPIV3.Document; sidebarConfig: SidebarConfig }) {
-    const headingsLink = getApiPaths(schema).map((path) => ({
+    const headingsLink = utils.getApiPaths(schema).map((path) => ({
         label: path.data.summary || path.data.description || "",
         href: "#" + path.key,
     }));
