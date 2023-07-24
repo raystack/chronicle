@@ -1,4 +1,4 @@
-import { OpenApi, Sidebar, Navbar, Toc, utils } from "@raystack/chronicle/client";
+import { OpenApi, Sidebar, Navbar, Toc, utils } from "@raystack/chronicle/dist/client";
 import { readApiYaml } from "../utils/index";
 import { Inter } from "next/font/google";
 import { SidebarConfig, readSidebarConfig } from "@/utils/sidebar";
