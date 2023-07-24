@@ -20,7 +20,7 @@ async function parseConfigFile<T>(content: string): Promise<T> {
     }
 }
 
-async function checkFileExists(path: string): Promise<boolean> {
+export async function checkFileExists(path: string): Promise<boolean> {
     try {
         await fs.access(path, fs.constants.F_OK);
         return true;

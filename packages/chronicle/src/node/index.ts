@@ -1,7 +1,8 @@
-import { readConfig, resolveChronicleConfig } from "../lib/config";
-import { DocFile, SiteConfig } from "../types";
+import { checkFileExists, readConfig, resolveChronicleConfig } from "../lib/config";
+import { DocFile, FileContent, SiteConfig } from "../types";
 import path from "node:path";
 import fs from "node:fs/promises";
+import matter from "gray-matter";
 
 async function getFilesPath(dir: string, exts: string[] = []): Promise<Array<DocFile>> {
     const files = await fs.readdir(dir);
@@ -44,5 +45,45 @@ export default class Chronicle {
 
     async listRepos() {
         return this.config.docsSources;
+    }
+
+    async read(slug: string[]): Promise<FileContent> {
+        const filePath = this.getFilePathFromSlug(slug);
+        const isMdFileExists = await checkFileExists(filePath + ".md");
+        if (isMdFileExists) {
+            return this.readMd(slug);
+        }
+
+        const isYamlFileExists = await checkFileExists(filePath + ".yaml");
+        if (isYamlFileExists) {
+            return this.readOpenApi(slug);
+        }
+
+        throw new Error("Unsupported file type");
+    }
+
+    async readMd(slug: string[]): Promise<FileContent> {
+        const filePath = this.getFilePathFromSlug(slug);
+        const fileContent = await fs.readFile(filePath + ".md", "utf-8");
+        const { content, data } = matter(fileContent);
+        return {
+            title: data.title,
+            content: content,
+            type: "md",
+        };
+    }
+
+    async readOpenApi(slug: string[]): Promise<FileContent> {
+        const filePath = this.getFilePathFromSlug(slug);
+        const content = await fs.readFile(filePath + ".yaml", "utf-8");
+        return {
+            title: "API",
+            content: content,
+            type: "openapi",
+        };
+    }
+
+    getFilePathFromSlug(slug: string[]) {
+        return path.join(process.cwd(), this.config.docsDir || "docs", ...slug);
     }
 }

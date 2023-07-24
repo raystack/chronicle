@@ -26,7 +26,14 @@ export interface SiteConfig {
 }
 
 export type DocFileType = "openapi" | "md";
+
 export interface DocFile {
     slug: Array<string>;
     type: DocFileType;
+}
+
+export interface FileContent {
+    title: string;
+    type: DocFileType;
+    content: string;
 }
