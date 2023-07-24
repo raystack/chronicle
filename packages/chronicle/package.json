@@ -2,15 +2,13 @@
   "name": "@raystack/chronicle",
   "version": "0.0.1",
   "files": [
-    "dist",
-    "client.js",
-    "client.d.ts"
+    "dist/**/*"
   ],
   "scripts": {
     "clean:dist": "rimraf dist",
     "build:client": "rollup -c",
-    "build:cli": "tsup",
-    "build": "npm run clean:dist && npm run build:client",
+    "build:node": "tsup",
+    "build": "npm run clean:dist && npm run build:client && npm run build:node",
     "test": "vitest",
     "dev:cli": "ts-node src/bin/chronicle.ts",
     "storybook": "storybook dev -p 6006",
@@ -19,6 +17,22 @@
   },
   "bin": {
     "chronicle": "./dist/bin/chronicle.js"
+  },
+  "exports": {
+    "./package.json": "./package.json",
+    "./node": {
+      "types": "./dist/node/index.d.ts",
+      "import": "./dist/node/index.mjs",
+      "module": "./dist/node/index.mjs",
+      "require": "./dist/node/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.js",
+      "module": "./dist/client/index.js",
+      "require": "./dist/client/index.cjs"
+    },
+    "./client/style.css": "./dist/client/style.css"
   },
   "author": "",
   "license": "Apache-2.0",
@@ -44,7 +58,7 @@
     "@storybook/react-vite": "^7.0.26",
     "@storybook/testing-library": "^0.2.0",
     "@types/js-yaml": "^4.0.5",
-    "@types/node": "^20.3.1",
+    "@types/node": "^20.4.4",
     "@types/openapi-to-postmanv2": "^3.2.0",
     "@types/postman-collection": "^3.5.7",
     "@types/react": "^18.2.13",
@@ -66,7 +80,7 @@
     "ts-node": "^10.9.1",
     "tslib": "^2.5.3",
     "tsup": "^7.1.0",
-    "typescript": "^5.0.4",
+    "typescript": "^5.1.6",
     "typescript-plugin-css-modules": "^5.0.1",
     "vite-plugin-node-polyfills": "^0.9.0",
     "vitest": "^0.32.2"
