@@ -1,4 +1,4 @@
-import { readConfig } from "../lib/config";
+import { readConfig, resolveChronicleConfig } from "../lib/config";
 import { DocFile, SiteConfig } from "../types";
 import path from "node:path";
 import fs from "node:fs/promises";
@@ -31,11 +31,18 @@ export default class Chronicle {
     static async initialize({ configPath }: { configPath?: string }) {
         const configFullPath = configPath || path.join(process.cwd(), "config.json");
         const config = await readConfig(configFullPath);
+        config.docsSources = await Promise.all(
+            config.docsSources.map((source) => resolveChronicleConfig(source, config)),
+        );
         return new Chronicle({ config });
     }
 
     async list() {
         const dir = this.config.docsDir || "docs";
         return getFilesPath(dir, [".md", ".yaml"]);
+    }
+
+    async listRepos() {
+        return this.config.docsSources;
     }
 }

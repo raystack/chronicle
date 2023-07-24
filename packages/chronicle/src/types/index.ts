@@ -1,8 +1,19 @@
-export interface DocRepoConfig {
+export interface RepoSourceConfig {
     org: string;
     name: string;
     tag: string;
     docPath: string;
+    config: DocConfig;
+}
+
+export interface RepoSourceConfigWithPath extends Omit<RepoSourceConfig, "config"> {
+    config: DocConfig | string;
+}
+
+export interface DocConfig {
+    indexPage: string;
+    navigation: [];
+    sidebar: [];
 }
 
 export interface SiteConfig {
@@ -11,5 +22,11 @@ export interface SiteConfig {
     imagesDir: string;
     tempDir?: string;
     docsDir?: string;
-    docsSources: DocRepoConfig[];
+    docsSources: RepoSourceConfigWithPath[];
+}
+
+export type DocFileType = "openapi" | "md";
+export interface DocFile {
+    slug: Array<string>;
+    type: DocFileType;
 }

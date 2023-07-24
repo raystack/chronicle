@@ -32,6 +32,12 @@
       "module": "./dist/client/index.js",
       "require": "./dist/client/index.cjs"
     },
+    "./types": {
+      "types": "./dist/types/index.d.ts",
+      "import": "./dist/types/index.js",
+      "module": "./dist/types/index.js",
+      "require": "./dist/types/index.cjs"
+    },
     "./client/style.css": "./dist/client/style.css"
   },
   "author": "",
