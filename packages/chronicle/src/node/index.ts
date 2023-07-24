@@ -67,7 +67,7 @@ export default class Chronicle {
         const fileContent = await fs.readFile(filePath + ".md", "utf-8");
         const { content, data } = matter(fileContent);
         return {
-            title: data.title,
+            title: data.title || "",
             content: content,
             type: "md",
         };

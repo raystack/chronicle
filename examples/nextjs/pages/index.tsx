@@ -1,5 +1,4 @@
 import { Navbar } from "@raystack/chronicle/client";
-import { readApiYaml } from "../utils/index";
 import { Inter } from "next/font/google";
 import { SidebarConfig, readSidebarConfig } from "@/utils/sidebar";
 import Link from "next/link";
