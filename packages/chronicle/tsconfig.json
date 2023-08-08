@@ -1,24 +1,17 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    // "declaration": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "jsx": "react",
     "module": "esnext",
     "moduleResolution": "node",
     "noEmit": true,
-    // "outDir": "dist",
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
-    "target": "es5",
-    "paths": {
-      "~/*": [
-        "./*"
-      ]
-    },
+    "target": "es6",
     "plugins": [
       {
         "name": "typescript-plugin-css-modules"

@@ -21,7 +21,15 @@ export default {
       preserveModules: true,
       preserveModulesRoot: "src",
       sourcemap: true,
-    }
+    },
+    {
+      dir: "dist",
+      format: "cjs",
+      preserveModules: true,
+      preserveModulesRoot: "src",
+      sourcemap: true,
+      entryFileNames: "[name].cjs",
+    },
   ],
   plugins: [
     nodePolyfills(),
@@ -38,6 +46,9 @@ export default {
       declaration: true,
       outDir: path.join(__dirname, 'dist', 'client'),
       tsconfig: "tsconfig.json",
+      "include": [
+        "src/client/**/*"
+      ]
     })
   ],
   external: [/node_modules/],

@@ -17,10 +17,7 @@
     "url": "https://github.com/raystack/chronicle/issues"
   },
   "homepage": "https://github.com/raystack/chronicle#readme",
-  "workspaces": [
-    "./packages/*",
-    "./example/*"
-  ],
+  "packageManager": "pnpm@7.15.0",
   "devDependencies": {
     "turbo": "^1.10.7"
   },
