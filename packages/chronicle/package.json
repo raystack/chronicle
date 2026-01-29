@@ -8,6 +8,16 @@
   },
   "devDependencies": {
     "@raystack/tools-config": "0.56.0",
+    "@types/mdx": "^2.0.13",
+    "@types/react": "^19.2.10",
+    "@types/react-dom": "^19.2.3",
     "typescript": "5.9.3"
+  },
+  "dependencies": {
+    "fumadocs-core": "^16.4.9",
+    "fumadocs-mdx": "^14.2.6",
+    "next": "16.1.6",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   }
 }
