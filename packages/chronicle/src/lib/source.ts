@@ -1,21 +1,11 @@
+import { docs } from '../../.source/server'
 import { loader } from 'fumadocs-core/source'
-import { createMDXSource } from 'fumadocs-mdx'
 import type { PageTree, PageTreeItem, Frontmatter } from '../types'
 
-interface SourceOptions {
-  contentDir?: string
-}
-
-export function createSource(options: SourceOptions = {}) {
-  const { contentDir = './content' } = options
-
-  return loader({
-    baseUrl: '/docs',
-    source: createMDXSource(contentDir, {
-      // frontmatter schema handled by fumadocs
-    }),
-  })
-}
+export const source = loader({
+  baseUrl: '/',
+  source: docs.toFumadocsSource(),
+})
 
 export function sortByOrder<T extends { frontmatter?: Frontmatter }>(
   items: T[]
@@ -27,12 +17,10 @@ export function sortByOrder<T extends { frontmatter?: Frontmatter }>(
   })
 }
 
-export function buildPageTree(source: ReturnType<typeof createSource>): PageTree {
-  const pages = source.getPages()
-  // Transform fumadocs page tree to our format
+export function buildPageTree(): PageTree {
   return {
     name: 'root',
-    children: transformTree(source.pageTree),
+    children: transformTree(source.pageTree as FumadocsTreeItem[]),
   }
 }
 
