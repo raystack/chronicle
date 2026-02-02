@@ -1,4 +1,6 @@
-import { Flex, Container, Box, Navbar, Headline, Link } from '@raystack/apsara'
+'use client'
+
+import { Flex, Navbar, Headline, Link } from '@raystack/apsara'
 import type { ThemeLayoutProps } from '../../types'
 import styles from './Layout.module.css'
 
@@ -20,19 +22,19 @@ export function Layout({ children, config, tree }: ThemeLayoutProps) {
             ))}
           </Flex>
           {config.search?.enabled && (
-            <Box className={styles.search}>
+            <div className={styles.search}>
               {/* Search component will be added later */}
-            </Box>
+            </div>
           )}
         </Navbar.End>
       </Navbar>
       <Flex className={styles.body}>
-        <Box as="aside" className={styles.sidebar}>
+        <aside className={styles.sidebar}>
           <SidebarTree tree={tree} />
-        </Box>
-        <Container size="medium" as="main" className={styles.content}>
+        </aside>
+        <main className={styles.content}>
           {children}
-        </Container>
+        </main>
       </Flex>
     </Flex>
   )

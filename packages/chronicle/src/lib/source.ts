@@ -18,9 +18,10 @@ export function sortByOrder<T extends { frontmatter?: Frontmatter }>(
 }
 
 export function buildPageTree(): PageTree {
+  const tree = source.pageTree as unknown as { name: string; children: FumadocsTreeItem[] }
   return {
-    name: 'root',
-    children: transformTree(source.pageTree as FumadocsTreeItem[]),
+    name: tree.name ?? 'root',
+    children: transformTree(tree.children ?? []),
   }
 }
 

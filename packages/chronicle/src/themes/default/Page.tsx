@@ -1,4 +1,6 @@
-import { Flex, Box, Headline, Text, Link } from '@raystack/apsara'
+'use client'
+
+import { Flex, Headline, Text, Link } from '@raystack/apsara'
 import type { ThemePageProps } from '../../types'
 import styles from './Page.module.css'
 
@@ -16,12 +18,12 @@ export function Page({ page, config }: ThemePageProps) {
             </Text>
           )}
         </header>
-        <Box className={styles.content}>
+        <div className={styles.content}>
           {page.content}
-        </Box>
+        </div>
       </article>
       {page.toc.length > 0 && (
-        <Box as="aside" className={styles.toc}>
+        <aside className={styles.toc}>
           <Text size={2} weight="medium" className={styles.tocTitle}>
             On this page
           </Text>
@@ -35,7 +37,7 @@ export function Page({ page, config }: ThemePageProps) {
               </li>
             ))}
           </ul>
-        </Box>
+        </aside>
       )}
     </Flex>
   )
