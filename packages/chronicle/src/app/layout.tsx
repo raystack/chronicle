@@ -1,4 +1,4 @@
-import '@raystack/apsara/index.css'
+import '@raystack/apsara/style.css'
 import type { Metadata } from 'next'
 import { loadConfig } from '../lib/config'
 
