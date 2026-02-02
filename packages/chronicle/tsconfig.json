@@ -4,6 +4,7 @@
     "outDir": "dist",
     "rootDir": ".",
     "baseUrl": ".",
+    "moduleResolution": "bundler",
     "paths": {
       "@/*": ["./src/*"],
       "@/.source": ["./.source/index"]
