@@ -24,7 +24,10 @@ export function loadConfig(contentDir: string = './content'): ChronicleConfig {
   return {
     ...defaultConfig,
     ...userConfig,
-    theme: { ...defaultConfig.theme, ...userConfig.theme },
+    theme: {
+      name: userConfig.theme?.name ?? defaultConfig.theme!.name,
+      colors: { ...defaultConfig.theme?.colors, ...userConfig.theme?.colors },
+    },
     search: { ...defaultConfig.search, ...userConfig.search },
   }
 }
