@@ -1,0 +1,8 @@
+title: My Documentation
+description: Documentation powered by Chronicle
+contentDir: .
+theme:
+  name: default
+search:
+  enabled: true
+  placeholder: Search documentation...

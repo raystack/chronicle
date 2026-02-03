@@ -1,31 +1,15 @@
 {
+  "extends": "@raystack/tools-config/tsconfig/react",
   "compilerOptions": {
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "jsx": "react",
-    "module": "esnext",
-    "moduleResolution": "node",
-    "noEmit": true,
-    "resolveJsonModule": true,
-    "skipLibCheck": true,
-    "sourceMap": true,
-    "strict": true,
-    "target": "es6",
-    "plugins": [
-      {
-        "name": "typescript-plugin-css-modules"
-      }
-    ]
-  },
-  "exclude": [
-    "node_modules",
-    "dist",
-    "**/*.stories.tsx"
-  ],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "commonjs"
+    "outDir": "dist",
+    "rootDir": ".",
+    "baseUrl": ".",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@/*": ["./src/*"],
+      "@/.source": ["./.source/index"]
     }
-  }
+  },
+  "include": ["src", ".source", "source.config.ts"],
+  "exclude": ["node_modules", "dist"]
 }

@@ -1,50 +1,37 @@
-import { RepoSourceConfig, SiteConfig, RepoSourceConfigWithPath } from "../types";
-import fs from "node:fs/promises";
-import path from "node:path";
+import fs from 'fs'
+import path from 'path'
+import { parse } from 'yaml'
+import type { ChronicleConfig } from '../types'
 
-export async function readConfig(configPath: string): Promise<SiteConfig> {
-    const isFileExists = await checkFileExists(configPath);
-    if (!isFileExists) {
-        throw new Error("config file doest exist");
-    }
-    const content = await fs.readFile(configPath, "utf-8");
-    return parseConfigFile(content);
+const CONFIG_FILE = 'chronicle.yaml'
+
+const defaultConfig: ChronicleConfig = {
+  title: 'Documentation',
+  theme: { name: 'default' },
+  search: { enabled: true, placeholder: 'Search...' },
 }
 
-async function parseConfigFile<T>(content: string): Promise<T> {
-    try {
-        const config = (await JSON.parse(content)) as T;
-        return config;
-    } catch (e) {
-        throw new Error("unable to parse config file");
-    }
+export function loadConfig(contentDir: string = './content'): ChronicleConfig {
+  const configPath = path.join(contentDir, CONFIG_FILE)
+
+  if (!fs.existsSync(configPath)) {
+    return defaultConfig
+  }
+
+  const raw = fs.readFileSync(configPath, 'utf-8')
+  const userConfig = parse(raw) as Partial<ChronicleConfig>
+
+  return {
+    ...defaultConfig,
+    ...userConfig,
+    theme: {
+      name: userConfig.theme?.name ?? defaultConfig.theme!.name,
+      colors: { ...defaultConfig.theme?.colors, ...userConfig.theme?.colors },
+    },
+    search: { ...defaultConfig.search, ...userConfig.search },
+  }
 }
 
-export async function checkFileExists(path: string): Promise<boolean> {
-    try {
-        await fs.access(path, fs.constants.F_OK);
-        return true;
-    } catch (e) {
-        console.error(e);
-        return false;
-    }
-}
-
-export async function resolveChronicleConfig(
-    repo: RepoSourceConfigWithPath,
-    config?: SiteConfig,
-): Promise<RepoSourceConfig> {
-    if (typeof repo.config === "object") return repo as RepoSourceConfig;
-    else if (typeof repo.config === "string") {
-        const { docsDir = "docs" } = config || {};
-        const configPath = path.join(process.cwd(), docsDir, repo.name, repo.config);
-        const isFileExists = await checkFileExists(configPath);
-        if (!isFileExists) {
-            throw new Error(`chronicle config file doest exist in path: ${configPath}`);
-        }
-        const content = await fs.readFile(configPath, "utf-8");
-        return parseConfigFile(content);
-    } else {
-        throw new Error(`unsupported config type`);
-    }
+export function getConfigPath(contentDir: string = './content'): string {
+  return path.join(contentDir, CONFIG_FILE)
 }
