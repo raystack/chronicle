@@ -2,6 +2,7 @@
 
 import { usePathname } from 'next/navigation'
 import { Flex, Navbar, Headline, Link, Sidebar, Text } from '@raystack/apsara'
+import { ClientThemeSwitcher } from '../../components/ui/client-theme-switcher'
 import type { ThemeLayoutProps, PageTreeItem } from '../../types'
 import styles from './Layout.module.css'
 
@@ -29,6 +30,7 @@ export function Layout({ children, config, tree }: ThemeLayoutProps) {
               {/* Search component will be added later */}
             </div>
           )}
+          <ClientThemeSwitcher size={16} />
         </Navbar.End>
       </Navbar>
       <Flex className={styles.body}>
