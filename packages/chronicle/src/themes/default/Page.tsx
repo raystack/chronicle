@@ -1,10 +1,11 @@
 'use client'
 
-import { Flex, Headline, Text, Link } from '@raystack/apsara'
+import { Flex, Headline, Text } from '@raystack/apsara'
 import type { ThemePageProps } from '../../types'
+import { Toc } from './Toc'
 import styles from './Page.module.css'
 
-export function Page({ page, config }: ThemePageProps) {
+export function Page({ page }: ThemePageProps) {
   return (
     <Flex className={styles.page}>
       <article className={styles.article}>
@@ -22,23 +23,7 @@ export function Page({ page, config }: ThemePageProps) {
           {page.content}
         </div>
       </article>
-      {page.toc.length > 0 && (
-        <aside className={styles.toc}>
-          <Text size={2} weight="medium" className={styles.tocTitle}>
-            On this page
-          </Text>
-          <ul className={styles.tocList}>
-            {page.toc.map((item) => (
-              <li
-                key={item.url}
-                style={{ paddingLeft: `var(--rs-space-${(item.depth - 2) * 2 + 2})` }}
-              >
-                <Link href={item.url}>{item.title}</Link>
-              </li>
-            ))}
-          </ul>
-        </aside>
-      )}
+      <Toc items={page.toc} />
     </Flex>
   )
 }

@@ -45,3 +45,18 @@
 .tocList li {
   padding: var(--rs-space-2) 0;
 }
+
+.tocLink {
+  color: var(--rs-color-foreground-base-tertiary);
+  text-decoration: none;
+  font-size: var(--rs-font-size-1);
+}
+
+.tocLink:hover {
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.tocLinkActive {
+  color: var(--rs-color-foreground-base-primary);
+  font-weight: 500;
+}
