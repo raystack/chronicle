@@ -1,10 +1,14 @@
 'use client'
 
-import { Flex, Navbar, Headline, Link } from '@raystack/apsara'
-import type { ThemeLayoutProps } from '../../types'
+import { usePathname } from 'next/navigation'
+import { Flex, Navbar, Headline, Link, Sidebar, Text } from '@raystack/apsara'
+import { ClientThemeSwitcher } from '../../components/ui/client-theme-switcher'
+import type { ThemeLayoutProps, PageTreeItem } from '../../types'
 import styles from './Layout.module.css'
 
 export function Layout({ children, config, tree }: ThemeLayoutProps) {
+  const pathname = usePathname()
+
   return (
     <Flex direction="column" className={styles.layout}>
       <Navbar className={styles.header}>
@@ -26,51 +30,50 @@ export function Layout({ children, config, tree }: ThemeLayoutProps) {
               {/* Search component will be added later */}
             </div>
           )}
+          <ClientThemeSwitcher size={16} />
         </Navbar.End>
       </Navbar>
       <Flex className={styles.body}>
-        <aside className={styles.sidebar}>
-          <SidebarTree tree={tree} />
-        </aside>
+        <Sidebar defaultOpen collapsible={false} className={styles.sidebar}>
+          <Sidebar.Main>
+            {tree.children.map((item) => (
+              <SidebarNode key={item.url ?? item.name} item={item} pathname={pathname} />
+            ))}
+          </Sidebar.Main>
+        </Sidebar>
         <main className={styles.content}>
           {children}
         </main>
       </Flex>
+      <footer className={styles.footer}>
+        <Text size={2} className={styles.footerText}>
+          Built with Chronicle
+        </Text>
+      </footer>
     </Flex>
   )
 }
 
-function SidebarTree({ tree }: { tree: ThemeLayoutProps['tree'] }) {
-  return (
-    <ul className={styles.sidebarList}>
-      {tree.children.map((item) => (
-        <SidebarItem key={item.name} item={item} />
-      ))}
-    </ul>
-  )
-}
-
-function SidebarItem({ item }: { item: ThemeLayoutProps['tree']['children'][number] }) {
+function SidebarNode({ item, pathname }: { item: PageTreeItem; pathname: string }) {
   if (item.type === 'separator') {
-    return <li className={styles.separator} />
+    return null
   }
 
   if (item.type === 'folder' && item.children) {
     return (
-      <li className={styles.folder}>
-        <span className={styles.folderLabel}>{item.name}</span>
-        <ul className={styles.sidebarList}>
-          {item.children.map((child) => (
-            <SidebarItem key={child.name} item={child} />
-          ))}
-        </ul>
-      </li>
+      <Sidebar.Group label={item.name} classNames={{ items: styles.groupItems }}>
+        {item.children.map((child) => (
+          <SidebarNode key={child.url ?? child.name} item={child} pathname={pathname} />
+        ))}
+      </Sidebar.Group>
     )
   }
 
+  const isActive = pathname === item.url
+
   return (
-    <li className={styles.page}>
-      <Link href={item.url ?? '#'}>{item.name}</Link>
-    </li>
+    <Sidebar.Item href={item.url ?? '#'} active={isActive}>
+      {item.name}
+    </Sidebar.Item>
   )
 }

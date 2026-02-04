@@ -18,25 +18,42 @@ export function sortByOrder<T extends { frontmatter?: Frontmatter }>(
 }
 
 export function buildPageTree(): PageTree {
-  const tree = source.pageTree as unknown as { name: string; children: FumadocsTreeItem[] }
-  return {
-    name: tree.name ?? 'root',
-    children: transformTree(tree.children ?? []),
-  }
-}
+  const pages = source.getPages()
+  const folders = new Map<string, PageTreeItem[]>()
+  const rootPages: PageTreeItem[] = []
 
-interface FumadocsTreeItem {
-  type?: 'page' | 'folder' | 'separator'
-  name: string
-  url?: string
-  children?: FumadocsTreeItem[]
-}
+  pages.forEach((page) => {
+    const data = page.data as { title?: string; order?: number }
+    const item: PageTreeItem = {
+      type: 'page',
+      name: data.title ?? page.slugs.join('/') ?? 'Untitled',
+      url: page.url,
+      order: data.order,
+    }
 
-function transformTree(tree: FumadocsTreeItem[]): PageTreeItem[] {
-  return tree.map((item) => ({
-    type: item.type ?? 'page',
-    name: item.name,
-    url: item.url,
-    children: item.children ? transformTree(item.children) : undefined,
-  }))
+    if (page.slugs.length > 1) {
+      const folder = page.slugs[0]
+      if (!folders.has(folder)) {
+        folders.set(folder, [])
+      }
+      folders.get(folder)?.push(item)
+    } else {
+      rootPages.push(item)
+    }
+  })
+
+  const sortByOrder = (items: PageTreeItem[]) =>
+    items.sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER))
+
+  const children: PageTreeItem[] = sortByOrder(rootPages)
+
+  folders.forEach((items, folder) => {
+    children.push({
+      type: 'folder',
+      name: folder.charAt(0).toUpperCase() + folder.slice(1),
+      children: sortByOrder(items),
+    })
+  })
+
+  return { name: 'root', children }
 }
