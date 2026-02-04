@@ -3,6 +3,7 @@ import type { MDXContent } from 'mdx/types'
 import { loadConfig } from '../../lib/config'
 import { source } from '../../lib/source'
 import { defaultTheme } from '../../themes/default'
+import { mdxComponents } from '../../components/mdx'
 import type { PageTree } from '../../types'
 
 interface PageProps {
@@ -46,7 +47,7 @@ export default async function DocsPage({ params }: PageProps) {
             title: data.title,
             description: data.description,
           },
-          content: <MDXBody />,
+          content: <MDXBody components={mdxComponents} />,
           toc: data.toc ?? [],
         }}
         config={config}

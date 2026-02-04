@@ -1,6 +1,7 @@
 import '@raystack/apsara/style.css'
 import type { Metadata } from 'next'
 import { loadConfig } from '../lib/config'
+import { Providers } from './providers'
 
 const config = loadConfig()
 
@@ -16,7 +17,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
     </html>
   )
 }
