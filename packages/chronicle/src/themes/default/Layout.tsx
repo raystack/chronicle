@@ -1,6 +1,6 @@
 'use client'
 
-import { Flex, Navbar, Headline, Link, Sidebar } from '@raystack/apsara'
+import { Flex, Navbar, Headline, Link, Sidebar, Text } from '@raystack/apsara'
 import type { ThemeLayoutProps, PageTreeItem } from '../../types'
 import styles from './Layout.module.css'
 
@@ -40,6 +40,11 @@ export function Layout({ children, config, tree }: ThemeLayoutProps) {
           {children}
         </main>
       </Flex>
+      <footer className={styles.footer}>
+        <Text size={2} className={styles.footerText}>
+          Built with Chronicle
+        </Text>
+      </footer>
     </Flex>
   )
 }

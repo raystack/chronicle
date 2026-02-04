@@ -58,3 +58,13 @@
 .page {
   padding: var(--rs-space-2) 0;
 }
+
+.footer {
+  border-top: 1px solid var(--rs-color-border-base-primary);
+  padding: var(--rs-space-5) var(--rs-space-9);
+  text-align: center;
+}
+
+.footerText {
+  color: var(--rs-color-text-base-secondary);
+}
