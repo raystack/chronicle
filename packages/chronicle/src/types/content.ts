@@ -24,6 +24,7 @@ export interface PageTreeItem {
   type: 'page' | 'folder' | 'separator'
   name: string
   url?: string
+  order?: number
   children?: PageTreeItem[]
 }
 

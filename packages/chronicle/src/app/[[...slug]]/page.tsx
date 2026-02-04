@@ -1,10 +1,9 @@
 import { notFound } from 'next/navigation'
 import type { MDXContent } from 'mdx/types'
 import { loadConfig } from '../../lib/config'
-import { source } from '../../lib/source'
+import { source, buildPageTree } from '../../lib/source'
 import { defaultTheme } from '../../themes/default'
 import { mdxComponents } from '../../components/mdx'
-import type { PageTree } from '../../types'
 
 interface PageProps {
   params: Promise<{ slug?: string[] }>
@@ -32,11 +31,7 @@ export default async function DocsPage({ params }: PageProps) {
   const data = page.data as PageData
   const MDXBody = data.body
 
-  // Simplified tree for now
-  const tree: PageTree = {
-    name: 'root',
-    children: [],
-  }
+  const tree = buildPageTree()
 
   return (
     <Layout config={config} tree={tree}>

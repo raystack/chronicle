@@ -18,25 +18,24 @@ export function sortByOrder<T extends { frontmatter?: Frontmatter }>(
 }
 
 export function buildPageTree(): PageTree {
-  const tree = source.pageTree as unknown as { name: string; children: FumadocsTreeItem[] }
+  const pages = source.getPages()
+
+  const children: PageTreeItem[] = pages.map((page) => {
+    const data = page.data as { title?: string; order?: number }
+    return {
+      type: 'page' as const,
+      name: data.title ?? page.slugs.join('/') ?? 'Untitled',
+      url: page.url,
+      order: data.order,
+    }
+  })
+
   return {
-    name: tree.name ?? 'root',
-    children: transformTree(tree.children ?? []),
+    name: 'root',
+    children: children.sort((a, b) => {
+      const orderA = a.order ?? Number.MAX_SAFE_INTEGER
+      const orderB = b.order ?? Number.MAX_SAFE_INTEGER
+      return orderA - orderB
+    }),
   }
-}
-
-interface FumadocsTreeItem {
-  type?: 'page' | 'folder' | 'separator'
-  name: string
-  url?: string
-  children?: FumadocsTreeItem[]
-}
-
-function transformTree(tree: FumadocsTreeItem[]): PageTreeItem[] {
-  return tree.map((item) => ({
-    type: item.type ?? 'page',
-    name: item.name,
-    url: item.url,
-    children: item.children ? transformTree(item.children) : undefined,
-  }))
 }

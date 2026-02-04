@@ -1,7 +1,7 @@
 'use client'
 
-import { Flex, Navbar, Headline, Link } from '@raystack/apsara'
-import type { ThemeLayoutProps } from '../../types'
+import { Flex, Navbar, Headline, Link, Sidebar } from '@raystack/apsara'
+import type { ThemeLayoutProps, PageTreeItem } from '../../types'
 import styles from './Layout.module.css'
 
 export function Layout({ children, config, tree }: ThemeLayoutProps) {
@@ -29,9 +29,13 @@ export function Layout({ children, config, tree }: ThemeLayoutProps) {
         </Navbar.End>
       </Navbar>
       <Flex className={styles.body}>
-        <aside className={styles.sidebar}>
-          <SidebarTree tree={tree} />
-        </aside>
+        <Sidebar defaultOpen collapsible={false} className={styles.sidebar}>
+          <Sidebar.Main>
+            {tree.children.map((item) => (
+              <SidebarNode key={item.url ?? item.name} item={item} />
+            ))}
+          </Sidebar.Main>
+        </Sidebar>
         <main className={styles.content}>
           {children}
         </main>
@@ -40,37 +44,24 @@ export function Layout({ children, config, tree }: ThemeLayoutProps) {
   )
 }
 
-function SidebarTree({ tree }: { tree: ThemeLayoutProps['tree'] }) {
-  return (
-    <ul className={styles.sidebarList}>
-      {tree.children.map((item) => (
-        <SidebarItem key={item.name} item={item} />
-      ))}
-    </ul>
-  )
-}
-
-function SidebarItem({ item }: { item: ThemeLayoutProps['tree']['children'][number] }) {
+function SidebarNode({ item }: { item: PageTreeItem }) {
   if (item.type === 'separator') {
-    return <li className={styles.separator} />
+    return null
   }
 
   if (item.type === 'folder' && item.children) {
     return (
-      <li className={styles.folder}>
-        <span className={styles.folderLabel}>{item.name}</span>
-        <ul className={styles.sidebarList}>
-          {item.children.map((child) => (
-            <SidebarItem key={child.name} item={child} />
-          ))}
-        </ul>
-      </li>
+      <Sidebar.Group label={item.name}>
+        {item.children.map((child) => (
+          <SidebarNode key={child.url ?? child.name} item={child} />
+        ))}
+      </Sidebar.Group>
     )
   }
 
   return (
-    <li className={styles.page}>
-      <Link href={item.url ?? '#'}>{item.name}</Link>
-    </li>
+    <Sidebar.Item href={item.url ?? '#'}>
+      {item.name}
+    </Sidebar.Item>
   )
 }
