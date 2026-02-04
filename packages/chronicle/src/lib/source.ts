@@ -19,23 +19,41 @@ export function sortByOrder<T extends { frontmatter?: Frontmatter }>(
 
 export function buildPageTree(): PageTree {
   const pages = source.getPages()
+  const folders = new Map<string, PageTreeItem[]>()
+  const rootPages: PageTreeItem[] = []
 
-  const children: PageTreeItem[] = pages.map((page) => {
+  pages.forEach((page) => {
     const data = page.data as { title?: string; order?: number }
-    return {
-      type: 'page' as const,
+    const item: PageTreeItem = {
+      type: 'page',
       name: data.title ?? page.slugs.join('/') ?? 'Untitled',
       url: page.url,
       order: data.order,
     }
+
+    if (page.slugs.length > 1) {
+      const folder = page.slugs[0]
+      if (!folders.has(folder)) {
+        folders.set(folder, [])
+      }
+      folders.get(folder)?.push(item)
+    } else {
+      rootPages.push(item)
+    }
   })
 
-  return {
-    name: 'root',
-    children: children.sort((a, b) => {
-      const orderA = a.order ?? Number.MAX_SAFE_INTEGER
-      const orderB = b.order ?? Number.MAX_SAFE_INTEGER
-      return orderA - orderB
-    }),
-  }
+  const sortByOrder = (items: PageTreeItem[]) =>
+    items.sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER))
+
+  const children: PageTreeItem[] = sortByOrder(rootPages)
+
+  folders.forEach((items, folder) => {
+    children.push({
+      type: 'folder',
+      name: folder.charAt(0).toUpperCase() + folder.slice(1),
+      children: sortByOrder(items),
+    })
+  })
+
+  return { name: 'root', children }
 }

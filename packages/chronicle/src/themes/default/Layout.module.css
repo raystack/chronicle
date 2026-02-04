@@ -55,6 +55,10 @@
   padding-left: var(--rs-space-4);
 }
 
+.groupItems {
+  padding-left: var(--rs-space-4);
+}
+
 .page {
   padding: var(--rs-space-2) 0;
 }

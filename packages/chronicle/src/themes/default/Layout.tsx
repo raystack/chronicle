@@ -1,10 +1,13 @@
 'use client'
 
+import { usePathname } from 'next/navigation'
 import { Flex, Navbar, Headline, Link, Sidebar, Text } from '@raystack/apsara'
 import type { ThemeLayoutProps, PageTreeItem } from '../../types'
 import styles from './Layout.module.css'
 
 export function Layout({ children, config, tree }: ThemeLayoutProps) {
+  const pathname = usePathname()
+
   return (
     <Flex direction="column" className={styles.layout}>
       <Navbar className={styles.header}>
@@ -32,7 +35,7 @@ export function Layout({ children, config, tree }: ThemeLayoutProps) {
         <Sidebar defaultOpen collapsible={false} className={styles.sidebar}>
           <Sidebar.Main>
             {tree.children.map((item) => (
-              <SidebarNode key={item.url ?? item.name} item={item} />
+              <SidebarNode key={item.url ?? item.name} item={item} pathname={pathname} />
             ))}
           </Sidebar.Main>
         </Sidebar>
@@ -49,23 +52,25 @@ export function Layout({ children, config, tree }: ThemeLayoutProps) {
   )
 }
 
-function SidebarNode({ item }: { item: PageTreeItem }) {
+function SidebarNode({ item, pathname }: { item: PageTreeItem; pathname: string }) {
   if (item.type === 'separator') {
     return null
   }
 
   if (item.type === 'folder' && item.children) {
     return (
-      <Sidebar.Group label={item.name}>
+      <Sidebar.Group label={item.name} classNames={{ items: styles.groupItems }}>
         {item.children.map((child) => (
-          <SidebarNode key={child.url ?? child.name} item={child} />
+          <SidebarNode key={child.url ?? child.name} item={child} pathname={pathname} />
         ))}
       </Sidebar.Group>
     )
   }
 
+  const isActive = pathname === item.url
+
   return (
-    <Sidebar.Item href={item.url ?? '#'}>
+    <Sidebar.Item href={item.url ?? '#'} active={isActive}>
       {item.name}
     </Sidebar.Item>
   )
