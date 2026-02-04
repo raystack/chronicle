@@ -2,7 +2,7 @@ import type { MDXComponents } from 'mdx/types'
 import { Image } from './image'
 import { Link } from './link'
 import { MdxTable, MdxThead, MdxTbody, MdxTr, MdxTh, MdxTd } from './table'
-import { MdxPre, MdxCode } from './code'
+import { MdxPre } from './code'
 import { Callout } from '../common/callout'
 
 export const mdxComponents: MDXComponents = {

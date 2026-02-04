@@ -3,13 +3,14 @@
 import NextImage from 'next/image'
 import type { ComponentProps } from 'react'
 
-type ImageProps = ComponentProps<'img'> & {
+type ImageProps = Omit<ComponentProps<'img'>, 'src'> & {
+  src?: string
   width?: number | string
   height?: number | string
 }
 
 export function Image({ src, alt, width, height, ...props }: ImageProps) {
-  if (!src) return null
+  if (!src || typeof src !== 'string') return null
 
   const isExternal = src.startsWith('http://') || src.startsWith('https://')
 
@@ -32,7 +33,6 @@ export function Image({ src, alt, width, height, ...props }: ImageProps) {
       alt={alt ?? ''}
       width={typeof width === 'string' ? parseInt(width, 10) : (width ?? 800)}
       height={typeof height === 'string' ? parseInt(height, 10) : (height ?? 400)}
-      {...props}
     />
   )
 }
