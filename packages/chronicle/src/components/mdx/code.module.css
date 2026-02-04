@@ -1,0 +1,27 @@
+.codeBlock {
+  border-radius: var(--rs-radius-2);
+  overflow: hidden;
+  margin: var(--rs-space-5) 0;
+  border: 1px solid var(--rs-color-border-base);
+}
+
+.codeHeader {
+  padding: var(--rs-space-3) var(--rs-space-4);
+  background: var(--rs-color-background-base-secondary);
+  border-bottom: 1px solid var(--rs-color-border-base);
+  font-size: var(--rs-font-size-1);
+  color: var(--rs-color-text-base-secondary);
+}
+
+.pre {
+  margin: 0;
+  padding: var(--rs-space-4);
+  overflow-x: auto;
+  background: var(--rs-color-background-base-primary);
+}
+
+.pre code {
+  font-family: var(--rs-font-family-mono);
+  font-size: var(--rs-font-size-2);
+  line-height: 1.6;
+}
