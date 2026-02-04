@@ -31,8 +31,8 @@ export function Link({ href, children, ...props }: LinkProps) {
   }
 
   return (
-    <NextLink href={href} passHref legacyBehavior>
-      <ApsaraLink {...props}>{children}</ApsaraLink>
+    <NextLink href={href} className={props.className}>
+      {children}
     </NextLink>
   )
 }
