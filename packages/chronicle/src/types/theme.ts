@@ -11,6 +11,7 @@ export interface ThemeLayoutProps {
 export interface ThemePageProps {
   page: Page
   config: ChronicleConfig
+  tree: PageTree
 }
 
 export interface Theme {

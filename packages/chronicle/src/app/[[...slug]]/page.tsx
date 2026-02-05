@@ -46,6 +46,7 @@ export default async function DocsPage({ params }: PageProps) {
           toc: data.toc ?? [],
         }}
         config={config}
+        tree={tree}
       />
     </Layout>
   )
