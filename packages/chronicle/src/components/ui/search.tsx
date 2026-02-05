@@ -6,6 +6,7 @@ import { Button, Command, Dialog, Text } from "@raystack/apsara";
 import { useDocsSearch } from "fumadocs-core/search/client";
 import type { SortedResult } from "fumadocs-core/search";
 import { DocumentIcon, HashtagIcon } from "@heroicons/react/24/outline";
+import { isMacOs } from "react-device-detect";
 import styles from "./search.module.css";
 
 export function Search() {
@@ -43,7 +44,7 @@ export function Search() {
 
   return (
     <>
-      <Button variant="outline" color="neutral" onClick={() => setOpen(true)} className={styles.trigger} trailingIcon={<kbd className={styles.kbd}>⌘ K</kbd>}>
+      <Button variant="outline" color="neutral" onClick={() => setOpen(true)} className={styles.trigger} trailingIcon={<kbd className={styles.kbd}>{isMacOs ? "⌘" : "Ctrl"} K</kbd>}>
         <Text>Search...</Text>
       </Button>
 
@@ -117,7 +118,8 @@ export function Search() {
 function getPageTitle(url: string): string {
   const path = url.split("#")[0];
   const segments = path.split("/").filter(Boolean);
-  const lastSegment = segments[segments.length - 1] || "";
+  const lastSegment = segments[segments.length - 1];
+  if (!lastSegment) return "Home";
   return lastSegment
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
