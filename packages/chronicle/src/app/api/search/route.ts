@@ -1,20 +1,6 @@
 import { source } from '../../../lib/source'
-import { createSearchAPI } from 'fumadocs-core/search/server'
-
-interface StructuredDataHeading {
-  id: string
-  content: string
-}
-
-interface StructuredDataContent {
-  heading?: string
-  content: string
-}
-
-interface StructuredData {
-  headings?: StructuredDataHeading[]
-  contents?: StructuredDataContent[]
-}
+import { createSearchAPI, type AdvancedIndex } from 'fumadocs-core/search/server'
+import type { StructuredData } from 'fumadocs-core/mdx-plugins'
 
 interface PageData {
   title?: string
@@ -24,12 +10,12 @@ interface PageData {
 }
 
 export const { GET } = createSearchAPI('advanced', {
-  indexes: async () => {
+  indexes: async (): Promise<AdvancedIndex[]> => {
     const pages = source.getPages()
     const indexes = await Promise.all(
-      pages.map(async (page) => {
+      pages.map(async (page): Promise<AdvancedIndex> => {
         const data = page.data as PageData
-        let structuredData = data.structuredData
+        let structuredData: StructuredData | undefined = data.structuredData
 
         if (!structuredData && data.load) {
           try {
