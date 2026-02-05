@@ -32,8 +32,12 @@ export const { GET } = createSearchAPI('advanced', {
         let structuredData = data.structuredData
 
         if (!structuredData && data.load) {
-          const loaded = await data.load()
-          structuredData = loaded.structuredData
+          try {
+            const loaded = await data.load()
+            structuredData = loaded.structuredData
+          } catch (error) {
+            console.error(`Failed to load structured data for ${page.url}:`, error)
+          }
         }
 
         return {

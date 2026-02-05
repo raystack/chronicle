@@ -8,14 +8,14 @@ interface BreadcrumbsProps {
   tree: PageTree
 }
 
-function findInTree(items: PageTreeItem[], segment: string): PageTreeItem | undefined {
+function findInTree(items: PageTreeItem[], targetPath: string): PageTreeItem | undefined {
   for (const item of items) {
-    const itemSlug = item.url?.split('/').pop() || item.name.toLowerCase().replace(/\s+/g, '-')
-    if (itemSlug === segment) {
+    const itemUrl = item.url || `/${item.name.toLowerCase().replace(/\s+/g, '-')}`
+    if (itemUrl === targetPath || itemUrl === `/${targetPath}`) {
       return item
     }
     if (item.children) {
-      const found = findInTree(item.children, segment)
+      const found = findInTree(item.children, targetPath)
       if (found) return found
     }
   }
@@ -38,10 +38,11 @@ function getFirstPageUrl(item: PageTreeItem): string | undefined {
 export function Breadcrumbs({ slug, tree }: BreadcrumbsProps) {
   const items: { label: string; href: string }[] = []
 
-  for (const segment of slug) {
-    const node = findInTree(tree.children, segment)
-    const href = node?.url || (node && getFirstPageUrl(node)) || `/${slug.slice(0, slug.indexOf(segment) + 1).join('/')}`
-    const label = node?.name ?? segment
+  for (let i = 0; i < slug.length; i++) {
+    const currentPath = `/${slug.slice(0, i + 1).join('/')}`
+    const node = findInTree(tree.children, currentPath)
+    const href = node?.url || (node && getFirstPageUrl(node)) || currentPath
+    const label = node?.name ?? slug[i]
     items.push({
       label: label.charAt(0).toUpperCase() + label.slice(1),
       href,
