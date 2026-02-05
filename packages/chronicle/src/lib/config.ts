@@ -11,8 +11,9 @@ const defaultConfig: ChronicleConfig = {
   search: { enabled: true, placeholder: 'Search...' },
 }
 
-export function loadConfig(contentDir: string = './content'): ChronicleConfig {
-  const configPath = path.join(contentDir, CONFIG_FILE)
+export function loadConfig(contentDir?: string): ChronicleConfig {
+  const dir = contentDir ?? process.env.CHRONICLE_CONTENT_DIR ?? './content'
+  const configPath = path.join(dir, CONFIG_FILE)
 
   if (!fs.existsSync(configPath)) {
     return defaultConfig
@@ -29,6 +30,7 @@ export function loadConfig(contentDir: string = './content'): ChronicleConfig {
       colors: { ...defaultConfig.theme?.colors, ...userConfig.theme?.colors },
     },
     search: { ...defaultConfig.search, ...userConfig.search },
+    footer: userConfig.footer,
   }
 }
 
