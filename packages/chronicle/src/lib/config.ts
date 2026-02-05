@@ -11,8 +11,8 @@ const defaultConfig: ChronicleConfig = {
   search: { enabled: true, placeholder: 'Search...' },
 }
 
-export function loadConfig(contentDir?: string): ChronicleConfig {
-  const dir = contentDir ?? process.env.CHRONICLE_CONTENT_DIR ?? './content'
+export function loadConfig(): ChronicleConfig {
+  const dir = process.env.CHRONICLE_CONTENT_DIR ?? process.cwd()
   const configPath = path.join(dir, CONFIG_FILE)
 
   if (!fs.existsSync(configPath)) {
