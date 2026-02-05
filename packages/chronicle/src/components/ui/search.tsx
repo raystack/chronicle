@@ -9,6 +9,20 @@ import { DocumentIcon, HashtagIcon } from "@heroicons/react/24/outline";
 import { isMacOs } from "react-device-detect";
 import styles from "./search.module.css";
 
+function SearchShortcutKey({ className }: { className?: string }) {
+  const [key, setKey] = useState("⌘");
+
+  useEffect(() => {
+    setKey(isMacOs ? "⌘" : "Ctrl");
+  }, []);
+
+  return (
+    <kbd className={className} suppressHydrationWarning>
+      {key} K
+    </kbd>
+  );
+}
+
 export function Search() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
@@ -44,7 +58,13 @@ export function Search() {
 
   return (
     <>
-      <Button variant="outline" color="neutral" onClick={() => setOpen(true)} className={styles.trigger} trailingIcon={<kbd className={styles.kbd}>{isMacOs ? "⌘" : "Ctrl"} K</kbd>}>
+      <Button
+        variant="outline"
+        color="neutral"
+        onClick={() => setOpen(true)}
+        className={styles.trigger}
+        trailingIcon={<SearchShortcutKey className={styles.kbd} />}
+      >
         <Text>Search...</Text>
       </Button>
 
@@ -63,26 +83,32 @@ export function Search() {
 
             <Command.List className={styles.list}>
               {query.isLoading && <Command.Empty>Loading...</Command.Empty>}
-              {!query.isLoading && search.length > 0 && results.length === 0 && (
-                <Command.Empty>No results found.</Command.Empty>
-              )}
-              {!query.isLoading && search.length === 0 && results.length > 0 && (
-                <Command.Group heading="Suggestions">
-                  {results.slice(0, 8).map((result: SortedResult) => (
-                    <Command.Item
-                      key={result.id}
-                      value={result.id}
-                      onSelect={() => onSelect(result.url)}
-                      className={styles.item}
-                    >
-                      <div className={styles.itemContent}>
-                        <DocumentIcon className={styles.icon} />
-                        <Text className={styles.pageText}>{result.content}</Text>
-                      </div>
-                    </Command.Item>
-                  ))}
-                </Command.Group>
-              )}
+              {!query.isLoading &&
+                search.length > 0 &&
+                results.length === 0 && (
+                  <Command.Empty>No results found.</Command.Empty>
+                )}
+              {!query.isLoading &&
+                search.length === 0 &&
+                results.length > 0 && (
+                  <Command.Group heading="Suggestions">
+                    {results.slice(0, 8).map((result: SortedResult) => (
+                      <Command.Item
+                        key={result.id}
+                        value={result.id}
+                        onSelect={() => onSelect(result.url)}
+                        className={styles.item}
+                      >
+                        <div className={styles.itemContent}>
+                          <DocumentIcon className={styles.icon} />
+                          <Text className={styles.pageText}>
+                            {result.content}
+                          </Text>
+                        </div>
+                      </Command.Item>
+                    ))}
+                  </Command.Group>
+                )}
               {search.length > 0 &&
                 results.map((result: SortedResult) => (
                   <Command.Item
@@ -92,16 +118,26 @@ export function Search() {
                     className={styles.item}
                   >
                     <div className={styles.itemContent}>
-                      {result.type === "page" ? <DocumentIcon className={styles.icon} /> : <HashtagIcon className={styles.icon} />}
+                      {result.type === "page" ? (
+                        <DocumentIcon className={styles.icon} />
+                      ) : (
+                        <HashtagIcon className={styles.icon} />
+                      )}
                       <div className={styles.resultText}>
                         {result.type === "heading" ? (
                           <>
-                            <Text className={styles.headingText}>{result.content}</Text>
+                            <Text className={styles.headingText}>
+                              {result.content}
+                            </Text>
                             <Text className={styles.separator}>-</Text>
-                            <Text className={styles.pageText}>{getPageTitle(result.url)}</Text>
+                            <Text className={styles.pageText}>
+                              {getPageTitle(result.url)}
+                            </Text>
                           </>
                         ) : (
-                          <Text className={styles.pageText}>{result.content}</Text>
+                          <Text className={styles.pageText}>
+                            {result.content}
+                          </Text>
                         )}
                       </div>
                     </div>
@@ -125,4 +161,3 @@ function getPageTitle(url: string): string {
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
 }
-
