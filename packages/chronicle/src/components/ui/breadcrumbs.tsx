@@ -10,7 +10,7 @@ interface BreadcrumbsProps {
 
 function findInTree(items: PageTreeItem[], segment: string): PageTreeItem | undefined {
   for (const item of items) {
-    const itemSlug = item.url?.split('/').pop()
+    const itemSlug = item.url?.split('/').pop() || item.name.toLowerCase().replace(/\s+/g, '-')
     if (itemSlug === segment) {
       return item
     }
@@ -22,32 +22,50 @@ function findInTree(items: PageTreeItem[], segment: string): PageTreeItem | unde
   return undefined
 }
 
+function getFirstPageUrl(item: PageTreeItem): string | undefined {
+  if (item.type === 'page' && item.url) {
+    return item.url
+  }
+  if (item.children) {
+    for (const child of item.children) {
+      const url = getFirstPageUrl(child)
+      if (url) return url
+    }
+  }
+  return undefined
+}
+
 export function Breadcrumbs({ slug, tree }: BreadcrumbsProps) {
   const items: { label: string; href: string }[] = []
 
-  let currentPath = '/docs'
   for (const segment of slug) {
-    currentPath = `${currentPath}/${segment}`
     const node = findInTree(tree.children, segment)
+    const href = node?.url || (node && getFirstPageUrl(node)) || `/${slug.slice(0, slug.indexOf(segment) + 1).join('/')}`
+    const label = node?.name ?? segment
     items.push({
-      label: node?.name ?? segment,
-      href: currentPath,
+      label: label.charAt(0).toUpperCase() + label.slice(1),
+      href,
     })
   }
 
   return (
     <Breadcrumb size="small">
-      <Breadcrumb.Item href="/docs">Docs</Breadcrumb.Item>
-      {items.flatMap((item, index) => [
-        <Breadcrumb.Separator key={`sep-${item.href}`} style={{ display: 'flex' }} />,
-        <Breadcrumb.Item
-          key={item.href}
-          href={item.href}
-          current={index === items.length - 1}
-        >
-          {item.label}
-        </Breadcrumb.Item>,
-      ])}
+      {items.flatMap((item, index) => {
+        const breadcrumbItem = (
+          <Breadcrumb.Item
+            key={`item-${index}`}
+            href={item.href}
+            current={index === items.length - 1}
+          >
+            {item.label}
+          </Breadcrumb.Item>
+        )
+        if (index === 0) return [breadcrumbItem]
+        return [
+          <Breadcrumb.Separator key={`sep-${index}`} style={{ display: 'flex' }} />,
+          breadcrumbItem,
+        ]
+      })}
     </Breadcrumb>
   )
 }
