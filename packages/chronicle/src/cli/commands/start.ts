@@ -2,11 +2,11 @@ import { Command } from 'commander'
 import { spawn } from 'child_process'
 import path from 'path'
 import chalk from 'chalk'
-import { resolveContentDir, loadCLIConfig } from '../utils'
+import { resolveContentDir, loadCLIConfig, attachLifecycleHandlers } from '../utils'
 
 declare const PACKAGE_ROOT: string
 
-const nextBin = path.join(PACKAGE_ROOT, 'node_modules', '.bin', 'next')
+const nextBin = path.join(PACKAGE_ROOT, 'node_modules', '.bin', process.platform === 'win32' ? 'next.cmd' : 'next')
 
 export const startCommand = new Command('start')
   .description('Start production server')
@@ -14,7 +14,7 @@ export const startCommand = new Command('start')
   .option('-c, --content <path>', 'Content directory')
   .action((options) => {
     const contentDir = resolveContentDir(options.content)
-    const { config } = loadCLIConfig(contentDir)
+    loadCLIConfig(contentDir)
 
     console.log(chalk.cyan('Starting production server...'))
     console.log(chalk.gray(`Content: ${contentDir}`))
@@ -28,7 +28,5 @@ export const startCommand = new Command('start')
       },
     })
 
-    child.on('close', (code) => process.exit(code ?? 0))
-    process.on('SIGINT', () => child.kill('SIGINT'))
-    process.on('SIGTERM', () => child.kill('SIGTERM'))
+    attachLifecycleHandlers(child)
   })
