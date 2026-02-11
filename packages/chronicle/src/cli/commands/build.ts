@@ -1,28 +1,31 @@
 import { Command } from 'commander'
 import { spawn } from 'child_process'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import chalk from 'chalk'
-import { loadCLIConfig } from '../utils'
+import { resolveContentDir, loadCLIConfig, attachLifecycleHandlers } from '../utils'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const packageRoot = path.resolve(__dirname, '../../..')
+declare const PACKAGE_ROOT: string
+
+const nextBin = path.join(PACKAGE_ROOT, 'node_modules', '.bin', process.platform === 'win32' ? 'next.cmd' : 'next')
 
 export const buildCommand = new Command('build')
   .description('Build for production')
-  .action(() => {
-    const { contentDir } = loadCLIConfig()
+  .option('-c, --content <path>', 'Content directory')
+  .action((options) => {
+    const contentDir = resolveContentDir(options.content)
+    loadCLIConfig(contentDir)
 
     console.log(chalk.cyan('Building for production...'))
     console.log(chalk.gray(`Content: ${contentDir}`))
 
-    spawn('npx', ['next', 'build'], {
+    const child = spawn(nextBin, ['build'], {
       stdio: 'inherit',
-      shell: true,
-      cwd: packageRoot,
+      cwd: PACKAGE_ROOT,
       env: {
         ...process.env,
         CHRONICLE_CONTENT_DIR: contentDir,
       },
     })
+
+    attachLifecycleHandlers(child)
   })
