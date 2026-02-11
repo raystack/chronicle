@@ -1,29 +1,34 @@
 import { Command } from 'commander'
 import { spawn } from 'child_process'
 import path from 'path'
-import { fileURLToPath } from 'url'
 import chalk from 'chalk'
-import { loadCLIConfig } from '../utils'
+import { resolveContentDir, loadCLIConfig } from '../utils'
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const packageRoot = path.resolve(__dirname, '../../..')
+declare const PACKAGE_ROOT: string
+
+const nextBin = path.join(PACKAGE_ROOT, 'node_modules', '.bin', 'next')
 
 export const startCommand = new Command('start')
   .description('Start production server')
   .option('-p, --port <port>', 'Port number', '3000')
+  .option('-c, --content <path>', 'Content directory')
   .action((options) => {
-    const { contentDir } = loadCLIConfig()
+    const contentDir = resolveContentDir(options.content)
+    const { config } = loadCLIConfig(contentDir)
 
     console.log(chalk.cyan('Starting production server...'))
     console.log(chalk.gray(`Content: ${contentDir}`))
 
-    spawn('npx', ['next', 'start', '-p', options.port], {
+    const child = spawn(nextBin, ['start', '-p', options.port], {
       stdio: 'inherit',
-      shell: true,
-      cwd: packageRoot,
+      cwd: PACKAGE_ROOT,
       env: {
         ...process.env,
         CHRONICLE_CONTENT_DIR: contentDir,
       },
     })
+
+    child.on('close', (code) => process.exit(code ?? 0))
+    process.on('SIGINT', () => child.kill('SIGINT'))
+    process.on('SIGTERM', () => child.kill('SIGTERM'))
   })
