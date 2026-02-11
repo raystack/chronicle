@@ -1,7 +1,6 @@
 export interface ChronicleConfig {
   title: string
   description?: string
-  contentDir?: string
   logo?: LogoConfig
   theme?: ThemeConfig
   navigation?: NavigationConfig

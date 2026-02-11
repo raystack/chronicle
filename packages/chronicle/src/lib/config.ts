@@ -33,7 +33,3 @@ export function loadConfig(): ChronicleConfig {
     footer: userConfig.footer,
   }
 }
-
-export function getConfigPath(contentDir: string = './content'): string {
-  return path.join(contentDir, CONFIG_FILE)
-}
