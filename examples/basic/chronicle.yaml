@@ -6,6 +6,23 @@ theme:
 search:
   enabled: true
   placeholder: Search documentation...
+api:
+  - name: Petstore
+    spec: ./petstore.json
+    basePath: /apis
+    server:
+      url: https://petstore.swagger.io/v2
+      description: Petstore Server
+    auth:
+      type: apiKey
+      header: api_key
+      placeholder: "Enter your API key"
+  - name: Frontier
+    spec: ./frontier.yaml
+    basePath: /apis
+    server:
+      url: https://frontier.raystack.org
+      description: Frontier Server
 footer:
   copyright: "© 2024 Chronicle. All rights reserved."
   links:
