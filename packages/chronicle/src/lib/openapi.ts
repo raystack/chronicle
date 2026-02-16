@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { parse as parseYaml } from 'yaml'
 import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
 import type { ApiConfig, ApiServerConfig, ApiAuthConfig } from '../types/config'
 
@@ -30,7 +31,8 @@ export function loadApiSpecs(apiConfigs: ApiConfig[]): ApiSpec[] {
 export function loadApiSpec(config: ApiConfig, contentDir: string): ApiSpec {
   const specPath = path.resolve(contentDir, config.spec)
   const raw = fs.readFileSync(specPath, 'utf-8')
-  const doc = JSON.parse(raw) as OpenAPIV2.Document | OpenAPIV3.Document
+  const isYaml = specPath.endsWith('.yaml') || specPath.endsWith('.yml')
+  const doc = (isYaml ? parseYaml(raw) : JSON.parse(raw)) as OpenAPIV2.Document | OpenAPIV3.Document
 
   let v3Doc: OpenAPIV3.Document
 
