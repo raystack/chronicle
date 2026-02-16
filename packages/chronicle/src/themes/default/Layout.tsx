@@ -1,12 +1,19 @@
 "use client";
 
 import { usePathname } from "next/navigation";
+import NextLink from "next/link";
 import { Flex, Navbar, Headline, Link, Sidebar } from "@raystack/apsara";
+import { CodeBracketIcon, RectangleStackIcon } from "@heroicons/react/24/outline";
 import { ClientThemeSwitcher } from "../../components/ui/client-theme-switcher";
 import { Search } from "../../components/ui/search";
 import { Footer } from "../../components/ui/footer";
 import type { ThemeLayoutProps, PageTreeItem } from "../../types";
 import styles from "./Layout.module.css";
+
+const iconMap: Record<string, React.ReactNode> = {
+  "code-bracket": <CodeBracketIcon width={16} height={16} />,
+  "rectangle-stack": <RectangleStackIcon width={16} height={16} />,
+};
 
 export function Layout({ children, config, tree }: ThemeLayoutProps) {
   const pathname = usePathname();
@@ -65,6 +72,7 @@ function SidebarNode({
     return (
       <Sidebar.Group
         label={item.name}
+        leadingIcon={item.icon ? iconMap[item.icon] : undefined}
         classNames={{ items: styles.groupItems }}
       >
         {item.children.map((child) => (
@@ -81,7 +89,12 @@ function SidebarNode({
   const isActive = pathname === item.url;
 
   return (
-    <Sidebar.Item href={item.url ?? "#"} active={isActive}>
+    <Sidebar.Item
+      href={item.url ?? "#"}
+      active={isActive}
+      leadingIcon={item.icon ? iconMap[item.icon] : undefined}
+      as={<NextLink href={item.url ?? "#"} />}
+    >
       {item.name}
     </Sidebar.Item>
   );
