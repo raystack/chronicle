@@ -1,6 +1,7 @@
 'use client'
 
 import { CodeBlock } from '@raystack/apsara'
+import { STATUS_CODES } from 'http'
 import styles from './response-panel.module.css'
 
 interface ResponsePanelProps {
@@ -25,7 +26,7 @@ export function ResponsePanel({ responses }: ResponsePanelProps) {
           <CodeBlock.LanguageSelectContent>
             {withExamples.map((resp) => (
               <CodeBlock.LanguageSelectItem key={resp.status} value={resp.status}>
-                {resp.status}{resp.description ? ` — ${resp.description}` : ''}
+                {resp.status} {STATUS_CODES[resp.status] ?? resp.status}
               </CodeBlock.LanguageSelectItem>
             ))}
           </CodeBlock.LanguageSelectContent>
