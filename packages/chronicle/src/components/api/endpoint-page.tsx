@@ -4,6 +4,7 @@ import type { OpenAPIV3 } from 'openapi-types'
 import { Flex, Text, Headline, Button } from '@raystack/apsara'
 import { MethodBadge } from './method-badge'
 import { FieldSection } from './field-section'
+import { CodeSnippets } from './code-snippets'
 import { flattenSchema, generateExampleJson, type SchemaField } from '../../lib/schema'
 import styles from './endpoint-page.module.css'
 
@@ -11,9 +12,11 @@ interface EndpointPageProps {
   method: string
   path: string
   operation: OpenAPIV3.OperationObject
+  serverUrl: string
+  auth?: { type: string; header: string; placeholder?: string }
 }
 
-export function EndpointPage({ method, path, operation }: EndpointPageProps) {
+export function EndpointPage({ method, path, operation, serverUrl, auth }: EndpointPageProps) {
   const tag = operation.tags?.[0]
   const params = (operation.parameters ?? []) as OpenAPIV3.ParameterObject[]
 
@@ -28,6 +31,15 @@ export function EndpointPage({ method, path, operation }: EndpointPageProps) {
 
   const body = getRequestBody(operation.requestBody as OpenAPIV3.RequestBodyObject | undefined)
   const responses = getResponseSections(operation.responses as Record<string, OpenAPIV3.ResponseObject>)
+
+  const fullUrl = serverUrl + path
+  const snippetHeaders: Record<string, string> = {}
+  if (auth) {
+    snippetHeaders[auth.header] = auth.placeholder ?? 'YOUR_API_KEY'
+  }
+  if (body) {
+    snippetHeaders['Content-Type'] = body.contentType
+  }
 
   return (
     <div className={styles.layout}>
@@ -82,7 +94,12 @@ export function EndpointPage({ method, path, operation }: EndpointPageProps) {
         ))}
       </Flex>
       <Flex direction="column" className={styles.right}>
-        {/* Phase 8e: CodePanel + ResponsePanel */}
+        <CodeSnippets
+          method={method}
+          url={fullUrl}
+          headers={snippetHeaders}
+          body={body?.jsonExample}
+        />
       </Flex>
     </div>
   )

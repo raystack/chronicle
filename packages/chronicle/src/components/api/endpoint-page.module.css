@@ -4,11 +4,14 @@
   gap: var(--rs-space-9);
   padding: var(--rs-space-7);
   max-width: 1400px;
+  height: calc(100vh - var(--rs-space-13));
+  overflow: hidden;
 }
 
 .left {
   gap: var(--rs-space-7);
   min-width: 0;
+  overflow-y: auto;
 }
 
 .right {
