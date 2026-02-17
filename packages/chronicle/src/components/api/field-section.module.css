@@ -1,0 +1,44 @@
+.header {
+  padding-bottom: var(--rs-space-3);
+}
+
+.headerLeft {
+  gap: var(--rs-space-4);
+}
+
+.label {
+  font-family: monospace;
+  color: var(--rs-color-grey-11, #6b7280);
+  font-size: 13px;
+}
+
+.separator {
+  height: 1px;
+  background: var(--rs-color-border-base, #e5e7eb);
+}
+
+.viewToggle {
+  border: 1px solid var(--rs-color-border-base, #e5e7eb);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.toggleBtn {
+  border-radius: 0;
+}
+
+.toggleBtn:not(:last-child) {
+  border-right: 1px solid var(--rs-color-border-base, #e5e7eb);
+}
+
+.json {
+  margin: 0;
+  padding: var(--rs-space-5);
+  background: var(--rs-color-grey-2, #f9fafb);
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  margin-top: var(--rs-space-4);
+}

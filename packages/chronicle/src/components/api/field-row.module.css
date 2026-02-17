@@ -1,0 +1,78 @@
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-2);
+  padding: var(--rs-space-4) 0;
+}
+
+.row + .row {
+  border-top: 1px solid var(--rs-color-border-base, #e5e7eb);
+}
+
+.main {
+  gap: var(--rs-space-2);
+}
+
+.badges {
+  gap: var(--rs-space-3);
+  flex-wrap: wrap;
+}
+
+.name {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--rs-color-blue-11, #1d4ed8);
+}
+
+.type {
+  font-family: monospace;
+  font-size: 12px;
+  padding: 1px var(--rs-space-2);
+  border-radius: 4px;
+  background: var(--rs-color-grey-3, #f3f4f6);
+  color: var(--rs-color-grey-11, #6b7280);
+}
+
+.location {
+  font-size: 12px;
+  padding: 1px var(--rs-space-2);
+  border-radius: 4px;
+  background: var(--rs-color-grey-3, #f3f4f6);
+  color: var(--rs-color-grey-11, #6b7280);
+}
+
+.required {
+  font-size: 11px;
+  padding: 1px var(--rs-space-2);
+  border-radius: 4px;
+  background: var(--rs-color-red-3, #fee2e2);
+  color: var(--rs-color-red-11, #b91c1c);
+}
+
+.description {
+  color: var(--rs-color-grey-11, #6b7280);
+  font-size: 13px;
+}
+
+.example {
+  color: var(--rs-color-grey-11, #6b7280);
+  font-size: 12px;
+}
+
+.example code {
+  font-family: monospace;
+  background: var(--rs-color-grey-3, #f3f4f6);
+  padding: 1px var(--rs-space-2);
+  border-radius: 3px;
+}
+
+.toggle {
+  padding: var(--rs-space-2) 0;
+  align-self: flex-start;
+}
+
+.children {
+  padding-left: var(--rs-space-5);
+  border-left: 1px solid var(--rs-color-border-base, #e5e7eb);
+  margin-left: var(--rs-space-2);
+}

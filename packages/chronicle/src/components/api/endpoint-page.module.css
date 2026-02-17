@@ -1,24 +1,60 @@
-.page {
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--rs-space-9);
   padding: var(--rs-space-7);
-  max-width: 960px;
+  max-width: 1400px;
 }
 
-.header {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rs-space-3);
-  padding-bottom: var(--rs-space-5);
-  border-bottom: 1px solid var(--rs-color-border-base, #e5e7eb);
+.left {
+  gap: var(--rs-space-7);
+  min-width: 0;
 }
 
-.path {
-  font-family: monospace;
+.right {
+  position: sticky;
+  top: var(--rs-space-7);
+  align-self: start;
+  gap: var(--rs-space-5);
+  min-width: 0;
 }
 
-.summary {
+.tag {
+  color: var(--rs-color-blue-11, #1d4ed8);
+  font-weight: 500;
+}
+
+.title {
   margin: 0;
 }
 
 .description {
   color: var(--rs-color-grey-11, #6b7280);
+}
+
+.methodPath {
+  gap: var(--rs-space-3);
+  padding: var(--rs-space-4) var(--rs-space-5);
+  border: 1px solid var(--rs-color-border-base, #e5e7eb);
+  border-radius: 8px;
+  background: var(--rs-color-grey-2, #f9fafb);
+}
+
+.path {
+  font-family: monospace;
+  flex: 1;
+}
+
+.tryButton {
+  margin-left: auto;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .right {
+    position: static;
+  }
 }

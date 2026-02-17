@@ -48,6 +48,33 @@ export function flattenSchema(
   return []
 }
 
+export function generateExampleJson(schema: OpenAPIV3.SchemaObject): unknown {
+  if (schema.example !== undefined) return schema.example
+  if (schema.default !== undefined) return schema.default
+
+  if (schema.type === 'array') {
+    const items = schema.items as OpenAPIV3.SchemaObject | undefined
+    return items ? [generateExampleJson(items)] : []
+  }
+
+  if (schema.type === 'object' || schema.properties) {
+    const properties = (schema.properties ?? {}) as Record<string, OpenAPIV3.SchemaObject>
+    const result: Record<string, unknown> = {}
+    for (const [name, prop] of Object.entries(properties)) {
+      result[name] = generateExampleJson(prop)
+    }
+    return result
+  }
+
+  const defaults: Record<string, unknown> = {
+    string: 'string',
+    integer: 0,
+    number: 0,
+    boolean: true,
+  }
+  return defaults[schema.type as string] ?? null
+}
+
 function inferType(schema: OpenAPIV3.SchemaObject): string {
   if (schema.type === 'array') {
     const items = schema.items as OpenAPIV3.SchemaObject | undefined
