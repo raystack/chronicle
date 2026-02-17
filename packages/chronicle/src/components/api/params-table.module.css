@@ -1,0 +1,29 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-3);
+}
+
+.title {
+  margin: 0;
+}
+
+.table {
+  width: 100%;
+}
+
+.fieldName {
+  font-family: monospace;
+  font-size: 13px;
+}
+
+.type {
+  font-family: monospace;
+  font-size: 13px;
+  color: var(--rs-color-grey-11, #6b7280);
+}
+
+.required {
+  color: var(--rs-color-red-11, #b91c1c);
+  font-size: 12px;
+}
