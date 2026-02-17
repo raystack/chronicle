@@ -6,7 +6,7 @@
 }
 
 .row + .row {
-  border-top: 1px solid var(--rs-color-border-base, #e5e7eb);
+  border-top: 1px solid var(--rs-color-border-base-primary);
 }
 
 .main {
@@ -21,7 +21,7 @@
 .name {
   font-family: monospace;
   font-size: 13px;
-  color: var(--rs-color-blue-11, #1d4ed8);
+  color: var(--rs-color-foreground-base-primary);
 }
 
 .type {
@@ -29,50 +29,77 @@
   font-size: 12px;
   padding: 1px var(--rs-space-2);
   border-radius: 4px;
-  background: var(--rs-color-grey-3, #f3f4f6);
-  color: var(--rs-color-grey-11, #6b7280);
+  background: var(--rs-color-background-neutral-secondary);
+  color: var(--rs-color-foreground-base-secondary);
 }
 
 .location {
   font-size: 12px;
   padding: 1px var(--rs-space-2);
   border-radius: 4px;
-  background: var(--rs-color-grey-3, #f3f4f6);
-  color: var(--rs-color-grey-11, #6b7280);
+  background: var(--rs-color-background-neutral-secondary);
+  color: var(--rs-color-foreground-base-secondary);
 }
 
 .required {
   font-size: 11px;
   padding: 1px var(--rs-space-2);
   border-radius: 4px;
-  background: var(--rs-color-red-3, #fee2e2);
-  color: var(--rs-color-red-11, #b91c1c);
+  background: var(--rs-color-background-danger-primary);
+  color: var(--rs-color-foreground-danger-primary);
 }
 
 .description {
-  color: var(--rs-color-grey-11, #6b7280);
+  color: var(--rs-color-foreground-base-secondary);
   font-size: 13px;
 }
 
 .example {
-  color: var(--rs-color-grey-11, #6b7280);
+  color: var(--rs-color-foreground-base-secondary);
   font-size: 12px;
 }
 
 .example code {
   font-family: monospace;
-  background: var(--rs-color-grey-3, #f3f4f6);
+  background: var(--rs-color-background-neutral-secondary);
   padding: 1px var(--rs-space-2);
   border-radius: 3px;
 }
 
-.toggle {
-  padding: var(--rs-space-2) 0;
-  align-self: flex-start;
+.accordion {
+  border: none;
+}
+
+.accordion :global([class*="accordion-header"]) {
+  margin: 0;
+}
+
+.accordion button {
+  min-height: unset;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.accordion button:hover,
+.accordion button:focus-visible {
+  background: transparent;
+}
+
+.accordion :global([class*="accordion-content-inner"]) {
+  padding: var(--rs-space-3) 0 0 0;
+  border: none;
+  box-shadow: none;
 }
 
 .children {
+  display: flex;
+  flex-direction: column;
   padding-left: var(--rs-space-5);
-  border-left: 1px solid var(--rs-color-border-base, #e5e7eb);
-  margin-left: var(--rs-space-2);
+  width: 100%;
+}
+
+.trigger {
+  color: var(--rs-color-foreground-base-secondary);
 }

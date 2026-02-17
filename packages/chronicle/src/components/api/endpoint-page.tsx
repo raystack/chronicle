@@ -77,6 +77,7 @@ export function EndpointPage({ method, path, operation }: EndpointPageProps) {
             key={resp.status}
             title={`${resp.status}${resp.description ? ` — ${resp.description}` : ''}`}
             fields={resp.fields}
+            jsonExample={resp.jsonExample}
           />
         ))}
       </Flex>
@@ -123,6 +124,7 @@ interface ResponseSection {
   status: string
   description?: string
   fields: SchemaField[]
+  jsonExample?: string
 }
 
 function getResponseSections(responses: Record<string, OpenAPIV3.ResponseObject>): ResponseSection[] {
@@ -137,6 +139,7 @@ function getResponseSections(responses: Record<string, OpenAPIV3.ResponseObject>
       status,
       description: resp.description,
       fields: schema ? flattenSchema(schema) : [],
+      jsonExample: schema ? JSON.stringify(generateExampleJson(schema), null, 2) : undefined,
     }
   })
 }

@@ -13,11 +13,11 @@ import styles from "./Layout.module.css";
 
 const iconMap: Record<string, React.ReactNode> = {
   "rectangle-stack": <RectangleStackIcon width={16} height={16} />,
-  "method-get": <MethodBadge method="GET" />,
-  "method-post": <MethodBadge method="POST" />,
-  "method-put": <MethodBadge method="PUT" />,
-  "method-delete": <MethodBadge method="DELETE" />,
-  "method-patch": <MethodBadge method="PATCH" />,
+  "method-get": <MethodBadge method="GET" size="micro" />,
+  "method-post": <MethodBadge method="POST" size="micro" />,
+  "method-put": <MethodBadge method="PUT" size="micro" />,
+  "method-delete": <MethodBadge method="DELETE" size="micro" />,
+  "method-patch": <MethodBadge method="PATCH" size="micro" />,
 };
 
 export function Layout({ children, config, tree }: ThemeLayoutProps) {

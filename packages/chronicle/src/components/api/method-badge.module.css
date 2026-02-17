@@ -1,35 +1,4 @@
 .badge {
-  display: inline-flex;
-  align-items: center;
-  padding: var(--rs-space-1) var(--rs-space-3);
-  border-radius: 4px;
   font-family: monospace;
-  font-size: 12px;
   letter-spacing: 0.5px;
-  white-space: nowrap;
-}
-
-.get {
-  background-color: var(--rs-color-blue-3, #dbeafe);
-  color: var(--rs-color-blue-11, #1d4ed8);
-}
-
-.post {
-  background-color: var(--rs-color-green-3, #dcfce7);
-  color: var(--rs-color-green-11, #15803d);
-}
-
-.put {
-  background-color: var(--rs-color-amber-3, #fef3c7);
-  color: var(--rs-color-amber-11, #b45309);
-}
-
-.delete {
-  background-color: var(--rs-color-red-3, #fee2e2);
-  color: var(--rs-color-red-11, #b91c1c);
-}
-
-.patch {
-  background-color: var(--rs-color-purple-3, #f3e8ff);
-  color: var(--rs-color-purple-11, #7e22ce);
 }
