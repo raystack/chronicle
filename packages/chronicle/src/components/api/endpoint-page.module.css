@@ -22,11 +22,6 @@
   min-width: 0;
 }
 
-.tag {
-  color: var(--rs-color-foreground-base-accent);
-  font-weight: 500;
-}
-
 .title {
   margin: 0;
 }

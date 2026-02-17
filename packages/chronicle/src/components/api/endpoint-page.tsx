@@ -5,6 +5,7 @@ import { Flex, Text, Headline, Button } from '@raystack/apsara'
 import { MethodBadge } from './method-badge'
 import { FieldSection } from './field-section'
 import { CodeSnippets } from './code-snippets'
+import { ResponsePanel } from './response-panel'
 import { flattenSchema, generateExampleJson, type SchemaField } from '../../lib/schema'
 import styles from './endpoint-page.module.css'
 
@@ -44,7 +45,6 @@ export function EndpointPage({ method, path, operation, serverUrl, auth }: Endpo
   return (
     <div className={styles.layout}>
       <Flex direction="column" className={styles.left}>
-        {tag && <Text size={2} className={styles.tag}>{tag}</Text>}
         {operation.summary && (
           <Headline size="small" as="h1" className={styles.title}>{operation.summary}</Headline>
         )}
@@ -100,6 +100,7 @@ export function EndpointPage({ method, path, operation, serverUrl, auth }: Endpo
           headers={snippetHeaders}
           body={body?.jsonExample}
         />
+        <ResponsePanel responses={responses} />
       </Flex>
     </div>
   )

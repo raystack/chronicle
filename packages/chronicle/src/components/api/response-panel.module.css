@@ -1,0 +1,7 @@
+.panel {
+  width: 100%;
+}
+
+.panel :global([class*="code-block-module_header"]) {
+  justify-content: space-between;
+}
