@@ -3,16 +3,21 @@
 import { usePathname } from "next/navigation";
 import NextLink from "next/link";
 import { Flex, Navbar, Headline, Link, Sidebar } from "@raystack/apsara";
-import { CodeBracketIcon, RectangleStackIcon } from "@heroicons/react/24/outline";
+import { RectangleStackIcon } from "@heroicons/react/24/outline";
 import { ClientThemeSwitcher } from "../../components/ui/client-theme-switcher";
 import { Search } from "../../components/ui/search";
 import { Footer } from "../../components/ui/footer";
+import { MethodBadge } from "../../components/api/method-badge";
 import type { ThemeLayoutProps, PageTreeItem } from "../../types";
 import styles from "./Layout.module.css";
 
 const iconMap: Record<string, React.ReactNode> = {
-  "code-bracket": <CodeBracketIcon width={16} height={16} />,
   "rectangle-stack": <RectangleStackIcon width={16} height={16} />,
+  "method-get": <MethodBadge method="GET" />,
+  "method-post": <MethodBadge method="POST" />,
+  "method-put": <MethodBadge method="PUT" />,
+  "method-delete": <MethodBadge method="DELETE" />,
+  "method-patch": <MethodBadge method="PATCH" />,
 };
 
 export function Layout({ children, config, tree }: ThemeLayoutProps) {

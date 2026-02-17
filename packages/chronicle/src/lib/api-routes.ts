@@ -82,9 +82,9 @@ export function buildApiPageTree(specs: ApiSpec[]): PageTree {
 
         opsByTag.get(tagKey)!.push({
           type: 'page',
-          name: `${method.toUpperCase()} ${op.summary ?? op.operationId}`,
+          name: op.summary ?? op.operationId,
           url: `/apis/${specSlug}/${op.operationId}`,
-          icon: 'code-bracket',
+          icon: `method-${method}`,
         })
       }
     }

@@ -3,7 +3,8 @@ import type { OpenAPIV3 } from 'openapi-types'
 import { Flex, Headline, Text } from '@raystack/apsara'
 import { loadConfig } from '../../../lib/config'
 import { loadApiSpecs } from '../../../lib/openapi'
-import { buildApiRoutes, findApiOperation, getSpecSlug } from '../../../lib/api-routes'
+import { buildApiRoutes, findApiOperation } from '../../../lib/api-routes'
+import { EndpointPage } from '../../../components/api'
 
 interface PageProps {
   params: Promise<{ slug?: string[] }>
@@ -22,18 +23,11 @@ export default async function ApiPage({ params }: PageProps) {
   if (!match) notFound()
 
   return (
-    <Flex direction="column" gap="medium" style={{ padding: 'var(--rs-space-7)' }}>
-      <Flex gap="small" align="center">
-        <Text size={2} weight="bold">{match.method}</Text>
-        <Text size={2}>{match.path}</Text>
-      </Flex>
-      {match.operation.summary && (
-        <Headline size="small" as="h1">{match.operation.summary}</Headline>
-      )}
-      {match.operation.description && (
-        <Text size={3}>{match.operation.description}</Text>
-      )}
-    </Flex>
+    <EndpointPage
+      method={match.method}
+      path={match.path}
+      operation={match.operation}
+    />
   )
 }
 
