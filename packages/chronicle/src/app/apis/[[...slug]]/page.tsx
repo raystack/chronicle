@@ -28,6 +28,7 @@ export default async function ApiPage({ params }: PageProps) {
       path={match.path}
       operation={match.operation}
       serverUrl={match.spec.server.url}
+      specName={match.spec.name}
       auth={match.spec.auth}
     />
   )
