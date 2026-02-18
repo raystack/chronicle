@@ -7,6 +7,7 @@ import { useDocsSearch } from "fumadocs-core/search/client";
 import type { SortedResult } from "fumadocs-core/search";
 import { DocumentIcon, HashtagIcon } from "@heroicons/react/24/outline";
 import { isMacOs } from "react-device-detect";
+import { MethodBadge } from "../api/method-badge";
 import styles from "./search.module.css";
 
 function SearchShortcutKey({ className }: { className?: string }) {
@@ -54,7 +55,9 @@ export function Search() {
     return () => document.removeEventListener("keydown", down);
   }, []);
 
-  const results = query.data === "empty" ? [] : (query.data ?? []);
+  const results = deduplicateByUrl(
+    query.data === "empty" ? [] : (query.data ?? []),
+  );
 
   return (
     <>
@@ -100,9 +103,9 @@ export function Search() {
                         className={styles.item}
                       >
                         <div className={styles.itemContent}>
-                          <DocumentIcon className={styles.icon} />
+                          {getResultIcon(result)}
                           <Text className={styles.pageText}>
-                            {result.content}
+                            {stripMethod(result.content)}
                           </Text>
                         </div>
                       </Command.Item>
@@ -118,16 +121,12 @@ export function Search() {
                     className={styles.item}
                   >
                     <div className={styles.itemContent}>
-                      {result.type === "page" ? (
-                        <DocumentIcon className={styles.icon} />
-                      ) : (
-                        <HashtagIcon className={styles.icon} />
-                      )}
+                      {getResultIcon(result)}
                       <div className={styles.resultText}>
                         {result.type === "heading" ? (
                           <>
                             <Text className={styles.headingText}>
-                              {result.content}
+                              {stripMethod(result.content)}
                             </Text>
                             <Text className={styles.separator}>-</Text>
                             <Text className={styles.pageText}>
@@ -136,7 +135,7 @@ export function Search() {
                           </>
                         ) : (
                           <Text className={styles.pageText}>
-                            {result.content}
+                            {stripMethod(result.content)}
                           </Text>
                         )}
                       </div>
@@ -149,6 +148,40 @@ export function Search() {
       </Dialog>
     </>
   );
+}
+
+function deduplicateByUrl(results: SortedResult[]): SortedResult[] {
+  const seen = new Set<string>();
+  return results.filter((r) => {
+    const base = r.url.split("#")[0];
+    if (seen.has(base)) return false;
+    seen.add(base);
+    return true;
+  });
+}
+
+const API_METHODS = new Set(["GET", "POST", "PUT", "DELETE", "PATCH"]);
+
+function extractMethod(content: string): string | null {
+  const first = content.split(" ")[0];
+  return API_METHODS.has(first) ? first : null;
+}
+
+function stripMethod(content: string): string {
+  const first = content.split(" ")[0];
+  return API_METHODS.has(first) ? content.slice(first.length + 1) : content;
+}
+
+function getResultIcon(result: SortedResult): React.ReactNode {
+  if (!result.url.startsWith("/apis/")) {
+    return result.type === "page" ? (
+      <DocumentIcon className={styles.icon} />
+    ) : (
+      <HashtagIcon className={styles.icon} />
+    );
+  }
+  const method = extractMethod(result.content);
+  return method ? <MethodBadge method={method} size="micro" /> : null;
 }
 
 function getPageTitle(url: string): string {
