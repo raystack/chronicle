@@ -25,6 +25,7 @@ export interface PageTreeItem {
   name: string
   url?: string
   order?: number
+  icon?: string
   children?: PageTreeItem[]
 }
 

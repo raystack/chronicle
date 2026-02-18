@@ -1,0 +1,7 @@
+.snippets {
+  width: 100%;
+}
+
+.snippets :global([class*="code-block-module_header"]) {
+  justify-content: space-between;
+}

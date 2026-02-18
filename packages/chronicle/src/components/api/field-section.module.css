@@ -1,0 +1,24 @@
+.header {
+  padding-bottom: var(--rs-space-3);
+}
+
+.label {
+  font-family: monospace;
+  color: var(--rs-color-foreground-base-secondary);
+  font-size: 13px;
+}
+
+.separator {
+  height: 1px;
+  background: var(--rs-color-border-base-primary);
+}
+
+.tabs {
+  margin-top: var(--rs-space-3);
+}
+
+.noFields {
+  color: var(--rs-color-foreground-base-secondary);
+  padding: var(--rs-space-5);
+}
+

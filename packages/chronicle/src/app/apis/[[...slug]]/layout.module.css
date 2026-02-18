@@ -1,0 +1,17 @@
+.layout {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.body {
+  overflow: hidden;
+}
+
+.sidebar {
+  height: 100%;
+}
+
+.content {
+  height: 100%;
+  overflow-y: auto;
+}
