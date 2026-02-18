@@ -7,6 +7,7 @@ export function getSpecSlug(spec: ApiSpec): string {
   return slugify(spec.name, { lower: true, strict: true })
 }
 
+
 export function buildApiRoutes(specs: ApiSpec[]): { slug: string[] }[] {
   const routes: { slug: string[] }[] = []
 
@@ -19,7 +20,7 @@ export function buildApiRoutes(specs: ApiSpec[]): { slug: string[] }[] {
       for (const method of ['get', 'post', 'put', 'delete', 'patch'] as const) {
         const op = pathItem[method]
         if (!op?.operationId) continue
-        routes.push({ slug: [specSlug, op.operationId] })
+        routes.push({ slug: [specSlug, encodeURIComponent(op.operationId)] })
       }
     }
   }
@@ -46,7 +47,7 @@ export function findApiOperation(specs: ApiSpec[], slug: string[]): ApiRouteMatc
     if (!pathItem) continue
     for (const method of ['get', 'post', 'put', 'delete', 'patch'] as const) {
       const op = pathItem[method]
-      if (op?.operationId === operationId) {
+      if (op?.operationId && encodeURIComponent(op.operationId) === operationId) {
         return { spec, operation: op, method: method.toUpperCase(), path: pathStr }
       }
     }
@@ -83,7 +84,7 @@ export function buildApiPageTree(specs: ApiSpec[]): PageTree {
         opsByTag.get(tagKey)!.push({
           type: 'page',
           name: op.summary ?? op.operationId,
-          url: `/apis/${specSlug}/${op.operationId}`,
+          url: `/apis/${specSlug}/${encodeURIComponent(op.operationId)}`,
           icon: `method-${method}`,
         })
       }

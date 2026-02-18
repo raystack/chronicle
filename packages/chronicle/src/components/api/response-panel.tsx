@@ -25,7 +25,7 @@ export function ResponsePanel({ responses }: ResponsePanelProps) {
           <CodeBlock.LanguageSelectContent>
             {withExamples.map((resp) => (
               <CodeBlock.LanguageSelectItem key={resp.status} value={resp.status}>
-                {resp.status} {resp.description ?? ''}
+                {resp.status} {resp.description ?? resp.status}
               </CodeBlock.LanguageSelectItem>
             ))}
           </CodeBlock.LanguageSelectContent>
