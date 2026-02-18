@@ -6,6 +6,7 @@ export interface SchemaField {
   required: boolean
   description?: string
   default?: unknown
+  enum?: unknown[]
   children?: SchemaField[]
 }
 
@@ -40,6 +41,7 @@ export function flattenSchema(
         required: required.includes(name),
         description: prop.description,
         default: prop.default,
+        enum: prop.enum,
         children: children?.length ? children : undefined,
       }
     })

@@ -3,6 +3,7 @@
 import { Flex, Text, Tabs, CodeBlock } from '@raystack/apsara'
 import type { SchemaField } from '../../lib/schema'
 import { FieldRow } from './field-row'
+import { JsonEditor } from './json-editor'
 import styles from './field-section.module.css'
 
 interface FieldSectionProps {
@@ -11,24 +12,41 @@ interface FieldSectionProps {
   fields: SchemaField[]
   locations?: Record<string, string>
   jsonExample?: string
+  editableJson?: boolean
+  onJsonChange?: (value: string) => void
+  alwaysShow?: boolean
+  editable?: boolean
+  values?: Record<string, unknown>
+  onValuesChange?: (values: Record<string, unknown>) => void
 }
 
-export function FieldSection({ title, label, fields, locations, jsonExample }: FieldSectionProps) {
-  if (fields.length === 0) return null
+export function FieldSection({
+  title, label, fields, locations, jsonExample,
+  editableJson, onJsonChange, alwaysShow,
+  editable, values, onValuesChange,
+}: FieldSectionProps) {
+  if (fields.length === 0 && !alwaysShow) return null
 
-  const fieldsContent = (
+  const fieldsContent = fields.length > 0 ? (
     <Flex direction="column">
       {fields.map((field) => (
         <FieldRow
           key={field.name}
           field={field}
           location={locations?.[field.name]}
+          editable={editable}
+          value={values?.[field.name]}
+          onChange={editable ? (name, val) => {
+            onValuesChange?.({ ...values, [name]: val })
+          } : undefined}
         />
       ))}
     </Flex>
+  ) : (
+    <Text size={2} className={styles.noFields}>No fields defined</Text>
   )
 
-  if (jsonExample) {
+  if (jsonExample !== undefined || alwaysShow) {
     return (
       <Flex direction="column">
         <Flex align="center" justify="between" className={styles.header}>
@@ -45,14 +63,21 @@ export function FieldSection({ title, label, fields, locations, jsonExample }: F
             {fieldsContent}
           </Tabs.Content>
           <Tabs.Content value="json">
-            <CodeBlock>
-              <CodeBlock.Header>
-                <CodeBlock.CopyButton />
-              </CodeBlock.Header>
-              <CodeBlock.Content>
-                <CodeBlock.Code language="json">{jsonExample}</CodeBlock.Code>
-              </CodeBlock.Content>
-            </CodeBlock>
+            {editableJson ? (
+              <JsonEditor
+                value={jsonExample ?? '{}'}
+                onChange={onJsonChange}
+              />
+            ) : (
+              <CodeBlock>
+                <CodeBlock.Header>
+                  <CodeBlock.CopyButton />
+                </CodeBlock.Header>
+                <CodeBlock.Content>
+                  <CodeBlock.Code language="json">{jsonExample ?? '{}'}</CodeBlock.Code>
+                </CodeBlock.Content>
+              </CodeBlock>
+            )}
           </Tabs.Content>
         </Tabs>
       </Flex>

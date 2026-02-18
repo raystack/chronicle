@@ -17,3 +17,8 @@
   margin-top: var(--rs-space-3);
 }
 
+.noFields {
+  color: var(--rs-color-foreground-base-secondary);
+  padding: var(--rs-space-5);
+}
+
