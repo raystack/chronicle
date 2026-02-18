@@ -81,13 +81,13 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
 
     const reqHeaders: Record<string, string> = {}
     for (const [key, value] of Object.entries(headerValues)) {
-      if (value) reqHeaders[key] = String(value)
+      if (value !== undefined && value !== null && value !== '') reqHeaders[key] = String(value)
     }
     for (const entry of customHeaders) {
       if (entry.key && entry.value) reqHeaders[entry.key] = entry.value
     }
-    if ((method === 'POST' || method === 'PUT' || method === 'PATCH') && bodyJsonStr) {
-      reqHeaders['Content-Type'] = body?.contentType ?? 'application/json'
+    if (body && bodyJsonStr) {
+      reqHeaders['Content-Type'] = body.contentType ?? 'application/json'
     }
 
     try {
@@ -99,7 +99,7 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
           method,
           path: fullPath,
           headers: reqHeaders,
-          body: (method === 'POST' || method === 'PUT' || method === 'PATCH') ? bodyValues : undefined,
+          body: body ? bodyValues : undefined,
         }),
       })
       const data = await res.json()
@@ -122,8 +122,8 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
   if (auth) {
     snippetHeaders[auth.header] = auth.placeholder ?? 'YOUR_API_KEY'
   }
-  if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
-    snippetHeaders['Content-Type'] = body?.contentType ?? 'application/json'
+  if (body) {
+    snippetHeaders['Content-Type'] = body.contentType ?? 'application/json'
   }
 
   return (
@@ -170,7 +170,7 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
           values={queryValues}
           onValuesChange={setQueryValues}
         />
-        {(body || method === 'POST' || method === 'PUT' || method === 'PATCH') && (
+        {body && (
           <FieldSection
             title="Body"
             label={body?.contentType}
@@ -199,7 +199,7 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
           method={method}
           url={fullUrl}
           headers={snippetHeaders}
-          body={(method === 'POST' || method === 'PUT' || method === 'PATCH') ? bodyJsonStr : undefined}
+          body={body ? bodyJsonStr : undefined}
         />
         <ResponsePanel responses={responses} />
         {responseBody && (
