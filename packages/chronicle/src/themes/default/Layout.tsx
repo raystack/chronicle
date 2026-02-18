@@ -2,6 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import NextLink from "next/link";
+import { cx } from "class-variance-authority";
 import { Flex, Navbar, Headline, Link, Sidebar } from "@raystack/apsara";
 import { RectangleStackIcon } from "@heroicons/react/24/outline";
 import { ClientThemeSwitcher } from "../../components/ui/client-theme-switcher";
@@ -20,11 +21,11 @@ const iconMap: Record<string, React.ReactNode> = {
   "method-patch": <MethodBadge method="PATCH" size="micro" />,
 };
 
-export function Layout({ children, config, tree }: ThemeLayoutProps) {
+export function Layout({ children, config, tree, classNames }: ThemeLayoutProps) {
   const pathname = usePathname();
   console.log(config);
   return (
-    <Flex direction="column" className={styles.layout}>
+    <Flex direction="column" className={cx(styles.layout, classNames?.layout)}>
       <Navbar className={styles.header}>
         <Navbar.Start>
           <Headline size="small" weight="medium" as="h1">
@@ -43,8 +44,8 @@ export function Layout({ children, config, tree }: ThemeLayoutProps) {
           <ClientThemeSwitcher size={16} />
         </Navbar.End>
       </Navbar>
-      <Flex className={styles.body}>
-        <Sidebar defaultOpen collapsible={false} className={styles.sidebar}>
+      <Flex className={cx(styles.body, classNames?.body)}>
+        <Sidebar defaultOpen collapsible={false} className={cx(styles.sidebar, classNames?.sidebar)}>
           <Sidebar.Main>
             {tree.children.map((item) => (
               <SidebarNode
@@ -55,7 +56,7 @@ export function Layout({ children, config, tree }: ThemeLayoutProps) {
             ))}
           </Sidebar.Main>
         </Sidebar>
-        <main className={styles.content}>{children}</main>
+        <main className={cx(styles.content, classNames?.content)}>{children}</main>
       </Flex>
       <Footer config={config.footer} />
     </Flex>

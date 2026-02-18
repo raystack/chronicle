@@ -6,6 +6,7 @@ export interface ThemeLayoutProps {
   children: ReactNode
   config: ChronicleConfig
   tree: PageTree
+  classNames?: { layout?: string; body?: string; sidebar?: string; content?: string }
 }
 
 export interface ThemePageProps {
