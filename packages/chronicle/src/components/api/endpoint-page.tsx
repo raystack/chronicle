@@ -108,7 +108,8 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
       } else {
         setResponseBody({ status: res.status, statusText: res.statusText, body: data.error ?? data })
       }
-    } catch {
+    } catch (err) {
+      console.error('API request failed:', err)
       setResponseBody({ status: 0, statusText: 'Error', body: 'Failed to send request' })
     } finally {
       setLoading(false)

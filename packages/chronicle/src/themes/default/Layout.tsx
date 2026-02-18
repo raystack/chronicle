@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import NextLink from "next/link";
 import { cx } from "class-variance-authority";
@@ -92,13 +93,15 @@ function SidebarNode({
   }
 
   const isActive = pathname === item.url;
+  const href = item.url ?? "#";
+  const link = useMemo(() => <NextLink href={href} />, [href]);
 
   return (
     <Sidebar.Item
-      href={item.url ?? "#"}
+      href={href}
       active={isActive}
       leadingIcon={item.icon ? iconMap[item.icon] : undefined}
-      as={<NextLink href={item.url ?? "#"} />}
+      as={link}
     >
       {item.name}
     </Sidebar.Item>

@@ -138,7 +138,7 @@ function convertV2Operation(op: OpenAPIV2.OperationObject): OpenAPIV3.OperationO
       in: p.in as 'path' | 'query' | 'header' | 'cookie',
       required: p.required ?? false,
       description: p.description,
-      schema: { type: (p as JsonObject).type as string, format: (p as JsonObject).format as string | undefined } as OpenAPIV3.SchemaObject,
+      schema: { type: ((p as JsonObject).type as string) ?? 'string', format: (p as JsonObject).format as string | undefined } as OpenAPIV3.SchemaObject,
     }))
 
   const bodyParam = params.find((p) => p.in === 'body') as JsonObject | undefined
