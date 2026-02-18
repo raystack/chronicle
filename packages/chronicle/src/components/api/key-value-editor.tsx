@@ -1,23 +1,8 @@
 'use client'
 
 import { Flex, InputField, IconButton, Button } from '@raystack/apsara'
+import { TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
 import styles from './key-value-editor.module.css'
-
-function TrashIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 4h12M5.333 4V2.667a1.333 1.333 0 0 1 1.334-1.334h2.666a1.333 1.333 0 0 1 1.334 1.334V4m2 0v9.333a1.333 1.333 0 0 1-1.334 1.334H4.667a1.333 1.333 0 0 1-1.334-1.334V4h9.334Z" />
-    </svg>
-  )
-}
-
-function PlusIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M8 3.333v9.334M3.333 8h9.334" />
-    </svg>
-  )
-}
 
 export interface KeyValueEntry {
   key: string
@@ -65,12 +50,12 @@ export function KeyValueEditor({ entries, onChange }: KeyValueEditorProps) {
             />
           </div>
           <IconButton size="small" variant="ghost" onClick={() => removeEntry(i)}>
-            <TrashIcon />
+            <TrashIcon width={14} height={14} />
           </IconButton>
         </Flex>
       ))}
       <Button variant="ghost" size="small" onClick={addEntry}>
-        <PlusIcon /> Add header
+        <PlusIcon width={14} height={14} /> Add header
       </Button>
     </Flex>
   )

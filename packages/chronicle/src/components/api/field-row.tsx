@@ -1,24 +1,9 @@
 'use client'
 
 import { Flex, Text, Accordion, InputField, Switch, Select, IconButton } from '@raystack/apsara'
+import { TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
 import type { SchemaField } from '../../lib/schema'
 import styles from './field-row.module.css'
-
-function TrashIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M2 4h12M5.333 4V2.667a1.333 1.333 0 0 1 1.334-1.334h2.666a1.333 1.333 0 0 1 1.334 1.334V4m2 0v9.333a1.333 1.333 0 0 1-1.334 1.334H4.667a1.333 1.333 0 0 1-1.334-1.334V4h9.334Z" />
-    </svg>
-  )
-}
-
-function PlusIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M8 3.333v9.334M3.333 8h9.334" />
-    </svg>
-  )
-}
 
 interface FieldRowProps {
   field: SchemaField
@@ -82,7 +67,7 @@ export function FieldRow({ field, location, editable, value, onChange }: FieldRo
               const newItem = itemChildren ? {} : ''
               onChange?.(field.name, [...items, newItem])
             }}>
-              <PlusIcon />
+              <PlusIcon width={14} height={14} />
             </IconButton>
           </Flex>
           {field.description && <Text size={2} className={styles.description}>{field.description}</Text>}
@@ -120,7 +105,7 @@ export function FieldRow({ field, location, editable, value, onChange }: FieldRo
                   const updated = items.filter((_, j) => j !== i)
                   onChange?.(field.name, updated)
                 }}>
-                  <TrashIcon />
+                  <TrashIcon width={14} height={14} />
                 </IconButton>
               </Flex>
             ))}
