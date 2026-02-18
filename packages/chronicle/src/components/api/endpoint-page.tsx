@@ -5,6 +5,7 @@ import type { OpenAPIV3 } from 'openapi-types'
 import { Flex, Text, Headline, Button, CodeBlock } from '@raystack/apsara'
 import { MethodBadge } from './method-badge'
 import { FieldSection } from './field-section'
+import { KeyValueEditor, type KeyValueEntry } from './key-value-editor'
 import { CodeSnippets } from './code-snippets'
 import { ResponsePanel } from './response-panel'
 import { flattenSchema, generateExampleJson, type SchemaField } from '../../lib/schema'
@@ -32,6 +33,11 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
   const responses = getResponseSections(operation.responses as Record<string, OpenAPIV3.ResponseObject>)
 
   // State for editable fields
+  const [customHeaders, setCustomHeaders] = useState<KeyValueEntry[]>(() => {
+    const initial: KeyValueEntry[] = []
+    if (auth) initial.push({ key: auth.header, value: '' })
+    return initial
+  })
   const [headerValues, setHeaderValues] = useState<Record<string, unknown>>({})
   const [pathValues, setPathValues] = useState<Record<string, unknown>>({})
   const [queryValues, setQueryValues] = useState<Record<string, unknown>>({})
@@ -77,8 +83,8 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
     for (const [key, value] of Object.entries(headerValues)) {
       if (value) reqHeaders[key] = String(value)
     }
-    if (auth && headerValues[auth.header]) {
-      reqHeaders[auth.header] = String(headerValues[auth.header])
+    for (const entry of customHeaders) {
+      if (entry.key && entry.value) reqHeaders[entry.key] = entry.value
     }
     if ((method === 'POST' || method === 'PUT') && bodyJsonStr) {
       reqHeaders['Content-Type'] = body?.contentType ?? 'application/json'
@@ -107,7 +113,7 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
     } finally {
       setLoading(false)
     }
-  }, [specName, method, path, pathValues, queryValues, headerValues, bodyValues, bodyJsonStr, auth, body])
+  }, [specName, method, path, pathValues, queryValues, headerValues, customHeaders, bodyValues, bodyJsonStr, body])
 
   // Snippet display values
   const fullUrl = '{domain}' + path
@@ -133,18 +139,20 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
           <MethodBadge method={method} />
           <Text size={3} className={styles.path}>{path}</Text>
           <Button variant="solid" size="small" className={styles.tryButton} onClick={handleTryIt} disabled={loading}>
-            {loading ? 'Sending...' : 'Try it'}
+            {loading ? 'Sending...' : 'Send'}
           </Button>
         </Flex>
 
         <FieldSection
-          title="Authorization"
+          title="Headers"
           fields={headerFields}
           locations={headerLocations}
           editable
           values={headerValues}
           onValuesChange={setHeaderValues}
-        />
+        >
+          <KeyValueEditor entries={customHeaders} onChange={setCustomHeaders} />
+        </FieldSection>
         <FieldSection
           title="Path"
           fields={pathFields}

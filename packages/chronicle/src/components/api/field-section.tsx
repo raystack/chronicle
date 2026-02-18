@@ -18,14 +18,15 @@ interface FieldSectionProps {
   editable?: boolean
   values?: Record<string, unknown>
   onValuesChange?: (values: Record<string, unknown>) => void
+  children?: React.ReactNode
 }
 
 export function FieldSection({
   title, label, fields, locations, jsonExample,
   editableJson, onJsonChange, alwaysShow,
-  editable, values, onValuesChange,
+  editable, values, onValuesChange, children,
 }: FieldSectionProps) {
-  if (fields.length === 0 && !alwaysShow) return null
+  if (fields.length === 0 && !children && !alwaysShow) return null
 
   const fieldsContent = fields.length > 0 ? (
     <Flex direction="column">
@@ -42,9 +43,9 @@ export function FieldSection({
         />
       ))}
     </Flex>
-  ) : (
+  ) : !children ? (
     <Text size={2} className={styles.noFields}>No fields defined</Text>
-  )
+  ) : null
 
   if (jsonExample !== undefined || alwaysShow) {
     return (
@@ -92,6 +93,7 @@ export function FieldSection({
       </Flex>
       <div className={styles.separator} />
       {fieldsContent}
+      {children}
     </Flex>
   )
 }
