@@ -206,12 +206,12 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
             <Text size={3} weight="medium">
               Response — {responseBody.status} {responseBody.statusText}
             </Text>
-            <CodeBlock value="json">
+            <CodeBlock>
               <CodeBlock.Header>
                 <CodeBlock.CopyButton />
               </CodeBlock.Header>
               <CodeBlock.Content>
-                <CodeBlock.Code value="json" language="json">
+                <CodeBlock.Code language="json">
                   {typeof responseBody.body === 'string'
                     ? (responseBody.body || 'No response body')
                     : (JSON.stringify(responseBody.body, null, 2) ?? 'No response body')}
