@@ -29,7 +29,7 @@ function buildStructuredData(op: OpenAPIV3.OperationObject, method: string, path
 }
 
 function operationToIndex(specSlug: string, pathStr: string, method: HttpMethod, op: OpenAPIV3.OperationObject): AdvancedIndex {
-  const url = `/apis/${specSlug}/${op.operationId}`
+  const url = `/apis/${specSlug}/${encodeURIComponent(op.operationId!)}`
   return {
     id: url,
     url,

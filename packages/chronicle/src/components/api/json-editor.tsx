@@ -44,7 +44,18 @@ export function JsonEditor({ value, onChange, readOnly }: JsonEditorProps) {
     viewRef.current = view
 
     return () => view.destroy()
-  }, [isDark])
+  }, [isDark, readOnly, onChange])
+
+  useEffect(() => {
+    const view = viewRef.current
+    if (!view) return
+    const current = view.state.doc.toString()
+    if (value !== current) {
+      view.dispatch({
+        changes: { from: 0, to: current.length, insert: value },
+      })
+    }
+  }, [value])
 
   return <div ref={containerRef} className={styles.editor} />
 }

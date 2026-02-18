@@ -62,6 +62,7 @@ export function FieldSection({
           </Tabs.List>
           <Tabs.Content value="fields">
             {fieldsContent}
+            {children}
           </Tabs.Content>
           <Tabs.Content value="json">
             {editableJson ? (

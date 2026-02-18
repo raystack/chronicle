@@ -62,25 +62,34 @@ function resolveRef(ref: string, root: JsonObject): JsonObject {
   return current as JsonObject
 }
 
-function deepResolveRefs(obj: unknown, root: JsonObject, seen = new Set<string>()): unknown {
+function deepResolveRefs(
+  obj: unknown,
+  root: JsonObject,
+  stack = new Set<string>(),
+  cache = new Map<string, JsonObject>(),
+): unknown {
   if (obj === null || obj === undefined || typeof obj !== 'object') return obj
 
   if (Array.isArray(obj)) {
-    return obj.map((item) => deepResolveRefs(item, root, seen))
+    return obj.map((item) => deepResolveRefs(item, root, stack, cache))
   }
 
   const record = obj as JsonObject
 
   if (typeof record.$ref === 'string') {
-    if (seen.has(record.$ref)) return { type: 'object', description: '[circular]' }
-    seen.add(record.$ref)
-    const resolved = resolveRef(record.$ref, root)
-    return deepResolveRefs(resolved, root, seen)
+    const ref = record.$ref
+    if (cache.has(ref)) return cache.get(ref) as JsonObject
+    if (stack.has(ref)) return { type: 'object', description: '[circular]' }
+    stack.add(ref)
+    const resolved = deepResolveRefs(resolveRef(ref, root), root, stack, cache) as JsonObject
+    stack.delete(ref)
+    cache.set(ref, resolved)
+    return resolved
   }
 
   const result: JsonObject = {}
   for (const [key, value] of Object.entries(record)) {
-    result[key] = deepResolveRefs(value, root, seen)
+    result[key] = deepResolveRefs(value, root, stack, cache)
   }
   return result
 }

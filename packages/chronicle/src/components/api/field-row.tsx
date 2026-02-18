@@ -91,12 +91,16 @@ export function FieldRow({ field, location, editable, value, onChange }: FieldRo
                     ))}
                   </Flex>
                 ) : (
-                  <InputField
-                    size="small"
-                    value={String(item ?? '')}
-                    onChange={(e) => {
+                  <EditableInput
+                    field={{
+                      ...field,
+                      name: `${field.name}[${i}]`,
+                      type: field.type.replace('[]', ''),
+                    }}
+                    value={item}
+                    onChange={(_, val) => {
                       const updated = [...items]
-                      updated[i] = e.target.value
+                      updated[i] = val
                       onChange?.(field.name, updated)
                     }}
                   />
@@ -149,8 +153,9 @@ function EditableInput({
   onChange?: (name: string, value: unknown) => void
 }) {
   if (field.enum) {
+    const enumMap = new Map(field.enum.map((opt) => [String(opt), opt]))
     return (
-      <Select value={String(value ?? '')} onValueChange={(v) => onChange?.(field.name, v)}>
+      <Select value={String(value ?? '')} onValueChange={(v) => onChange?.(field.name, enumMap.get(v) ?? v)}>
         <Select.Trigger size="small">
           <Select.Value placeholder={`Select ${field.name}`} />
         </Select.Trigger>

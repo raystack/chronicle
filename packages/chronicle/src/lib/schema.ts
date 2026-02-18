@@ -16,10 +16,20 @@ export function flattenSchema(
 ): SchemaField[] {
   if (schema.type === 'array' && schema.items) {
     const items = schema.items as OpenAPIV3.SchemaObject
-    return flattenSchema(items).map((f) => ({
-      ...f,
-      type: `${f.type}[]`,
-    }))
+    const itemType = inferType(items)
+    const children =
+      itemType === 'object' || items.properties
+        ? flattenSchema(items, items.required ?? [])
+        : itemType.endsWith('[]') && (items as OpenAPIV3.ArraySchemaObject).items
+          ? flattenSchema((items as OpenAPIV3.ArraySchemaObject).items as OpenAPIV3.SchemaObject)
+          : undefined
+    return [{
+      name: 'items',
+      type: `${itemType}[]`,
+      required: true,
+      description: items.description,
+      children: children?.length ? children : undefined,
+    }]
   }
 
   if (schema.type === 'object' || schema.properties) {

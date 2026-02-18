@@ -86,7 +86,7 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
     for (const entry of customHeaders) {
       if (entry.key && entry.value) reqHeaders[entry.key] = entry.value
     }
-    if ((method === 'POST' || method === 'PUT') && bodyJsonStr) {
+    if ((method === 'POST' || method === 'PUT' || method === 'PATCH') && bodyJsonStr) {
       reqHeaders['Content-Type'] = body?.contentType ?? 'application/json'
     }
 
@@ -99,7 +99,7 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
           method,
           path: fullPath,
           headers: reqHeaders,
-          body: (method === 'POST' || method === 'PUT') ? bodyValues : undefined,
+          body: (method === 'POST' || method === 'PUT' || method === 'PATCH') ? bodyValues : undefined,
         }),
       })
       const data = await res.json()
@@ -121,7 +121,7 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
   if (auth) {
     snippetHeaders[auth.header] = auth.placeholder ?? 'YOUR_API_KEY'
   }
-  if (method === 'POST' || method === 'PUT') {
+  if (method === 'POST' || method === 'PUT' || method === 'PATCH') {
     snippetHeaders['Content-Type'] = body?.contentType ?? 'application/json'
   }
 
@@ -169,7 +169,7 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
           values={queryValues}
           onValuesChange={setQueryValues}
         />
-        {(body || method === 'POST' || method === 'PUT') && (
+        {(body || method === 'POST' || method === 'PUT' || method === 'PATCH') && (
           <FieldSection
             title="Body"
             label={body?.contentType}
@@ -198,7 +198,7 @@ export function EndpointPage({ method, path, operation, serverUrl, specName, aut
           method={method}
           url={fullUrl}
           headers={snippetHeaders}
-          body={(method === 'POST' || method === 'PUT') ? bodyJsonStr : undefined}
+          body={(method === 'POST' || method === 'PUT' || method === 'PATCH') ? bodyJsonStr : undefined}
         />
         <ResponsePanel responses={responses} />
         {responseBody && (

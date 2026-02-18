@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
       status: response.status,
       statusText: response.statusText,
       body: responseBody,
-    });
+    }, { status: response.status });
   } catch (error) {
     const message =
       error instanceof Error
@@ -53,6 +53,7 @@ export async function POST(request: NextRequest) {
         statusText: "Bad Gateway",
         body: `Could not reach ${url}\n${message}`,
       },
+      { status: 502 },
     );
   }
 }

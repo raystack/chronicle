@@ -2,6 +2,7 @@
   width: 100%;
 }
 
+/* stylelint-disable-next-line selector-pseudo-class-no-unknown */
 .panel :global([class*="code-block-module_header"]) {
   justify-content: space-between;
 }

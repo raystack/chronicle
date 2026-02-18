@@ -23,7 +23,6 @@ const iconMap: Record<string, React.ReactNode> = {
 
 export function Layout({ children, config, tree, classNames }: ThemeLayoutProps) {
   const pathname = usePathname();
-  console.log(config);
   return (
     <Flex direction="column" className={cx(styles.layout, classNames?.layout)}>
       <Navbar className={styles.header}>
