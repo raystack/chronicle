@@ -1,0 +1,9 @@
+.editor {
+  border: 1px solid var(--rs-color-border-base-primary);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.editor .cm-editor {
+  font-size: var(--rs-font-size-small);
+}
