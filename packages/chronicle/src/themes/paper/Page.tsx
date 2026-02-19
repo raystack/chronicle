@@ -48,8 +48,8 @@ export function Page({ page, config, tree }: ThemePageProps) {
   const crumbs = findBreadcrumb(tree.children, page.slug)
 
   return (
-    <Flex className={styles.page}>
-      <Flex direction="column" className={styles.main}>
+    <>
+      <main className={styles.main}>
         <Flex align="center" className={styles.navbar}>
           <Flex align="center" gap="small" className={styles.navLeft}>
             {prev ? (
@@ -94,8 +94,8 @@ export function Page({ page, config, tree }: ThemePageProps) {
             {page.content}
           </div>
         </article>
-      </Flex>
+      </main>
       <ReadingProgress items={page.toc} />
-    </Flex>
+    </>
   )
 }

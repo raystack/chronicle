@@ -16,7 +16,7 @@ export function Layout({ children, config, tree }: ThemeLayoutProps) {
           </Headline>
           <ChapterNav tree={tree} />
         </aside>
-        <main className={styles.content}>{children}</main>
+        <div className={styles.content}>{children}</div>
       </Flex>
       <Footer config={config.footer} />
     </Flex>
