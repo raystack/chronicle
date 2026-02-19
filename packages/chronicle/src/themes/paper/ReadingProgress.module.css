@@ -1,0 +1,47 @@
+.ruler {
+  width: 200px;
+  flex-shrink: 0;
+  position: sticky;
+  top: var(--rs-space-9);
+  max-height: calc(100vh - var(--rs-space-17));
+  overflow-y: auto;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--rs-space-3);
+}
+
+.mark {
+  display: flex;
+  align-items: center;
+  gap: var(--rs-space-2);
+  text-decoration: none;
+  color: var(--rs-color-foreground-base-tertiary);
+  transition: color 0.15s ease;
+}
+
+.mark:hover {
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.dash {
+  flex-shrink: 0;
+  font-family: 'SF Mono', 'Fira Code', monospace;
+}
+
+.label {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: var(--rs-font-size-mini);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.active {
+  color: var(--rs-color-foreground-accent-primary);
+}

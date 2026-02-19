@@ -1,11 +1,12 @@
 import { loadConfig } from '../../../lib/config'
 import { loadApiSpecs } from '../../../lib/openapi'
 import { buildApiPageTree } from '../../../lib/api-routes'
-import { Layout } from '../../../themes/default'
+import { getTheme } from '../../../themes/registry'
 import styles from './layout.module.css'
 
 export default function ApiLayout({ children }: { children: React.ReactNode }) {
   const config = loadConfig()
+  const { Layout } = getTheme(config.theme?.name)
   const specs = loadApiSpecs(config.api ?? [])
   const tree = buildApiPageTree(specs)
 

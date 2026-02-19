@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import type { MDXContent } from 'mdx/types'
 import { loadConfig } from '../../lib/config'
 import { source, buildPageTree } from '../../lib/source'
-import { defaultTheme } from '../../themes/default'
+import { getTheme } from '../../themes/registry'
 import { mdxComponents } from '../../components/mdx'
 
 interface PageProps {
@@ -26,7 +26,7 @@ export default async function DocsPage({ params }: PageProps) {
     notFound()
   }
 
-  const { Layout, Page } = defaultTheme
+  const { Layout, Page } = getTheme(config.theme?.name)
 
   const data = page.data as PageData
   const MDXBody = data.body

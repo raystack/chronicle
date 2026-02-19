@@ -1,0 +1,15 @@
+.page {
+  gap: var(--rs-space-9);
+}
+
+.article {
+  flex: 1;
+  min-width: 0;
+  max-width: 720px;
+}
+
+.content {
+  font-family: Georgia, 'Times New Roman', serif;
+  line-height: 1.8;
+  margin-top: var(--rs-space-5);
+}
