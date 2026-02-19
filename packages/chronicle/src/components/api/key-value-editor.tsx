@@ -49,7 +49,7 @@ export function KeyValueEditor({ entries, onChange }: KeyValueEditorProps) {
               onChange={(e) => updateEntry(i, 'value', e.target.value)}
             />
           </div>
-          <IconButton size="small" variant="ghost" aria-label={`Delete ${entry.key || 'entry'}`} onClick={() => removeEntry(i)}>
+          <IconButton size={1} aria-label={`Delete ${entry.key || 'entry'}`} onClick={() => removeEntry(i)}>
             <TrashIcon width={14} height={14} />
           </IconButton>
         </Flex>
