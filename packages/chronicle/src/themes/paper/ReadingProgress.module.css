@@ -2,9 +2,9 @@
   width: 200px;
   flex-shrink: 0;
   position: sticky;
-  top: var(--rs-space-9);
-  max-height: calc(100vh - var(--rs-space-17));
-  overflow-y: auto;
+  top: 0;
+  height: 100%;
+  padding-top: 100px;
 }
 
 .nav {

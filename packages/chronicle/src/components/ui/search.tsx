@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button, Command, Dialog, Text } from "@raystack/apsara";
+import { cx } from "class-variance-authority";
 import { useDocsSearch } from "fumadocs-core/search/client";
 import type { SortedResult } from "fumadocs-core/search";
 import { DocumentIcon, HashtagIcon } from "@heroicons/react/24/outline";
@@ -24,7 +25,11 @@ function SearchShortcutKey({ className }: { className?: string }) {
   );
 }
 
-export function Search() {
+interface SearchProps {
+  className?: string
+}
+
+export function Search({ className }: SearchProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
@@ -65,7 +70,7 @@ export function Search() {
         variant="outline"
         color="neutral"
         onClick={() => setOpen(true)}
-        className={styles.trigger}
+        className={cx(styles.trigger, className)}
         trailingIcon={<SearchShortcutKey className={styles.kbd} />}
       >
         <Text>Search...</Text>

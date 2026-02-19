@@ -1,15 +1,102 @@
 .page {
-  gap: var(--rs-space-9);
+  height: 100%;
+  overflow-y: auto;
+  background: var(--rs-color-background-neutral-primary);
+}
+
+.main {
+  flex: 1;
+  max-width: 1024px;
+  margin: 0 auto;
+}
+
+.navbar {
+  padding: var(--rs-space-1) 0;
+  border-bottom: 1px solid var(--rs-color-border-base-primary);
+  flex-shrink: 0;
+  justify-content: space-between;
+  width: 100%;
+  position: sticky;
+  top: 0;
+  background: var(--rs-color-background-neutral-primary);
+  z-index: 10;
+}
+
+.navLeft {
+  align-items: center;
+}
+
+.navRight {
+  align-items: center;
+}
+
+.arrow {
+  display: flex;
+  align-items: center;
+  color: var(--rs-color-foreground-base-primary);
+  text-decoration: none;
+}
+
+.arrow:hover {
+  color: var(--rs-color-foreground-accent-primary);
+}
+
+.arrowDisabled {
+  display: flex;
+  align-items: center;
+  color: var(--rs-color-foreground-base-tertiary);
+  opacity: 0.4;
+}
+
+.breadcrumb {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: var(--rs-font-size-small);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-left: var(--rs-space-3);
+}
+
+.separator {
+  margin: 0 var(--rs-space-2);
+  color: var(--rs-color-foreground-base-tertiary);
+}
+
+.crumbLink {
+  color: var(--rs-color-foreground-base-tertiary);
+  text-decoration: none;
+}
+
+.crumbLink:hover {
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.crumbActive {
+  color: var(--rs-color-foreground-base-primary);
+  font-weight: 600;
 }
 
 .article {
   flex: 1;
   min-width: 0;
-  max-width: 720px;
+  margin-top: var(--rs-space-7);
+  padding: 0 var(--rs-space-7);
+}
+
+.searchButton {
+  height: 28px;
+  padding: 0 var(--rs-space-3);
+  font-size: var(--rs-font-size-small);
+  border: none;
+  box-shadow: none;
 }
 
 .content {
   font-family: Georgia, 'Times New Roman', serif;
   line-height: 1.8;
-  margin-top: var(--rs-space-5);
+  background: var(--rs-color-background-base-primary);
+  padding: var(--rs-space-9);
+  border-left: 1px solid var(--rs-color-border-base-primary);
+  border-right: 1px solid var(--rs-color-border-base-primary);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  margin-bottom: var(--rs-space-9);
 }
