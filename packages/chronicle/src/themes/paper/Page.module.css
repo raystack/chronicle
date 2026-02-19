@@ -95,3 +95,48 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
   margin-bottom: var(--rs-space-9);
 }
+
+.content h1 {
+  margin: 2rem 0 1rem;
+  font-size: 2rem;
+}
+
+.content h2 {
+  margin: 1.75rem 0 0.75rem;
+  font-size: 1.5rem;
+}
+
+.content h3 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.25rem;
+}
+
+.content h4 {
+  margin: 1.25rem 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.content h5,
+.content h6 {
+  margin: 1rem 0 0.5rem;
+}
+
+.content p {
+  margin: 0.75rem 0;
+}
+
+.content ul,
+.content ol {
+  margin: 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.content li {
+  margin: 0.25rem 0;
+}
+
+.content blockquote {
+  margin: 1rem 0;
+  padding-left: 1rem;
+  border-left: 3px solid var(--rs-color-border-base-primary);
+}
