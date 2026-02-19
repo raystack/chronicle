@@ -89,7 +89,7 @@ export function Page({ page, config, tree }: ThemePageProps) {
             {config.search?.enabled && <Search className={styles.searchButton} />}
           </Flex>
         </Flex>
-        <article className={styles.article}>
+        <article className={styles.article} data-article-content>
           <div className={styles.content}>
             {page.content}
           </div>

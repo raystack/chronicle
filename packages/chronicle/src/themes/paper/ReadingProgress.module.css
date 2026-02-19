@@ -1,45 +1,132 @@
-.ruler {
-  width: 200px;
+.container {
   position: fixed;
-  right: 0;
+  right: var(--rs-space-4);
   top: 100px;
+  width: 200px;
+  height: calc(100vh - 200px);
+  z-index: 10;
 }
 
-.nav {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: var(--rs-space-3);
+.inner {
+  position: absolute;
+  inset: 0;
 }
 
-.mark {
-  display: flex;
+.tickContainer {
+  position: absolute;
+  right: 0;
+  display: grid;
+  width: 6rem;
   align-items: center;
-  gap: var(--rs-space-2);
-  text-decoration: none;
-  color: var(--rs-color-foreground-base-tertiary);
-  transition: color 0.15s ease;
+  justify-content: flex-end;
 }
 
-.mark:hover {
+.tickLine {
+  height: 1px;
+  width: 0.5rem;
+  transition: all 100ms;
+}
+
+.tickLineBefore {
+  background-color: var(--rs-color-background-neutral-tertiary);
+}
+
+.tickLineAfter {
+  background-color: var(--rs-color-background-neutral-tertiary);
+}
+
+.tickContainer:hover .tickLine {
+  width: 1rem;
+}
+
+.tickClickable {
+  position: absolute;
+  inset-inline: 0;
+  height: 0.5rem;
+  cursor: pointer;
+}
+
+.headingContainer {
+  transition: transform 150ms;
+}
+
+.headingContainer:hover {
+  transform: translateX(-0.125rem);
+}
+
+.headingLabel {
+  position: absolute;
+  display: flex;
+  height: 0.75rem;
+  align-items: center;
+  font-family: var(--rs-font-mono);
+  font-size: 0.75rem;
   color: var(--rs-color-foreground-base-primary);
+  text-transform: capitalize;
+  opacity: 0;
+  transition: opacity 300ms;
 }
 
-.dash {
-  flex-shrink: 0;
-  font-family: 'SF Mono', 'Fira Code', monospace;
-}
-
-.label {
+.headingLink {
+  color: var(--rs-color-foreground-base-primary);
+  text-align: right;
   font-family: 'SF Mono', 'Fira Code', monospace;
   font-size: var(--rs-font-size-mini);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-weight: var(--rs-font-weight-regular);
+  line-height: var(--rs-line-height-mini);
+  letter-spacing: var(--rs-letter-spacing-mini);
+  text-decoration: none;
+  cursor: pointer;
 }
 
-.active {
-  color: var(--rs-color-foreground-accent-primary);
+.headingLink:hover {
+  color: var(--rs-color-cobalt-600, #0066cc);
+}
+
+.container:hover .headingLabel {
+  opacity: 1;
+}
+
+.connectingLine {
+  position: absolute;
+  right: 0;
+  height: 1px;
+  background-color: var(--rs-color-background-neutral-emphasis);
+}
+
+.scrollMarkerContainer {
+  position: absolute;
+  right: 0;
+  z-index: 20;
+  transition: opacity 300ms;
+  pointer-events: none;
+}
+
+.scrollMarkerContainerReady {
+  opacity: 1;
+}
+
+.scrollMarkerContainerNotReady {
+  opacity: 0;
+}
+
+.scrollMarkerLine {
+  height: 1px;
+  width: 1rem;
+  background-color: var(--rs-color-cobalt-600, #0066cc);
+}
+
+.scrollMarkerText {
+  position: absolute;
+  top: 0;
+  left: -2.5rem;
+  transform: translateY(-50%);
+  font-family: var(--rs-font-mono);
+  font-size: 0.75rem;
+  color: var(--rs-color-cobalt-600, #0066cc);
+  transition: opacity 300ms;
+}
+
+.container:hover .scrollMarkerText {
+  opacity: 0;
 }
