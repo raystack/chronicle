@@ -1,7 +1,7 @@
 import fs from 'fs'
 import path from 'path'
 import { parse } from 'yaml'
-import type { ChronicleConfig } from '../types'
+import type { ChronicleConfig } from '@/types'
 
 const CONFIG_FILE = 'chronicle.yaml'
 

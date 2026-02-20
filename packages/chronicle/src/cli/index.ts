@@ -3,6 +3,7 @@ import { initCommand } from './commands/init'
 import { devCommand } from './commands/dev'
 import { buildCommand } from './commands/build'
 import { startCommand } from './commands/start'
+import { serveCommand } from './commands/serve'
 
 const program = new Command()
 
@@ -15,5 +16,6 @@ program.addCommand(initCommand)
 program.addCommand(devCommand)
 program.addCommand(buildCommand)
 program.addCommand(startCommand)
+program.addCommand(serveCommand)
 
 program.parse()

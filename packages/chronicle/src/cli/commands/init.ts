@@ -3,7 +3,7 @@ import fs from 'fs'
 import path from 'path'
 import chalk from 'chalk'
 import { stringify } from 'yaml'
-import type { ChronicleConfig } from '../../types'
+import type { ChronicleConfig } from '@/types'
 
 function createConfig(): ChronicleConfig {
   return {

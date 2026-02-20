@@ -1,8 +1,8 @@
 'use client'
 
 import { Flex } from '@raystack/apsara'
-import type { ThemePageProps } from '../../types'
-import { Breadcrumbs } from '../../components/ui/breadcrumbs'
+import type { ThemePageProps } from '@/types'
+import { Breadcrumbs } from '@/components/ui/breadcrumbs'
 import { Toc } from './Toc'
 import styles from './Page.module.css'
 

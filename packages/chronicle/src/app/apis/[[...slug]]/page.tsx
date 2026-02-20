@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation'
 import type { OpenAPIV3 } from 'openapi-types'
 import { Flex, Headline, Text } from '@raystack/apsara'
-import { loadConfig } from '../../../lib/config'
-import { loadApiSpecs } from '../../../lib/openapi'
-import { buildApiRoutes, findApiOperation } from '../../../lib/api-routes'
-import { EndpointPage } from '../../../components/api'
+import { loadConfig } from '@/lib/config'
+import { loadApiSpecs } from '@/lib/openapi'
+import { buildApiRoutes, findApiOperation } from '@/lib/api-routes'
+import { EndpointPage } from '@/components/api'
 
 interface PageProps {
   params: Promise<{ slug?: string[] }>

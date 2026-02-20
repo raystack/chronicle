@@ -1,6 +1,6 @@
 import { docs } from '../../.source/server'
 import { loader } from 'fumadocs-core/source'
-import type { PageTree, PageTreeItem, Frontmatter } from '../types'
+import type { PageTree, PageTreeItem, Frontmatter } from '@/types'
 
 export const source = loader({
   baseUrl: '/',

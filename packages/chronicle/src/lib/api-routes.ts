@@ -1,6 +1,6 @@
 import type { OpenAPIV3 } from 'openapi-types'
 import slugify from 'slugify'
-import type { PageTree, PageTreeItem } from '../types/content'
+import type { PageTree, PageTreeItem } from '@/types/content'
 import type { ApiSpec } from './openapi'
 
 export function getSpecSlug(spec: ApiSpec): string {

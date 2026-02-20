@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { parse as parseYaml } from 'yaml'
 import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
-import type { ApiConfig, ApiServerConfig, ApiAuthConfig } from '../types/config'
+import type { ApiConfig, ApiServerConfig, ApiAuthConfig } from '@/types/config'
 
 type JsonObject = Record<string, unknown>
 

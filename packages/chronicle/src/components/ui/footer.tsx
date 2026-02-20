@@ -1,5 +1,5 @@
 import { Flex, Link, Text } from "@raystack/apsara";
-import type { FooterConfig } from "../../types";
+import type { FooterConfig } from "@/types";
 import styles from "./footer.module.css";
 
 interface FooterProps {

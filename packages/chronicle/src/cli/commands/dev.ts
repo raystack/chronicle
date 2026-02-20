@@ -2,7 +2,7 @@ import { Command } from 'commander'
 import { spawn } from 'child_process'
 import path from 'path'
 import chalk from 'chalk'
-import { resolveContentDir, loadCLIConfig, attachLifecycleHandlers } from '../utils'
+import { resolveContentDir, loadCLIConfig, attachLifecycleHandlers } from '@/cli/utils'
 
 declare const PACKAGE_ROOT: string
 

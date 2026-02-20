@@ -2,7 +2,7 @@
 
 import { cx } from 'class-variance-authority'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import type { TocItem } from '../../types'
+import type { TocItem } from '@/types'
 import styles from './ReadingProgress.module.css'
 
 interface Heading {

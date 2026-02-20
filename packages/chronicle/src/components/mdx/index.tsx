@@ -3,7 +3,7 @@ import { Image } from './image'
 import { Link } from './link'
 import { MdxTable, MdxThead, MdxTbody, MdxTr, MdxTh, MdxTd } from './table'
 import { MdxPre } from './code'
-import { Callout } from '../common/callout'
+import { Callout } from '@/components/common/callout'
 
 export const mdxComponents: MDXComponents = {
   img: Image,

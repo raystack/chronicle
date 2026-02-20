@@ -1,7 +1,7 @@
 'use client'
 
 import { Flex, Text, Tabs, CodeBlock } from '@raystack/apsara'
-import type { SchemaField } from '../../lib/schema'
+import type { SchemaField } from '@/lib/schema'
 import { FieldRow } from './field-row'
 import { JsonEditor } from './json-editor'
 import styles from './field-section.module.css'
