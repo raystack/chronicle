@@ -31,10 +31,6 @@
   padding-left: var(--rs-space-4);
 }
 
-.item {
-  list-style: none;
-}
-
 .link {
   display: flex;
   align-items: center;

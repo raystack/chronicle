@@ -1,4 +1,5 @@
 .layout {
+  --paper-sidebar-width: 260px;
   min-height: 100vh;
 }
 
@@ -7,7 +8,7 @@
 }
 
 .sidebar {
-  width: 260px;
+  width: var(--paper-sidebar-width);
   padding: var(--rs-space-7) var(--rs-space-5);
   background: var(--rs-color-background-neutral-primary);
   overflow-y: auto;
@@ -27,5 +28,5 @@
   flex: 1;
   overflow-y: auto;
   background: var(--rs-color-background-neutral-primary);
-  padding-right: 260px;
+  padding-right: var(--paper-sidebar-width);
 }

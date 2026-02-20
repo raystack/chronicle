@@ -116,6 +116,7 @@ export function ReadingProgress({ items }: ReadingProgressProps) {
     setHeadings(resolvedItems)
   }, [items])
 
+  // Imperative DOM updates to avoid React re-render on every scroll event
   const handleScroll = useCallback(() => {
     const article = document.querySelector(ARTICLE_SELECTOR)
     const container = containerRef.current
@@ -163,17 +164,25 @@ export function ReadingProgress({ items }: ReadingProgressProps) {
   }, [])
 
   useEffect(() => {
-    const init = setTimeout(() => {
-      recalcHeadings()
-      handleScroll()
-      setReady(true)
-    }, 250)
+    recalcHeadings()
+    handleScroll()
+    setReady(true)
+
+    const article = document.querySelector(ARTICLE_SELECTOR)
+    let ro: ResizeObserver | undefined
+    if (article) {
+      ro = new ResizeObserver(() => {
+        recalcHeadings()
+        handleScroll()
+      })
+      ro.observe(article)
+    }
 
     window.addEventListener('resize', recalcHeadings)
     window.addEventListener('scroll', handleScroll, { passive: true })
 
     return () => {
-      clearTimeout(init)
+      ro?.disconnect()
       window.removeEventListener('resize', recalcHeadings)
       window.removeEventListener('scroll', handleScroll)
     }
@@ -251,7 +260,7 @@ export function ReadingProgress({ items }: ReadingProgressProps) {
             className={styles.connectingLine}
             style={{
               top: `${h.yPosition}px`,
-              width: `${(3 - h.level) * 4 + 12}px`,
+              width: `${Math.max(4, (3 - h.level) * 4 + 12)}px`,
             }}
           />
         ))}

@@ -1,12 +1,15 @@
 .main {
+  --paper-navbar-height: 40px;
+  --paper-navbar-padding: var(--rs-space-3);
+  --paper-navbar-total: calc(var(--paper-navbar-height) + var(--paper-navbar-padding) * 2 + 1px);
   flex: 1;
   max-width: 1024px;
   margin: 0 auto;
 }
 
 .navbar {
-  height: 40px;
-  padding: var(--rs-space-3) 0;
+  height: var(--paper-navbar-height);
+  padding: var(--paper-navbar-padding) 0;
   border-bottom: 1px solid var(--rs-color-border-base-primary);
   justify-content: space-between;
   width: 100%;
@@ -41,6 +44,10 @@
   align-items: center;
   color: var(--rs-color-foreground-base-tertiary);
   opacity: 0.4;
+  cursor: default;
+  border: none;
+  background: none;
+  padding: 0;
 }
 
 .breadcrumb {
@@ -73,7 +80,7 @@
 .article {
   flex: 1;
   min-width: 0;
-  margin-top: 72px;
+  margin-top: var(--paper-navbar-total);
   padding: 0 var(--rs-space-7);
 }
 
@@ -116,9 +123,14 @@
   font-size: 1.1rem;
 }
 
-.content h5,
+.content h5 {
+  margin: 1rem 0 0.5rem;
+  font-size: 1rem;
+}
+
 .content h6 {
   margin: 1rem 0 0.5rem;
+  font-size: 0.875rem;
 }
 
 .content p {
