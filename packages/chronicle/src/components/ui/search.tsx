@@ -8,7 +8,7 @@ import { useDocsSearch } from "fumadocs-core/search/client";
 import type { SortedResult } from "fumadocs-core/search";
 import { DocumentIcon, HashtagIcon } from "@heroicons/react/24/outline";
 import { isMacOs } from "react-device-detect";
-import { MethodBadge } from "../api/method-badge";
+import { MethodBadge } from "@/components/api/method-badge";
 import styles from "./search.module.css";
 
 function SearchShortcutKey({ className }: { className?: string }) {

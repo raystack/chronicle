@@ -6,11 +6,11 @@ import NextLink from "next/link";
 import { cx } from "class-variance-authority";
 import { Flex, Navbar, Headline, Link, Sidebar } from "@raystack/apsara";
 import { RectangleStackIcon } from "@heroicons/react/24/outline";
-import { ClientThemeSwitcher } from "../../components/ui/client-theme-switcher";
-import { Search } from "../../components/ui/search";
-import { Footer } from "../../components/ui/footer";
-import { MethodBadge } from "../../components/api/method-badge";
-import type { ThemeLayoutProps, PageTreeItem } from "../../types";
+import { ClientThemeSwitcher } from "@/components/ui/client-theme-switcher";
+import { Search } from "@/components/ui/search";
+import { Footer } from "@/components/ui/footer";
+import { MethodBadge } from "@/components/api/method-badge";
+import type { ThemeLayoutProps, PageTreeItem } from "@/types";
 import styles from "./Layout.module.css";
 
 const iconMap: Record<string, React.ReactNode> = {

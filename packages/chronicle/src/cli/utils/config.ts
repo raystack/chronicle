@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { parse } from 'yaml'
 import chalk from 'chalk'
-import type { ChronicleConfig } from '../../types'
+import type { ChronicleConfig } from '@/types'
 
 export interface CLIConfig {
   config: ChronicleConfig

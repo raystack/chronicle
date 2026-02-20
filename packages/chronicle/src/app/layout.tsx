@@ -1,7 +1,7 @@
 import '@raystack/apsara/normalize.css'
 import '@raystack/apsara/style.css'
 import type { Metadata } from 'next'
-import { loadConfig } from '../lib/config'
+import { loadConfig } from '@/lib/config'
 import { Providers } from './providers'
 
 const config = loadConfig()

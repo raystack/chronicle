@@ -1,10 +1,10 @@
-import { source } from '../../../lib/source'
+import { source } from '@/lib/source'
 import { createSearchAPI, type AdvancedIndex } from 'fumadocs-core/search/server'
 import type { StructuredData } from 'fumadocs-core/mdx-plugins'
 import type { OpenAPIV3 } from 'openapi-types'
-import { loadConfig } from '../../../lib/config'
-import { loadApiSpecs, type ApiSpec } from '../../../lib/openapi'
-import { getSpecSlug } from '../../../lib/api-routes'
+import { loadConfig } from '@/lib/config'
+import { loadApiSpecs, type ApiSpec } from '@/lib/openapi'
+import { getSpecSlug } from '@/lib/api-routes'
 
 interface PageData {
   title?: string

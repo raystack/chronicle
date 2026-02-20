@@ -8,7 +8,7 @@ import { FieldSection } from './field-section'
 import { KeyValueEditor, type KeyValueEntry } from './key-value-editor'
 import { CodeSnippets } from './code-snippets'
 import { ResponsePanel } from './response-panel'
-import { flattenSchema, generateExampleJson, type SchemaField } from '../../lib/schema'
+import { flattenSchema, generateExampleJson, type SchemaField } from '@/lib/schema'
 import styles from './endpoint-page.module.css'
 
 interface EndpointPageProps {

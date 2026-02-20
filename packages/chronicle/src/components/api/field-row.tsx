@@ -2,7 +2,7 @@
 
 import { Flex, Text, Accordion, InputField, Switch, Select, IconButton } from '@raystack/apsara'
 import { TrashIcon, PlusIcon } from '@heroicons/react/24/outline'
-import type { SchemaField } from '../../lib/schema'
+import type { SchemaField } from '@/lib/schema'
 import styles from './field-row.module.css'
 
 interface FieldRowProps {

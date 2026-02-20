@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { Text } from '@raystack/apsara'
-import type { TocItem } from '../../types'
+import type { TocItem } from '@/types'
 import styles from './Toc.module.css'
 
 interface TocProps {

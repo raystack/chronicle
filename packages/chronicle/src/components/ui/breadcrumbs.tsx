@@ -1,7 +1,7 @@
 'use client'
 
 import { Breadcrumb } from '@raystack/apsara'
-import type { PageTree, PageTreeItem } from '../../types'
+import type { PageTree, PageTreeItem } from '@/types'
 
 interface BreadcrumbsProps {
   slug: string[]

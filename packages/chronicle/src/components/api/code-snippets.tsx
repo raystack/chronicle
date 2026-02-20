@@ -7,7 +7,7 @@ import {
   generatePython,
   generateGo,
   generateTypeScript,
-} from "../../lib/snippet-generators";
+} from "@/lib/snippet-generators";
 import styles from "./code-snippets.module.css";
 
 interface CodeSnippetsProps {

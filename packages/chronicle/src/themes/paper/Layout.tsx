@@ -2,9 +2,9 @@
 
 import { Flex, Headline } from '@raystack/apsara'
 import { cx } from 'class-variance-authority'
-import { Footer } from '../../components/ui/footer'
+import { Footer } from '@/components/ui/footer'
 import { ChapterNav } from './ChapterNav'
-import type { ThemeLayoutProps } from '../../types'
+import type { ThemeLayoutProps } from '@/types'
 import styles from './Layout.module.css'
 
 export function Layout({ children, config, tree, classNames }: ThemeLayoutProps) {

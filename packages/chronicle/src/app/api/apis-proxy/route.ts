@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { loadConfig } from "../../../lib/config";
-import { loadApiSpecs } from "../../../lib/openapi";
+import { loadConfig } from "@/lib/config";
+import { loadApiSpecs } from "@/lib/openapi";
 
 export async function POST(request: NextRequest) {
   const { specName, method, path, headers, body } = await request.json();

@@ -1,9 +1,9 @@
 import { notFound } from 'next/navigation'
 import type { MDXContent } from 'mdx/types'
-import { loadConfig } from '../../lib/config'
-import { source, buildPageTree } from '../../lib/source'
-import { getTheme } from '../../themes/registry'
-import { mdxComponents } from '../../components/mdx'
+import { loadConfig } from '@/lib/config'
+import { source, buildPageTree } from '@/lib/source'
+import { getTheme } from '@/themes/registry'
+import { mdxComponents } from '@/components/mdx'
 
 interface PageProps {
   params: Promise<{ slug?: string[] }>
