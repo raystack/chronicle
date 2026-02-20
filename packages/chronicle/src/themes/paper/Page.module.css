@@ -2,6 +2,7 @@
   --paper-navbar-height: 40px;
   --paper-navbar-padding: var(--rs-space-3);
   --paper-navbar-total: calc(var(--paper-navbar-height) + var(--paper-navbar-padding) * 2 + 1px);
+
   flex: 1;
   max-width: 1024px;
   margin: 0 auto;

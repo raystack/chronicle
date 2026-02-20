@@ -43,14 +43,24 @@ function resolveOverlaps(headings: Heading[], maxPosition: number): Heading[] {
     lastUsedPos = newPos
   }
 
+  // Backward pass: clamp-and-shift to prevent overlapping positions
   for (let i = resolved.length - 1; i >= 0; i--) {
     const maxAllowed =
       i === resolved.length - 1
         ? maxPosition
         : resolved[i + 1].yPosition - TICK_HEIGHT
 
-    if (resolved[i].yPosition > maxAllowed) {
-      resolved[i] = { ...resolved[i], yPosition: Math.max(0, maxAllowed) }
+    const clampedPos = Math.max(0, maxAllowed)
+    if (resolved[i].yPosition > clampedPos) {
+      resolved[i] = { ...resolved[i], yPosition: clampedPos }
+      for (let j = i - 1; j >= 0; j--) {
+        const upperBound = resolved[j + 1].yPosition - TICK_HEIGHT
+        if (resolved[j].yPosition > upperBound) {
+          resolved[j] = { ...resolved[j], yPosition: Math.max(0, upperBound) }
+        } else {
+          break
+        }
+      }
     }
   }
 
@@ -235,7 +245,7 @@ export function ReadingProgress({ items }: ReadingProgressProps) {
               style={{
                 top: `${h.yPosition - 6}px`,
                 right: '24px',
-                zIndex: 10 * (h.level < 4 ? 1 : 0),
+                zIndex: h.level < 4 ? 10 : 0,
                 transitionDelay: `${50 * i}ms`,
               }}
             >
