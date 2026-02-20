@@ -30,8 +30,8 @@ export const serveCommand = new Command('serve')
       env,
     })
 
-    process.on('SIGINT', () => buildChild.kill('SIGINT'))
-    process.on('SIGTERM', () => buildChild.kill('SIGTERM'))
+    process.once('SIGINT', () => buildChild.kill('SIGINT'))
+    process.once('SIGTERM', () => buildChild.kill('SIGTERM'))
 
     buildChild.on('close', (code) => {
       if (code !== 0) {

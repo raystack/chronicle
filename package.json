@@ -1,5 +1,8 @@
 {
   "name": "chronicle",
   "private": true,
-  "workspaces": ["packages/*", "examples/*"]
+  "workspaces": ["packages/*", "examples/*"],
+  "engines": {
+    "node": ">=22"
+  }
 }
