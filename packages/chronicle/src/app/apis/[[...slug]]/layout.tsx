@@ -2,6 +2,7 @@ import { loadConfig } from '../../../lib/config'
 import { loadApiSpecs } from '../../../lib/openapi'
 import { buildApiPageTree } from '../../../lib/api-routes'
 import { getTheme } from '../../../themes/registry'
+import { Search } from '../../../components/ui/search'
 import styles from './layout.module.css'
 
 export default function ApiLayout({ children }: { children: React.ReactNode }) {
@@ -17,6 +18,7 @@ export default function ApiLayout({ children }: { children: React.ReactNode }) {
       sidebar: styles.sidebar,
       content: styles.content,
     }}>
+      <Search className={styles.hiddenSearch} />
       {children}
     </Layout>
   )

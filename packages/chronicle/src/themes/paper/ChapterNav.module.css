@@ -16,6 +16,9 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--rs-color-foreground-base-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .chapterItems {
@@ -40,6 +43,9 @@
   color: var(--rs-color-foreground-base-tertiary);
   text-decoration: none;
   padding: var(--rs-space-1) 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .link:hover {
@@ -55,4 +61,15 @@
   display: flex;
   align-items: center;
   flex-shrink: 0;
+}
+
+.subLabel {
+  font-size: var(--rs-font-size-small);
+  font-weight: 500;
+  color: var(--rs-color-foreground-base-secondary);
+  margin-top: var(--rs-space-3);
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

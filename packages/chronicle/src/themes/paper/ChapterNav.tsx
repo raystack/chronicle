@@ -52,6 +52,19 @@ export function ChapterNav({ tree }: ChapterNavProps) {
 function ChapterItem({ item, pathname }: { item: PageTreeItem; pathname: string }) {
   if (item.type === 'separator') return null
 
+  if (item.type === 'folder' && item.children) {
+    return (
+      <li className={styles.item}>
+        <span className={styles.subLabel}>{item.name}</span>
+        <ul className={styles.chapterItems}>
+          {item.children.map((child) => (
+            <ChapterItem key={child.url ?? child.name} item={child} pathname={pathname} />
+          ))}
+        </ul>
+      </li>
+    )
+  }
+
   const isActive = pathname === item.url
   const icon = item.icon ? iconMap[item.icon] : null
 
