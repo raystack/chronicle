@@ -63,7 +63,7 @@ export function FieldRow({ field, location, editable, value, onChange }: FieldRo
         <Flex direction="column" className={styles.main}>
           <Flex align="center" justify="between">
             {label}
-            <IconButton size="small" variant="ghost" onClick={() => {
+            <IconButton size={1} onClick={() => {
               const newItem = itemChildren ? {} : ''
               onChange?.(field.name, [...items, newItem])
             }}>
@@ -105,7 +105,7 @@ export function FieldRow({ field, location, editable, value, onChange }: FieldRo
                     }}
                   />
                 )}
-                <IconButton size="small" variant="ghost" onClick={() => {
+                <IconButton size={1} onClick={() => {
                   const updated = items.filter((_, j) => j !== i)
                   onChange?.(field.name, updated)
                 }}>

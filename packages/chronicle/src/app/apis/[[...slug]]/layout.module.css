@@ -14,4 +14,9 @@
 .content {
   height: 100%;
   overflow-y: auto;
+  padding-right: 0;
+}
+
+.hiddenSearch {
+  display: none;
 }
