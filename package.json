@@ -1,8 +1,5 @@
 {
   "name": "chronicle",
   "private": true,
-  "packageManager": "pnpm@10.6.2",
-  "engines": {
-    "node": ">=22"
-  }
+  "workspaces": ["packages/*", "examples/*"]
 }
