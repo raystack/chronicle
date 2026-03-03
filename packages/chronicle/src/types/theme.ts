@@ -18,4 +18,5 @@ export interface ThemePageProps {
 export interface Theme {
   Layout: React.ComponentType<ThemeLayoutProps>
   Page: React.ComponentType<ThemePageProps>
+  className?: string
 }
