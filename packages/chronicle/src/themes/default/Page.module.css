@@ -5,8 +5,30 @@
 .article {
   flex: 1;
   min-width: 0;
+  max-width: 768px;
 }
 
 .content {
   line-height: 1.7;
+}
+
+.content h1,
+.content h2,
+.content h3,
+.content h4,
+.content h5,
+.content h6 {
+  margin-top: var(--rs-space-8);
+  margin-bottom: var(--rs-space-5);
+}
+
+.content ul,
+.content ol {
+  padding-left: var(--rs-space-5);
+}
+
+.content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
 }
