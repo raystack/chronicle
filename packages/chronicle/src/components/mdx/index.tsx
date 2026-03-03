@@ -3,7 +3,7 @@ import { Image } from './image'
 import { Link } from './link'
 import { MdxTable, MdxThead, MdxTbody, MdxTr, MdxTh, MdxTd } from './table'
 import { MdxPre } from './code'
-import { Callout } from '@/components/common/callout'
+import { CalloutContainer, CalloutTitle, CalloutDescription, MdxBlockquote } from '@/components/common/callout'
 import { Tabs } from '@raystack/apsara'
 
 export const mdxComponents: MDXComponents = {
@@ -16,7 +16,10 @@ export const mdxComponents: MDXComponents = {
   th: MdxTh,
   td: MdxTd,
   pre: MdxPre,
-  Callout,
+  blockquote: MdxBlockquote,
+  Callout: CalloutContainer,
+  CalloutTitle,
+  CalloutDescription,
   Tabs,
 }
 

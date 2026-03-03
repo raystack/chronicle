@@ -9,7 +9,7 @@
   padding: var(--rs-space-3) var(--rs-space-4);
   background: var(--rs-color-background-base-secondary);
   border-bottom: 1px solid var(--rs-color-border-base);
-  font-size: var(--rs-font-size-1);
+  font-size: var(--rs-font-size-mini);
   color: var(--rs-color-text-base-secondary);
 }
 
@@ -21,7 +21,7 @@
 }
 
 .pre code {
-  font-family: var(--rs-font-family-mono);
-  font-size: var(--rs-font-size-2);
+  font-family: var(--rs-font-mono);
+  font-size: var(--rs-font-size-small);
   line-height: 1.6;
 }
