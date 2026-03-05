@@ -7,6 +7,7 @@ on:
 jobs:
   npm-release:
     name: Publish to npm
+    if: github.event.release.prerelease == false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     defaults:
@@ -29,7 +30,7 @@ jobs:
       - name: Bump version
         run: |
           VERSION="${GITHUB_REF_NAME#v}"
-          npm version "$VERSION" --no-git-tag-version
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
 
       - name: Create .npmrc
         run: echo "//registry.npmjs.org/:_authToken=$NPM_TOKEN" > "$HOME/.npmrc"
@@ -43,6 +44,7 @@ jobs:
 
   docker-release:
     name: Publish to Docker Hub
+    if: github.event.release.prerelease == false
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
