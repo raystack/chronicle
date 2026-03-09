@@ -134,3 +134,4 @@ dist
 .pnp.*
 
 dist
+examples/frontier

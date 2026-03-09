@@ -22,6 +22,7 @@
   gap: 0;
   border-left: 1px solid var(--rs-color-border-base-primary);
   padding-left: var(--rs-space-3);
+  margin-bottom: var(--rs-space-6);
 }
 
 .link {

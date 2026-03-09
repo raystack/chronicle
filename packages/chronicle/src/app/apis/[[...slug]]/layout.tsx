@@ -1,3 +1,4 @@
+import { cx } from 'class-variance-authority'
 import { loadConfig } from '@/lib/config'
 import { loadApiSpecs } from '@/lib/openapi'
 import { buildApiPageTree } from '@/lib/api-routes'
@@ -7,13 +8,13 @@ import styles from './layout.module.css'
 
 export default function ApiLayout({ children }: { children: React.ReactNode }) {
   const config = loadConfig()
-  const { Layout } = getTheme(config.theme?.name)
+  const { Layout, className } = getTheme(config.theme?.name)
   const specs = loadApiSpecs(config.api ?? [])
   const tree = buildApiPageTree(specs)
 
   return (
     <Layout config={config} tree={tree} classNames={{
-      layout: styles.layout,
+      layout: cx(styles.layout, className),
       body: styles.body,
       sidebar: styles.sidebar,
       content: styles.content,
