@@ -25,3 +25,11 @@
   font-size: var(--rs-font-size-small);
   line-height: 1.6;
 }
+
+.pre code span {
+  color: var(--shiki-light);
+}
+
+:global([data-theme=dark]) .pre code span {
+  color: var(--shiki-dark);
+}
