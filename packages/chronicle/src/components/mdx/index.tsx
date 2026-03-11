@@ -4,6 +4,7 @@ import { Link } from './link'
 import { MdxTable, MdxThead, MdxTbody, MdxTr, MdxTh, MdxTd } from './table'
 import { MdxPre, MdxCode } from './code'
 import { MdxDetails, MdxSummary } from './details'
+import { Mermaid } from './mermaid'
 import { MdxParagraph } from './paragraph'
 import { CalloutContainer, CalloutTitle, CalloutDescription, MdxBlockquote } from '@/components/common/callout'
 import { Tabs } from '@raystack/apsara'
@@ -27,6 +28,7 @@ export const mdxComponents: MDXComponents = {
   CalloutTitle,
   CalloutDescription,
   Tabs,
+  Mermaid,
 }
 
 export { Image } from './image'
