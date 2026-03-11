@@ -69,11 +69,12 @@ export function Search({ className }: SearchProps) {
       <Button
         variant="outline"
         color="neutral"
+        size="small"
         onClick={() => setOpen(true)}
         className={cx(styles.trigger, className)}
         trailingIcon={<SearchShortcutKey className={styles.kbd} />}
       >
-        <Text>Search...</Text>
+        Search...
       </Button>
 
       <Dialog open={open} onOpenChange={setOpen}>

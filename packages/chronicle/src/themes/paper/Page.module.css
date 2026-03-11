@@ -104,6 +104,15 @@
   margin-bottom: var(--rs-space-9);
 }
 
+.content h1,
+.content h2,
+.content h3,
+.content h4,
+.content h5,
+.content h6 {
+  line-height: 1.4;
+}
+
 .content h1 {
   margin: 2rem 0 1rem;
   font-size: 2rem;
@@ -142,10 +151,20 @@
 .content ol {
   margin: 0.75rem 0;
   padding-left: 1.5rem;
+  margin-bottom: var(--rs-space-5);
 }
 
 .content li {
-  margin: 0.25rem 0;
+  font-size: var(--rs-font-size-regular);
+  margin: var(--rs-space-2) 0;
+}
+
+.content table {
+  margin-bottom: var(--rs-space-5);
+}
+
+.content [role="tablist"] {
+  margin-bottom: var(--rs-space-3);
 }
 
 .content blockquote {

@@ -1,0 +1,9 @@
+.mermaid {
+  margin: var(--rs-space-5) 0;
+  overflow-x: auto;
+}
+
+.mermaid svg {
+  max-width: 100%;
+  height: auto;
+}

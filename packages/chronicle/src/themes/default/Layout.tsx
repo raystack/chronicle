@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import NextLink from "next/link";
 import { cx } from "class-variance-authority";
-import { Flex, Navbar, Headline, Link, Sidebar } from "@raystack/apsara";
+import { Flex, Navbar, Headline, Link, Sidebar, Button } from "@raystack/apsara";
 import { RectangleStackIcon } from "@heroicons/react/24/outline";
 import { ClientThemeSwitcher } from "@/components/ui/client-theme-switcher";
 import { Search } from "@/components/ui/search";
@@ -22,31 +22,55 @@ const iconMap: Record<string, React.ReactNode> = {
   "method-patch": <MethodBadge method="PATCH" size="micro" />,
 };
 
+let savedScrollTop = 0;
+
 export function Layout({ children, config, tree, classNames }: ThemeLayoutProps) {
   const pathname = usePathname();
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onScroll = () => { savedScrollTop = el.scrollTop; };
+    el.addEventListener('scroll', onScroll);
+    return () => el.removeEventListener('scroll', onScroll);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el) requestAnimationFrame(() => { el.scrollTop = savedScrollTop; });
+  }, [pathname]);
+
   return (
     <Flex direction="column" className={cx(styles.layout, classNames?.layout)}>
       <Navbar className={styles.header}>
         <Navbar.Start>
-          <Headline size="small" weight="medium" as="h1">
-            {config.title}
-          </Headline>
+          <NextLink href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Headline size="small" weight="medium" as="h1">
+              {config.title}
+            </Headline>
+          </NextLink>
         </Navbar.Start>
         <Navbar.End>
-          <Flex gap="medium">
+          <Flex gap="medium" align="center" className={styles.navActions}>
+            {config.api?.map((api) => (
+              <NextLink key={api.basePath} href={api.basePath} className={styles.navButton}>
+                {api.name} API
+              </NextLink>
+            ))}
             {config.navigation?.links?.map((link) => (
               <Link key={link.href} href={link.href}>
                 {link.label}
               </Link>
             ))}
+            {config.search?.enabled && <Search />}
           </Flex>
-          {config.search?.enabled && <Search />}
           <ClientThemeSwitcher size={16} />
         </Navbar.End>
       </Navbar>
       <Flex className={cx(styles.body, classNames?.body)}>
         <Sidebar defaultOpen collapsible={false} className={cx(styles.sidebar, classNames?.sidebar)}>
-          <Sidebar.Main>
+          <Sidebar.Main ref={scrollRef}>
             {tree.children.map((item) => (
               <SidebarNode
                 key={item.url ?? item.name}
@@ -94,7 +118,7 @@ function SidebarNode({
 
   const isActive = pathname === item.url;
   const href = item.url ?? "#";
-  const link = useMemo(() => <NextLink href={href} />, [href]);
+  const link = useMemo(() => <NextLink href={href} scroll={false} />, [href]);
 
   return (
     <Sidebar.Item
