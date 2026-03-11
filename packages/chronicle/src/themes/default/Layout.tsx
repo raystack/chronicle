@@ -4,7 +4,7 @@ import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 import NextLink from "next/link";
 import { cx } from "class-variance-authority";
-import { Flex, Navbar, Headline, Link, Sidebar } from "@raystack/apsara";
+import { Flex, Navbar, Headline, Link, Sidebar, Button } from "@raystack/apsara";
 import { RectangleStackIcon } from "@heroicons/react/24/outline";
 import { ClientThemeSwitcher } from "@/components/ui/client-theme-switcher";
 import { Search } from "@/components/ui/search";
@@ -28,12 +28,21 @@ export function Layout({ children, config, tree, classNames }: ThemeLayoutProps)
     <Flex direction="column" className={cx(styles.layout, classNames?.layout)}>
       <Navbar className={styles.header}>
         <Navbar.Start>
-          <Headline size="small" weight="medium" as="h1">
-            {config.title}
-          </Headline>
+          <NextLink href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <Headline size="small" weight="medium" as="h1">
+              {config.title}
+            </Headline>
+          </NextLink>
         </Navbar.Start>
         <Navbar.End>
           <Flex gap="medium">
+            {config.api?.map((api) => (
+              <NextLink key={api.basePath} href={api.basePath} style={{ textDecoration: 'none' }}>
+                <Button variant="outline" color="neutral" size="small">
+                  {api.name} API
+                </Button>
+              </NextLink>
+            ))}
             {config.navigation?.links?.map((link) => (
               <Link key={link.href} href={link.href}>
                 {link.label}

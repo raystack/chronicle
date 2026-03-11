@@ -1,3 +1,7 @@
 .callout {
   margin: var(--rs-space-5) 0;
 }
+
+.callout p:last-child {
+  margin-bottom: 0;
+}

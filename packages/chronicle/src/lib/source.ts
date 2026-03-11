@@ -47,13 +47,19 @@ export function buildPageTree(): PageTree {
 
   const children: PageTreeItem[] = sortByOrder(rootPages)
 
+  const folderItems: PageTreeItem[] = []
   folders.forEach((items, folder) => {
-    children.push({
+    const sorted = sortByOrder(items)
+    const indexPage = sorted[0]
+    folderItems.push({
       type: 'folder',
       name: folder.charAt(0).toUpperCase() + folder.slice(1),
-      children: sortByOrder(items),
+      order: indexPage?.order,
+      children: sorted,
     })
   })
+
+  children.push(...sortByOrder(folderItems))
 
   return { name: 'root', children }
 }
