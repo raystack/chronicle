@@ -8,6 +8,13 @@ type PreProps = ComponentProps<'pre'> & {
   title?: string
 }
 
+export function MdxCode({ children, className, ...props }: ComponentProps<'code'>) {
+  if (className || (typeof children === 'object')) {
+    return <code className={className} {...props}>{children}</code>
+  }
+  return <code className={styles.inlineCode} {...props}>{children}</code>
+}
+
 export function MdxPre({ children, title, className, ...props }: PreProps) {
   return (
     <div className={styles.codeBlock}>

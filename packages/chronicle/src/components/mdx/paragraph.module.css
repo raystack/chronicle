@@ -1,0 +1,7 @@
+.paragraph {
+  font-size: var(--rs-font-size-regular);
+}
+
+.paragraph :global(a) {
+  font-size: inherit;
+}

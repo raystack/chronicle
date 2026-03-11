@@ -2,13 +2,13 @@
   border-radius: var(--rs-radius-2);
   overflow: hidden;
   margin: var(--rs-space-5) 0;
-  border: 1px solid var(--rs-color-border-base);
+  border: 1px solid var(--rs-color-border-base-primary);
 }
 
 .codeHeader {
   padding: var(--rs-space-3) var(--rs-space-4);
   background: var(--rs-color-background-base-secondary);
-  border-bottom: 1px solid var(--rs-color-border-base);
+  border-bottom: 1px solid var(--rs-color-border-base-primary);
   font-size: var(--rs-font-size-mini);
   color: var(--rs-color-text-base-secondary);
 }
@@ -32,4 +32,11 @@
 
 :global([data-theme=dark]) .pre code span {
   color: var(--shiki-dark);
+}
+
+.inlineCode {
+  background: var(--rs-color-background-neutral-secondary);
+  padding: var(--rs-space-1) var(--rs-space-2);
+  border-radius: var(--rs-radius-1);
+  font-size: inherit;
 }
