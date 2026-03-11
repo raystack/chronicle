@@ -118,7 +118,7 @@ function SidebarNode({
 
   const isActive = pathname === item.url;
   const href = item.url ?? "#";
-  const link = useMemo(() => <NextLink href={href} />, [href]);
+  const link = useMemo(() => <NextLink href={href} scroll={false} />, [href]);
 
   return (
     <Sidebar.Item
