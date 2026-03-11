@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useRef, useState } from 'react'
+import { useEffect, useId, useState } from 'react'
 import styles from './mermaid.module.css'
 
 interface MermaidProps {
@@ -9,7 +9,6 @@ interface MermaidProps {
 
 export function Mermaid({ chart }: MermaidProps) {
   const mermaidId = useId().replace(/:/g, '-')
-  const ref = useRef<HTMLDivElement>(null)
   const [svg, setSvg] = useState<string>('')
 
   useEffect(() => {
@@ -31,7 +30,6 @@ export function Mermaid({ chart }: MermaidProps) {
 
   return (
     <div
-      ref={ref}
       className={styles.mermaid}
       dangerouslySetInnerHTML={{ __html: svg }}
     />
