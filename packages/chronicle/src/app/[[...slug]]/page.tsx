@@ -26,7 +26,7 @@ export default async function DocsPage({ params }: PageProps) {
     notFound()
   }
 
-  const { Layout, Page, className } = getTheme(config.theme?.name)
+  const { Page } = getTheme(config.theme?.name)
 
   const data = page.data as PageData
   const MDXBody = data.body
@@ -34,21 +34,19 @@ export default async function DocsPage({ params }: PageProps) {
   const tree = buildPageTree()
 
   return (
-    <Layout config={config} tree={tree} classNames={{ layout: className }}>
-      <Page
-        page={{
-          slug: slug ?? [],
-          frontmatter: {
-            title: data.title,
-            description: data.description,
-          },
-          content: <MDXBody components={mdxComponents} />,
-          toc: data.toc ?? [],
-        }}
-        config={config}
-        tree={tree}
-      />
-    </Layout>
+    <Page
+      page={{
+        slug: slug ?? [],
+        frontmatter: {
+          title: data.title,
+          description: data.description,
+        },
+        content: <MDXBody components={mdxComponents} />,
+        toc: data.toc ?? [],
+      }}
+      config={config}
+      tree={tree}
+    />
   )
 }
 

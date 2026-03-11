@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useEffect, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import NextLink from "next/link";
 import { cx } from "class-variance-authority";
@@ -22,8 +22,28 @@ const iconMap: Record<string, React.ReactNode> = {
   "method-patch": <MethodBadge method="PATCH" size="micro" />,
 };
 
+let savedScrollTop = 0;
+
 export function Layout({ children, config, tree, classNames }: ThemeLayoutProps) {
   const pathname = usePathname();
+  const sidebarRef = useRef<HTMLElement>(null);
+
+  const getScrollEl = useCallback(() => {
+    return sidebarRef.current?.querySelector('[class*="main"]') as HTMLElement | null;
+  }, []);
+
+  useEffect(() => {
+    const el = getScrollEl();
+    if (!el) return;
+    const onScroll = () => { savedScrollTop = el.scrollTop; };
+    el.addEventListener('scroll', onScroll);
+    return () => el.removeEventListener('scroll', onScroll);
+  }, [getScrollEl]);
+
+  useEffect(() => {
+    const el = getScrollEl();
+    if (el) requestAnimationFrame(() => { el.scrollTop = savedScrollTop; });
+  }, [pathname, getScrollEl]);
 
   return (
     <Flex direction="column" className={cx(styles.layout, classNames?.layout)}>
@@ -55,7 +75,7 @@ export function Layout({ children, config, tree, classNames }: ThemeLayoutProps)
         </Navbar.End>
       </Navbar>
       <Flex className={cx(styles.body, classNames?.body)}>
-        <Sidebar defaultOpen collapsible={false} className={cx(styles.sidebar, classNames?.sidebar)}>
+        <Sidebar ref={sidebarRef} defaultOpen collapsible={false} className={cx(styles.sidebar, classNames?.sidebar)}>
           <Sidebar.Main>
             {tree.children.map((item) => (
               <SidebarNode

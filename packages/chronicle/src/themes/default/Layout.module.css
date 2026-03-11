@@ -16,9 +16,6 @@
 
 .sidebar {
   width: 260px;
-  padding: var(--rs-space-5);
-  border-right: 1px solid var(--rs-color-border-base-primary);
-  overflow-y: auto;
   position: sticky;
   top: 0;
   height: 100vh;
