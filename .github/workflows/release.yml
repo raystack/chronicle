@@ -28,9 +28,9 @@ jobs:
         run: bun build-cli.ts
 
       - name: Bump version
-        run: |
-          VERSION="${GITHUB_REF_NAME#v}"
-          npm version "$VERSION" --no-git-tag-version --allow-same-version
+        run: bun scripts/bump-version.ts
+        env:
+          GIT_REFNAME: ${{ github.ref_name }}
 
       - name: Publish
         run: bun publish --access public
