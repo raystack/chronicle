@@ -4,6 +4,14 @@
   "description": "Config-driven documentation framework",
   "license": "Apache-2.0",
   "type": "module",
+  "files": [
+    "bin",
+    "dist",
+    "src",
+    "templates",
+    "next.config.mjs",
+    "source.config.ts"
+  ],
   "bin": {
     "chronicle": "./bin/chronicle.js"
   },
