@@ -32,5 +32,6 @@ export function loadConfig(): ChronicleConfig {
     search: { ...defaultConfig.search, ...userConfig.search },
     footer: userConfig.footer,
     api: userConfig.api,
+    llms: { enabled: false, ...userConfig.llms },
   }
 }

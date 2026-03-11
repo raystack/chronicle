@@ -43,7 +43,7 @@
     "class-variance-authority": "^0.7.1",
     "codemirror": "^6.0.2",
     "commander": "^14.0.2",
-    "fumadocs-core": "^16.4.9",
+    "fumadocs-core": "16.6.15",
     "fumadocs-mdx": "^14.2.6",
     "lodash": "^4.17.23",
     "mermaid": "^11.13.0",

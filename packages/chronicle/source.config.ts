@@ -12,6 +12,9 @@ export const docs = defineDocs({
     schema: frontmatterSchema.extend({
       order: z.number().optional(),
     }),
+    postprocess: {
+      includeProcessedMarkdown: true,
+    },
     files: ['**/*.mdx', '**/*.md', '!**/node_modules/**'],
   },
 })
