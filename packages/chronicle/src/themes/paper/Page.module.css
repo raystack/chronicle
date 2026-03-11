@@ -151,15 +151,24 @@
 .content ol {
   margin: 0.75rem 0;
   padding-left: 1.5rem;
+  margin-bottom: var(--rs-space-5);
 }
 
 .content li {
-  margin: 0.25rem 0;
   font-size: var(--rs-font-size-regular);
+  margin: var(--rs-space-2) 0;
 }
 
 .content code {
   font-family: inherit;
+}
+
+.content table {
+  margin-bottom: var(--rs-space-5);
+}
+
+.content [role="tablist"] {
+  margin-bottom: var(--rs-space-3);
 }
 
 .content blockquote {

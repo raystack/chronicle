@@ -26,18 +26,25 @@
 .content ul,
 .content ol {
   padding-left: var(--rs-space-5);
+  margin-bottom: var(--rs-space-5);
 }
 
 .content li {
   font-size: var(--rs-font-size-regular);
+  margin: var(--rs-space-2) 0;
 }
 
 .content code {
   font-family: inherit;
 }
 
+.content [role="tablist"] {
+  margin-bottom: var(--rs-space-3);
+}
+
 .content table {
   display: block;
   max-width: 100%;
   overflow-x: auto;
+  margin-bottom: var(--rs-space-5);
 }
