@@ -1,0 +1,59 @@
+---
+title: Themes
+description: Available themes and customization options.
+order: 7
+---
+
+# Themes
+
+Chronicle ships with two built-in themes. Set the theme in your `chronicle.yaml`:
+
+```yaml
+theme:
+  name: default
+```
+
+## Default Theme
+
+A traditional documentation layout with three-column design.
+
+```yaml
+theme:
+  name: default
+```
+
+### Layout
+
+- **Left sidebar** — Collapsible navigation tree with page icons
+- **Main content** — Centered content area
+- **Right sidebar** — Table of contents (auto-generated from headings)
+- **Top navbar** — Site title, search button, navigation links, theme toggle
+
+### Features
+
+- Responsive sidebar (collapsible on mobile)
+- Keyboard-accessible search (`Cmd+K` / `Ctrl+K`)
+- Light/dark mode toggle
+- Breadcrumb navigation
+- Active heading tracking in table of contents
+
+## Paper Theme
+
+A book-style layout optimized for long-form reading.
+
+```yaml
+theme:
+  name: paper
+```
+
+### Layout
+
+- **Left sidebar** — Chapter-style navigation
+- **Main content** — Centered content area with reading-optimized width
+- **Reading progress** — Progress indicator for current page
+
+### Features
+
+- Minimal, distraction-free design
+- Reading progress tracking
+- Optimized typography for long content

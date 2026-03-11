@@ -1,0 +1,213 @@
+---
+title: Components
+description: MDX components and admonitions supported in Chronicle.
+order: 6
+---
+
+# Components
+
+Chronicle provides built-in MDX components that enhance standard markdown with interactive elements and styled content.
+
+## Callout
+
+Callouts highlight important information with colored boxes.
+
+### Directive Syntax
+
+Use `:::` fenced directives in your MDX files:
+
+```mdx
+:::note
+This is a note callout.
+:::
+
+:::tip
+Helpful tip for users.
+:::
+
+:::warning
+Be careful with this operation.
+:::
+
+:::danger
+This action is irreversible.
+:::
+
+:::success
+Operation completed successfully.
+:::
+```
+
+### Directive Types
+
+| Directive | Callout Type | Color |
+|-----------|-------------|-------|
+| `:::note` | `accent` | Blue |
+| `:::tip` | `accent` | Blue |
+| `:::info` | `accent` | Blue |
+| `:::warn` | `attention` | Yellow |
+| `:::warning` | `attention` | Yellow |
+| `:::danger` | `alert` | Red |
+| `:::caution` | `alert` | Red |
+| `:::success` | `success` | Green |
+
+### JSX Syntax
+
+For more control, use the `Callout` component directly:
+
+````mdx
+<Callout type="accent">
+  <CalloutTitle>Note</CalloutTitle>
+  <CalloutDescription>This is a custom callout with title and description.</CalloutDescription>
+</Callout>
+````
+
+**Callout Props**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `type` | `'accent' \| 'attention' \| 'alert' \| 'success' \| 'grey'` | `'grey'` | Callout color variant |
+| `outline` | `boolean` | `false` | Use outline style |
+| `width` | `string` | — | Custom width |
+| `className` | `string` | — | Additional CSS class |
+
+## Tabs
+
+Tabbed content panels using Apsara's `Tabs` component.
+
+````mdx
+<Tabs defaultValue="npm">
+  <Tabs.List>
+    <Tabs.Trigger value="npm">npm</Tabs.Trigger>
+    <Tabs.Trigger value="bun">bun</Tabs.Trigger>
+  </Tabs.List>
+  <Tabs.Content value="npm">
+
+    ```bash
+    npm install @raystack/chronicle
+    ```
+
+  </Tabs.Content>
+  <Tabs.Content value="bun">
+
+    ```bash
+    bun add @raystack/chronicle
+    ```
+
+  </Tabs.Content>
+</Tabs>
+````
+
+## Mermaid Diagrams
+
+Render diagrams using Mermaid syntax in fenced code blocks:
+
+````mdx
+```mermaid
+graph TD
+    A[Start] --> B{Decision}
+    B -->|Yes| C[Action]
+    B -->|No| D[End]
+```
+````
+
+Mermaid is loaded dynamically on the client side. Supports all standard Mermaid diagram types: flowcharts, sequence diagrams, class diagrams, state diagrams, etc.
+
+## Code Blocks
+
+Fenced code blocks are syntax-highlighted using Shiki.
+
+````mdx
+```typescript
+function hello(name: string): string {
+  return `Hello, ${name}!`
+}
+```
+````
+
+### Code Block Title
+
+Add a title to code blocks:
+
+````mdx
+```typescript title="hello.ts"
+function hello(name: string): string {
+  return `Hello, ${name}!`
+}
+```
+````
+
+## Tables
+
+Standard markdown tables are rendered with Apsara styling:
+
+```mdx
+| Column A | Column B | Column C |
+|----------|----------|----------|
+| Cell 1   | Cell 2   | Cell 3   |
+| Cell 4   | Cell 5   | Cell 6   |
+```
+
+## Images
+
+Images support both local and external sources:
+
+```mdx
+![Alt text](./screenshot.png)
+
+![External image](https://example.com/image.png)
+```
+
+- **Local images** — Rendered with Next.js `Image` component (optimized, default 800x400)
+- **External images** — Rendered with standard `<img>` tag
+
+## Links
+
+Links are automatically handled:
+
+```mdx
+[Internal link](/docs/configuration)
+[External link](https://github.com)
+[Anchor link](#section)
+```
+
+- **Internal links** — Use Next.js client-side navigation
+- **External links** — Open in a new tab automatically
+- **Anchor links** — Smooth scroll to the section
+
+## Details / Collapsible
+
+Collapsible content sections:
+
+````mdx
+<details>
+  <summary>Click to expand</summary>
+
+  Hidden content goes here. Supports full markdown inside.
+
+</details>
+````
+
+## Blockquotes
+
+Standard blockquotes render as grey callouts:
+
+```mdx
+> This is a blockquote rendered as a callout.
+```
+
+## HTML Tag Overrides
+
+Chronicle overrides these HTML elements with styled components:
+
+| HTML Element | Chronicle Component | Notes |
+|-------------|-------------------|-------|
+| `<p>` | `MdxParagraph` | Auto-converts to `<div>` when containing block elements |
+| `<img>` | `Image` | Next.js optimized for local, standard for external |
+| `<a>` | `Link` | Smart routing with external link detection |
+| `<code>` | `MdxCode` | Inline code styling |
+| `<pre>` | `MdxPre` | Code blocks with optional title header |
+| `<table>` | `MdxTable` | Apsara Table component |
+| `<blockquote>` | `MdxBlockquote` | Rendered as grey Callout |
+| `<details>` | `MdxDetails` | Collapsible sections |
+| `<summary>` | `MdxSummary` | Collapsible section header |

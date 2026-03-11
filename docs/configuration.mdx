@@ -1,0 +1,217 @@
+---
+title: Configuration
+description: Full chronicle.yaml configuration reference.
+order: 3
+---
+
+# Configuration
+
+All site configuration lives in a single `chronicle.yaml` file in your content directory.
+
+## Full Example
+
+```yaml
+title: My Project Docs
+description: Documentation for My Project
+
+logo:
+  light: ./logo-light.png
+  dark: ./logo-dark.png
+
+theme:
+  name: default
+
+navigation:
+  links:
+    - label: GitHub
+      href: https://github.com/myorg/myproject
+    - label: Blog
+      href: https://blog.example.com
+
+search:
+  enabled: true
+  placeholder: Search docs...
+
+footer:
+  copyright: "© 2026 My Company"
+  links:
+    - label: GitHub
+      href: https://github.com/myorg/myproject
+    - label: License
+      href: /license
+
+api:
+  - name: REST API
+    spec: ./openapi.yaml
+    basePath: /apis
+    server:
+      url: https://api.example.com
+      description: Production Server
+    auth:
+      type: apiKey
+      header: Authorization
+      placeholder: "Bearer token"
+```
+
+## Reference
+
+### title
+
+**Required.** The site title displayed in the navbar and browser tab.
+
+```yaml
+title: My Documentation
+```
+
+### description
+
+Optional meta description for SEO.
+
+```yaml
+description: Documentation powered by Chronicle
+```
+
+### logo
+
+Logo configuration with theme-aware variants.
+
+```yaml
+logo:
+  light: ./logo-light.png
+  dark: ./logo-dark.png
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `light` | `string` | Logo path or URL for light theme |
+| `dark` | `string` | Logo path or URL for dark theme |
+
+### theme
+
+Theme selection and customization.
+
+```yaml
+theme:
+  name: default
+```
+
+| Field | Type | Description | Default |
+|-------|------|-------------|---------|
+| `name` | `'default' \| 'paper'` | Theme to use | `default` |
+| `colors` | `Record<string, string>` | Custom color overrides | — |
+
+See [Themes](/docs/themes) for details on each theme.
+
+### navigation
+
+Top navbar links and social icons.
+
+```yaml
+navigation:
+  links:
+    - label: GitHub
+      href: https://github.com/myorg/myproject
+    - label: API
+      href: /apis
+  social:
+    - type: github
+      href: https://github.com/myorg/myproject
+    - type: discord
+      href: https://discord.gg/example
+```
+
+**navigation.links**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `label` | `string` | Link text |
+| `href` | `string` | URL (internal or external) |
+
+**navigation.social**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `type` | `string` | Icon type: `github`, `twitter`, `discord`, or custom |
+| `href` | `string` | URL |
+
+### search
+
+Search functionality powered by Fumadocs.
+
+```yaml
+search:
+  enabled: true
+  placeholder: Search documentation...
+```
+
+| Field | Type | Description | Default |
+|-------|------|-------------|---------|
+| `enabled` | `boolean` | Enable/disable search | `true` |
+| `placeholder` | `string` | Search input placeholder | `Search...` |
+
+When enabled, search is accessible via the navbar button or keyboard shortcut `Cmd+K` / `Ctrl+K`.
+
+### footer
+
+Footer content displayed at the bottom of every page.
+
+```yaml
+footer:
+  copyright: "© 2026 My Company. All rights reserved."
+  links:
+    - label: Terms
+      href: /terms
+    - label: Privacy
+      href: /privacy
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `copyright` | `string` | Copyright text (left-aligned) |
+| `links` | `NavLink[]` | Footer links (right-aligned) |
+
+### api
+
+OpenAPI specification configuration for interactive API documentation.
+
+```yaml
+api:
+  - name: Petstore API
+    spec: ./petstore.yaml
+    basePath: /apis
+    server:
+      url: https://petstore.swagger.io/v2
+      description: Production Server
+    auth:
+      type: apiKey
+      header: api_key
+      placeholder: Enter your API key
+```
+
+Each entry in the `api` array creates a section of API documentation.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | `string` | API display name |
+| `spec` | `string` | Path to OpenAPI spec file (JSON or YAML), relative to `chronicle.yaml` |
+| `basePath` | `string` | URL path prefix for API pages (e.g., `/apis`) |
+| `server.url` | `string` | Base URL for the API server |
+| `server.description` | `string` | Server description |
+| `auth.type` | `string` | Authentication type (e.g., `apiKey`, `bearer`) |
+| `auth.header` | `string` | Header name for auth token |
+| `auth.placeholder` | `string` | Placeholder text in auth input |
+
+API pages include a "Try it out" panel that uses the configured server URL and auth settings.
+
+## Defaults
+
+If `chronicle.yaml` is missing or fields are omitted, these defaults apply:
+
+```yaml
+title: Documentation
+theme:
+  name: default
+search:
+  enabled: true
+  placeholder: Search...
+```
