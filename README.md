@@ -72,12 +72,10 @@ cd chronicle
 bun install
 ```
 
-3. Build and run the dev server
+3. Run the dev server
 
 ```bash
-cd packages/chronicle
-bun build-cli.ts
-bun bin/chronicle.js dev --content ../../docs
+cd docs && bun ../packages/chronicle/bin/chronicle.js dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the docs site.
@@ -86,7 +84,7 @@ Open [http://localhost:3000](http://localhost:3000) to see the docs site.
 
 1. Create a branch from `main`
 2. Make your changes
-3. Test locally with `bun bin/chronicle.js dev --content ../../docs`
+3. Test locally from the `docs/` directory
 4. Open a pull request
 
 ## License
