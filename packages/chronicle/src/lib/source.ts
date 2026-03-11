@@ -24,11 +24,12 @@ export function buildPageTree(): PageTree {
 
   pages.forEach((page) => {
     const data = page.data as { title?: string; order?: number }
+    const isIndex = page.url === '/'
     const item: PageTreeItem = {
       type: 'page',
       name: data.title ?? page.slugs.join('/') ?? 'Untitled',
       url: page.url,
-      order: data.order,
+      order: data.order ?? (isIndex ? 0 : undefined),
     }
 
     if (page.slugs.length > 1) {
