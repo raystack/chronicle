@@ -58,6 +58,10 @@
   padding-left: var(--rs-space-4);
 }
 
+.navActions :global(button) {
+  height: 32px;
+}
+
 .groupItems {
   padding-left: var(--rs-space-4);
 }

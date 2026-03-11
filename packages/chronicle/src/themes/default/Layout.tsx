@@ -24,6 +24,7 @@ const iconMap: Record<string, React.ReactNode> = {
 
 export function Layout({ children, config, tree, classNames }: ThemeLayoutProps) {
   const pathname = usePathname();
+
   return (
     <Flex direction="column" className={cx(styles.layout, classNames?.layout)}>
       <Navbar className={styles.header}>
@@ -35,7 +36,7 @@ export function Layout({ children, config, tree, classNames }: ThemeLayoutProps)
           </NextLink>
         </Navbar.Start>
         <Navbar.End>
-          <Flex gap="medium">
+          <Flex gap="medium" align="center" className={styles.navActions}>
             {config.api?.map((api) => (
               <NextLink key={api.basePath} href={api.basePath} style={{ textDecoration: 'none' }}>
                 <Button variant="outline" color="neutral" size="small">
@@ -48,8 +49,8 @@ export function Layout({ children, config, tree, classNames }: ThemeLayoutProps)
                 {link.label}
               </Link>
             ))}
+            {config.search?.enabled && <Search />}
           </Flex>
-          {config.search?.enabled && <Search />}
           <ClientThemeSwitcher size={16} />
         </Navbar.End>
       </Navbar>
