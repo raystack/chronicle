@@ -16,7 +16,13 @@ Config-driven documentation framework built on Next.js, Fumadocs, and Apsara UI.
 ### Install
 
 ```bash
-npm install @raystack/chronicle
+bun add @raystack/chronicle
+```
+
+Or run directly without installing:
+
+```bash
+bunx @raystack/chronicle init
 ```
 
 ### Initialize
@@ -66,16 +72,11 @@ cd chronicle
 bun install
 ```
 
-3. Build the CLI
+3. Build and run the dev server
 
 ```bash
 cd packages/chronicle
 bun build-cli.ts
-```
-
-4. Run the dev server
-
-```bash
 bun bin/chronicle.js dev --content ../../docs
 ```
 
