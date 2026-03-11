@@ -1,10 +1,19 @@
-import type { ComponentProps } from 'react'
+import { Children, isValidElement, type ComponentProps } from 'react'
 import styles from './paragraph.module.css'
 
+const BLOCK_ELEMENTS = new Set(['summary', 'details', 'div', 'table', 'ul', 'ol'])
+
+function hasBlockChild(children: React.ReactNode): boolean {
+  return Children.toArray(children).some(
+    (child) => isValidElement(child) && typeof child.type === 'string' && BLOCK_ELEMENTS.has(child.type)
+  )
+}
+
 export function MdxParagraph({ children, className, ...props }: ComponentProps<'p'>) {
+  const Tag = hasBlockChild(children) ? 'div' : 'p'
   return (
-    <p className={`${styles.paragraph} ${className ?? ''}`} {...props}>
+    <Tag className={`${styles.paragraph} ${className ?? ''}`} {...props}>
       {children}
-    </p>
+    </Tag>
   )
 }
