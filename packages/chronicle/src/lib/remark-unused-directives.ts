@@ -18,6 +18,7 @@ const remarkUnusedDirectives: Plugin = () => {
         const hasChildren = node.children && node.children.length > 0
         if (!hasAttributes && !hasChildren) {
           const name = node.name
+          if (!name) return
           Object.keys(node).forEach((key) => delete node[key])
           node.type = 'text'
           node.value = `:${name}`

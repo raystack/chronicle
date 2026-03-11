@@ -34,10 +34,6 @@
   margin: var(--rs-space-2) 0;
 }
 
-.content code {
-  font-family: inherit;
-}
-
 .content [role="tablist"] {
   margin-bottom: var(--rs-space-3);
 }

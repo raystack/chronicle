@@ -159,10 +159,6 @@
   margin: var(--rs-space-2) 0;
 }
 
-.content code {
-  font-family: inherit;
-}
-
 .content table {
   margin-bottom: var(--rs-space-5);
 }

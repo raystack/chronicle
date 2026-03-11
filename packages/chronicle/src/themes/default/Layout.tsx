@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useEffect, useRef, useCallback } from "react";
+import { useMemo, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import NextLink from "next/link";
 import { cx } from "class-variance-authority";
@@ -26,24 +26,20 @@ let savedScrollTop = 0;
 
 export function Layout({ children, config, tree, classNames }: ThemeLayoutProps) {
   const pathname = usePathname();
-  const sidebarRef = useRef<HTMLElement>(null);
-
-  const getScrollEl = useCallback(() => {
-    return sidebarRef.current?.querySelector('[class*="main"]') as HTMLElement | null;
-  }, []);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const el = getScrollEl();
+    const el = scrollRef.current;
     if (!el) return;
     const onScroll = () => { savedScrollTop = el.scrollTop; };
     el.addEventListener('scroll', onScroll);
     return () => el.removeEventListener('scroll', onScroll);
-  }, [getScrollEl]);
+  }, []);
 
   useEffect(() => {
-    const el = getScrollEl();
+    const el = scrollRef.current;
     if (el) requestAnimationFrame(() => { el.scrollTop = savedScrollTop; });
-  }, [pathname, getScrollEl]);
+  }, [pathname]);
 
   return (
     <Flex direction="column" className={cx(styles.layout, classNames?.layout)}>
@@ -58,10 +54,8 @@ export function Layout({ children, config, tree, classNames }: ThemeLayoutProps)
         <Navbar.End>
           <Flex gap="medium" align="center" className={styles.navActions}>
             {config.api?.map((api) => (
-              <NextLink key={api.basePath} href={api.basePath} style={{ textDecoration: 'none' }}>
-                <Button variant="outline" color="neutral" size="small">
-                  {api.name} API
-                </Button>
+              <NextLink key={api.basePath} href={api.basePath} className={styles.navButton}>
+                {api.name} API
               </NextLink>
             ))}
             {config.navigation?.links?.map((link) => (
@@ -75,8 +69,8 @@ export function Layout({ children, config, tree, classNames }: ThemeLayoutProps)
         </Navbar.End>
       </Navbar>
       <Flex className={cx(styles.body, classNames?.body)}>
-        <Sidebar ref={sidebarRef} defaultOpen collapsible={false} className={cx(styles.sidebar, classNames?.sidebar)}>
-          <Sidebar.Main>
+        <Sidebar defaultOpen collapsible={false} className={cx(styles.sidebar, classNames?.sidebar)}>
+          <Sidebar.Main ref={scrollRef}>
             {tree.children.map((item) => (
               <SidebarNode
                 key={item.url ?? item.name}
