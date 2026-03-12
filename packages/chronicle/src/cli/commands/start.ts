@@ -2,11 +2,13 @@ import { Command } from 'commander'
 import { spawn } from 'child_process'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { createRequire } from 'module'
 import chalk from 'chalk'
 import { resolveContentDir, loadCLIConfig, attachLifecycleHandlers } from '@/cli/utils'
 
+const require = createRequire(import.meta.url)
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
-const nextBin = path.join(PACKAGE_ROOT, 'node_modules', '.bin', process.platform === 'win32' ? 'next.cmd' : 'next')
+const nextCli = require.resolve('next/dist/bin/next')
 
 export const startCommand = new Command('start')
   .description('Start production server')
@@ -19,7 +21,7 @@ export const startCommand = new Command('start')
     console.log(chalk.cyan('Starting production server...'))
     console.log(chalk.gray(`Content: ${contentDir}`))
 
-    const child = spawn(nextBin, ['start', '-p', options.port], {
+    const child = spawn(process.execPath, [nextCli, 'start', '-p', options.port], {
       stdio: 'inherit',
       cwd: PACKAGE_ROOT,
       env: {
