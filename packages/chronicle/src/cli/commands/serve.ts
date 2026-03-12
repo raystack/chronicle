@@ -1,13 +1,10 @@
 import { Command } from 'commander'
 import { spawn } from 'child_process'
-import path from 'path'
-import { fileURLToPath } from 'url'
 import { createRequire } from 'module'
 import chalk from 'chalk'
-import { resolveContentDir, loadCLIConfig, attachLifecycleHandlers } from '@/cli/utils'
+import { resolveContentDir, loadCLIConfig, attachLifecycleHandlers, scaffoldDir } from '@/cli/utils'
 
 const require = createRequire(import.meta.url)
-const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const nextCli = require.resolve('next/dist/bin/next')
 
 export const serveCommand = new Command('serve')
@@ -17,10 +14,11 @@ export const serveCommand = new Command('serve')
   .action((options) => {
     const contentDir = resolveContentDir(options.content)
     loadCLIConfig(contentDir)
+    const scaffoldPath = scaffoldDir(contentDir)
 
     const env = {
       ...process.env,
-      CHRONICLE_CONTENT_DIR: contentDir,
+      CHRONICLE_CONTENT_DIR: './content',
     }
 
     console.log(chalk.cyan('Building for production...'))
@@ -28,7 +26,7 @@ export const serveCommand = new Command('serve')
 
     const buildChild = spawn(process.execPath, [nextCli, 'build'], {
       stdio: 'inherit',
-      cwd: PACKAGE_ROOT,
+      cwd: scaffoldPath,
       env,
     })
 
@@ -45,7 +43,7 @@ export const serveCommand = new Command('serve')
 
       const startChild = spawn(process.execPath, [nextCli, 'start', '-p', options.port], {
         stdio: 'inherit',
-        cwd: PACKAGE_ROOT,
+        cwd: scaffoldPath,
         env,
       })
 

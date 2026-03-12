@@ -13,7 +13,7 @@ export interface CLIConfig {
 export function resolveContentDir(contentFlag?: string): string {
   if (contentFlag) return path.resolve(contentFlag)
   if (process.env.CHRONICLE_CONTENT_DIR) return path.resolve(process.env.CHRONICLE_CONTENT_DIR)
-  return process.cwd()
+  return path.resolve('content')
 }
 
 function resolveConfigPath(contentDir: string): string | null {
