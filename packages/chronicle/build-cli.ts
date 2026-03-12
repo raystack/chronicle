@@ -5,9 +5,6 @@ const result = await Bun.build({
   outdir: 'dist/cli',
   target: 'node',
   format: 'esm',
-  define: {
-    PACKAGE_ROOT: JSON.stringify(path.resolve(import.meta.dir)),
-  },
 })
 
 if (!result.success) {

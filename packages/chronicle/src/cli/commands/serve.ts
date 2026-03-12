@@ -1,11 +1,11 @@
 import { Command } from 'commander'
 import { spawn } from 'child_process'
 import path from 'path'
+import { fileURLToPath } from 'url'
 import chalk from 'chalk'
 import { resolveContentDir, loadCLIConfig, attachLifecycleHandlers } from '@/cli/utils'
 
-declare const PACKAGE_ROOT: string
-
+const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const nextBin = path.join(PACKAGE_ROOT, 'node_modules', '.bin', process.platform === 'win32' ? 'next.cmd' : 'next')
 
 export const serveCommand = new Command('serve')

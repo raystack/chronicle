@@ -1,4 +1,5 @@
-import { defineDocs, defineConfig } from 'fumadocs-mdx/config'
+import { defineDocs, defineConfig, frontmatterSchema } from 'fumadocs-mdx/config'
+import { z } from 'zod'
 import remarkDirective from 'remark-directive'
 import { remarkDirectiveAdmonition, remarkMdxMermaid } from 'fumadocs-core/mdx-plugins'
 import remarkUnusedDirectives from './src/lib/remark-unused-directives'
@@ -8,6 +9,12 @@ const contentDir = process.env.CHRONICLE_CONTENT_DIR || './content'
 export const docs = defineDocs({
   dir: contentDir,
   docs: {
+    schema: frontmatterSchema.extend({
+      order: z.number().optional(),
+    }),
+    postprocess: {
+      includeProcessedMarkdown: true,
+    },
     files: ['**/*.mdx', '**/*.md', '!**/node_modules/**'],
   },
 })

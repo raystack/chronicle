@@ -7,6 +7,11 @@ export interface ChronicleConfig {
   search?: SearchConfig
   footer?: FooterConfig
   api?: ApiConfig[]
+  llms?: LlmsConfig
+}
+
+export interface LlmsConfig {
+  enabled?: boolean
 }
 
 export interface ApiConfig {
