@@ -5,6 +5,7 @@ import path from 'path'
 import chalk from 'chalk'
 import { stringify } from 'yaml'
 import type { ChronicleConfig } from '@/types'
+import { loadCLIConfig, scaffoldDir, detectPackageManager } from '@/cli/utils'
 
 
 function createConfig(): ChronicleConfig {
@@ -51,9 +52,8 @@ This is your documentation home page.
 
 export const initCommand = new Command('init')
   .description('Initialize a new Chronicle project')
-  .option('-d, --dir <path>', 'Project directory', '.')
-  .action((options) => {
-    const projectDir = path.resolve(options.dir)
+  .action(() => {
+    const projectDir = process.cwd()
     const dirName = path.basename(projectDir) || 'docs'
     const contentDir = path.join(projectDir, 'content')
 
@@ -109,9 +109,13 @@ export const initCommand = new Command('init')
     }
 
     // Install dependencies
-    const pm = (process.env.npm_config_user_agent || 'npm').split('/')[0]
+    const pm = detectPackageManager()
     console.log(chalk.cyan(`\nInstalling dependencies with ${pm}...`))
     execSync(`${pm} install`, { cwd: projectDir, stdio: 'inherit' })
+
+    // Scaffold .chronicle/ directory
+    loadCLIConfig(contentDir)
+    scaffoldDir(contentDir)
 
     const runCmd = pm === 'npm' ? 'npx' : pm === 'bun' ? 'bunx' : `${pm} dlx`
     console.log(chalk.green('\n✓ Chronicle initialized!'))

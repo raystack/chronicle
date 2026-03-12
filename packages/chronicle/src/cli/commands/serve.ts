@@ -1,20 +1,21 @@
 import { Command } from 'commander'
 import { spawn } from 'child_process'
-import { createRequire } from 'module'
+import path from 'path'
+import fs from 'fs'
 import chalk from 'chalk'
-import { resolveContentDir, loadCLIConfig, attachLifecycleHandlers, scaffoldDir } from '@/cli/utils'
-
-const require = createRequire(import.meta.url)
-const nextCli = require.resolve('next/dist/bin/next')
+import { attachLifecycleHandlers, resolveNextCli } from '@/cli/utils'
 
 export const serveCommand = new Command('serve')
   .description('Build and start production server')
   .option('-p, --port <port>', 'Port number', '3000')
-  .option('-c, --content <path>', 'Content directory')
   .action((options) => {
-    const contentDir = resolveContentDir(options.content)
-    loadCLIConfig(contentDir)
-    const scaffoldPath = scaffoldDir(contentDir)
+    const scaffoldPath = path.join(process.cwd(), '.chronicle')
+    if (!fs.existsSync(scaffoldPath)) {
+      console.log(chalk.red('Error: .chronicle/ not found. Run'), chalk.cyan('chronicle init'), chalk.red('first.'))
+      process.exit(1)
+    }
+
+    const nextCli = resolveNextCli()
 
     const env = {
       ...process.env,
@@ -22,7 +23,6 @@ export const serveCommand = new Command('serve')
     }
 
     console.log(chalk.cyan('Building for production...'))
-    console.log(chalk.gray(`Content: ${contentDir}`))
 
     const buildChild = spawn(process.execPath, [nextCli, 'build'], {
       stdio: 'inherit',

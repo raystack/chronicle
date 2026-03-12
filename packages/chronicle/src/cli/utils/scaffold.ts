@@ -1,4 +1,5 @@
 import { execSync } from 'child_process'
+import { createRequire } from 'module'
 import fs from 'fs'
 import path from 'path'
 import chalk from 'chalk'
@@ -27,8 +28,15 @@ function ensureRemoved(targetPath: string) {
   }
 }
 
-function detectPackageManager(): string {
-  return (process.env.npm_config_user_agent || 'npm').split('/')[0]
+export function detectPackageManager(): string {
+  if (process.env.npm_config_user_agent) {
+    return process.env.npm_config_user_agent.split('/')[0]
+  }
+  const cwd = process.cwd()
+  if (fs.existsSync(path.join(cwd, 'bun.lock')) || fs.existsSync(path.join(cwd, 'bun.lockb'))) return 'bun'
+  if (fs.existsSync(path.join(cwd, 'pnpm-lock.yaml'))) return 'pnpm'
+  if (fs.existsSync(path.join(cwd, 'yarn.lock'))) return 'yarn'
+  return 'npm'
 }
 
 function generateNextConfig(scaffoldPath: string) {
@@ -83,6 +91,11 @@ function ensureDeps() {
     console.log(chalk.cyan(`Installing dependencies with ${pm}...`))
     execSync(`${pm} install`, { cwd, stdio: 'inherit' })
   }
+}
+
+export function resolveNextCli(): string {
+  const cwdRequire = createRequire(path.join(process.cwd(), 'package.json'))
+  return cwdRequire.resolve('next/dist/bin/next')
 }
 
 export function scaffoldDir(contentDir: string): string {
