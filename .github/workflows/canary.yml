@@ -35,6 +35,6 @@ jobs:
           echo "Canary version: $VERSION"
 
       - name: Publish
-        run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
-          bun publish --tag canary --access public
+        run: bun publish --tag canary --access public
+        env:
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
