@@ -1,0 +1,23 @@
+title: Chronicle
+description: Config-driven documentation framework
+
+theme:
+  name: paper
+
+navigation:
+  links:
+    - label: GitHub
+      href: https://github.com/raystack/chronicle
+
+search:
+  enabled: true
+  placeholder: Search docs...
+
+llms:
+  enabled: true
+
+footer:
+  copyright: "© 2026 Raystack. All rights reserved."
+  links:
+    - label: GitHub
+      href: https://github.com/raystack/chronicle

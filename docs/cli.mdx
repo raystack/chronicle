@@ -1,0 +1,84 @@
+---
+title: CLI Commands
+description: Chronicle CLI commands reference.
+order: 2
+---
+
+# CLI Commands
+
+Chronicle provides a CLI to initialize, develop, build, and serve your documentation site.
+
+## init
+
+Scaffold a new Chronicle project.
+
+```bash
+chronicle init [options]
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-d, --dir <path>` | Target directory | `.` (current directory) |
+
+Creates a `chronicle.yaml` config file and a sample `index.mdx` in the specified directory.
+
+## dev
+
+Start the development server with hot reload.
+
+```bash
+chronicle dev [options]
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-p, --port <port>` | Port number | `3000` |
+| `-c, --content <path>` | Content directory | Current directory |
+
+## build
+
+Build the site for production.
+
+```bash
+chronicle build [options]
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-c, --content <path>` | Content directory | Current directory |
+
+## start
+
+Start the production server. Requires a prior `chronicle build`.
+
+```bash
+chronicle start [options]
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-p, --port <port>` | Port number | `3000` |
+| `-c, --content <path>` | Content directory | Current directory |
+
+## serve
+
+Build and start the production server in one step.
+
+```bash
+chronicle serve [options]
+```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `-p, --port <port>` | Port number | `3000` |
+| `-c, --content <path>` | Content directory | Current directory |
+
+## Content Directory Resolution
+
+The content directory is resolved in this order:
+
+1. `--content` CLI flag (highest priority)
+2. `CHRONICLE_CONTENT_DIR` environment variable
+3. Current working directory (default)
+
+The content directory must contain a `chronicle.yaml` file.

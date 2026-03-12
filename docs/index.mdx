@@ -1,0 +1,84 @@
+---
+title: Getting Started
+description: Install and set up Chronicle, a config-driven documentation framework.
+order: 1
+---
+
+# Getting Started
+
+Chronicle is a config-driven documentation framework built on Next.js 15, Fumadocs, and Apsara UI components. Write MDX content, configure with a single YAML file, and get a fully themed documentation site.
+
+## Installation
+
+```bash
+bun add @raystack/chronicle
+```
+
+## Quick Start
+
+### 1. Initialize a new project
+
+```bash
+chronicle init
+```
+
+This creates:
+- `chronicle.yaml` — your site configuration
+- `index.mdx` — a sample documentation page
+
+### 2. Start the development server
+
+```bash
+chronicle dev
+```
+
+Your docs site is now running at [http://localhost:3000](http://localhost:3000).
+
+### 3. Add content
+
+Create `.mdx` files in your content directory. Each file becomes a page. Use folders to create nested navigation.
+
+```
+content/
+├── chronicle.yaml
+├── index.mdx
+├── getting-started.mdx
+└── guides/
+    ├── installation.mdx
+    └── configuration.mdx
+```
+
+### 4. Build for production
+
+```bash
+chronicle build
+chronicle start
+```
+
+Or use the combined command:
+
+```bash
+chronicle serve
+```
+
+## Project Structure
+
+A minimal Chronicle project looks like:
+
+```
+my-docs/
+├── chronicle.yaml      # Site configuration
+├── index.mdx           # Home page
+└── guides/
+    └── setup.mdx       # Nested page at /guides/setup
+```
+
+All configuration is done through `chronicle.yaml`. No additional config files needed.
+
+## Next Steps
+
+- [CLI Commands](/docs/cli) — All available CLI commands and flags
+- [Configuration](/docs/configuration) — Full `chronicle.yaml` reference
+- [Frontmatter](/docs/frontmatter) — Page-level metadata options
+- [Components](/docs/components) — MDX components and admonitions
+- [Themes](/docs/themes) — Available themes and customization

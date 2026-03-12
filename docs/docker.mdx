@@ -1,0 +1,66 @@
+---
+title: Docker
+description: Run Chronicle with Docker.
+order: 8
+---
+
+# Docker
+
+Chronicle is available as a Docker image on [Docker Hub](https://hub.docker.com/r/raystack/chronicle).
+
+## Pull the Image
+
+```bash
+docker pull raystack/chronicle
+```
+
+## Production Server
+
+The default command builds and starts a production server on port 3000.
+
+```bash
+docker run -p 3000:3000 -v ./content:/app/content raystack/chronicle
+```
+
+Mount your content directory (containing `chronicle.yaml` and MDX files) to `/app/content`.
+
+## Development Server
+
+Override the default command with `dev` for hot reload:
+
+```bash
+docker run -p 3000:3000 -v ./content:/app/content raystack/chronicle dev --port 3000
+```
+
+## Custom Port
+
+```bash
+docker run -p 8080:8080 -v ./content:/app/content raystack/chronicle serve --port 8080
+```
+
+## Docker Compose
+
+```yaml
+services:
+  docs:
+    image: raystack/chronicle
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./content:/app/content
+```
+
+## Available Commands
+
+The entrypoint is `chronicle`, so any CLI command can be passed:
+
+```bash
+# Build only
+docker run -v ./content:/app/content raystack/chronicle build
+
+# Start pre-built server
+docker run -p 3000:3000 -v ./content:/app/content raystack/chronicle start --port 3000
+
+# Build and start (default)
+docker run -p 3000:3000 -v ./content:/app/content raystack/chronicle serve --port 3000
+```

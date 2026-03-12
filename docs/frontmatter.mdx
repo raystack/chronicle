@@ -1,0 +1,115 @@
+---
+title: Frontmatter
+description: Page-level metadata options for MDX files.
+order: 4
+---
+
+# Frontmatter
+
+Every MDX file supports YAML frontmatter at the top of the file for page-level configuration.
+
+## Example
+
+```mdx
+---
+title: Getting Started
+description: A quick guide to set up your project
+order: 2
+icon: rectangle-stack
+---
+
+# Getting Started
+
+Your content here...
+```
+
+## Fields
+
+### title
+
+**Required.** The page title used in navigation, browser tab, and page heading.
+
+```yaml
+title: Installation Guide
+```
+
+### description
+
+Optional meta description for the page. Used in SEO metadata.
+
+```yaml
+description: Step-by-step installation instructions
+```
+
+### order
+
+Controls the page's position in sidebar navigation. Lower numbers appear first.
+
+```yaml
+order: 1
+```
+
+**Decimal ordering** is supported for inserting pages between existing ones:
+
+```yaml
+# Page A: order 1
+# New page: order 1.5 (appears between A and B)
+# Page B: order 2
+```
+
+Pages without an `order` value appear after ordered pages.
+
+### icon
+
+Icon identifier displayed next to the page title in the sidebar.
+
+```yaml
+icon: rectangle-stack
+```
+
+**Available icons:**
+
+| Value | Description |
+|-------|-------------|
+| `rectangle-stack` | Rectangle stack icon |
+| `method-get` | HTTP GET badge |
+| `method-post` | HTTP POST badge |
+| `method-put` | HTTP PUT badge |
+| `method-delete` | HTTP DELETE badge |
+| `method-patch` | HTTP PATCH badge |
+
+## Navigation Ordering
+
+Sidebar navigation is determined by:
+
+1. **Frontmatter `order`** — Pages sorted by `order` value (ascending)
+2. **Decimal values** — Use `1`, `1.5`, `2` for fine-grained positioning
+3. **Folders** — Directories become collapsible groups, auto-named from the folder name (capitalized)
+4. **No `meta.json` required** — Ordering is entirely frontmatter-based
+
+### Example structure
+
+```
+content/
+├── index.mdx          # order: 1
+├── quickstart.mdx     # order: 2
+├── guides/
+│   ├── setup.mdx      # order: 1
+│   └── advanced.mdx   # order: 2
+└── reference/
+    ├── cli.mdx        # order: 1
+    └── config.mdx     # order: 2
+```
+
+This produces sidebar navigation:
+
+```
+Home (order: 1)
+Quickstart (order: 2)
+▸ Guides
+    Setup (order: 1)
+    Advanced (order: 2)
+▸ Reference
+    CLI (order: 1)
+    Config (order: 2)
+```
