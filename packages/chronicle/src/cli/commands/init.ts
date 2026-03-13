@@ -52,18 +52,13 @@ This is your documentation home page.
 
 export const initCommand = new Command('init')
   .description('Initialize a new Chronicle project')
-  .action(() => {
+  .option('-c, --content <path>', 'Content directory name', 'content')
+  .action((options) => {
     const projectDir = process.cwd()
     const dirName = path.basename(projectDir) || 'docs'
-    const contentDir = path.join(projectDir, 'content')
+    const contentDir = path.join(projectDir, options.content)
 
-    // Create project directory
-    if (!fs.existsSync(projectDir)) {
-      fs.mkdirSync(projectDir, { recursive: true })
-      console.log(chalk.green('✓'), 'Created', projectDir)
-    }
-
-    // Create content directory
+    // Create content directory if it doesn't exist
     if (!fs.existsSync(contentDir)) {
       fs.mkdirSync(contentDir, { recursive: true })
       console.log(chalk.green('✓'), 'Created', contentDir)
@@ -87,9 +82,10 @@ export const initCommand = new Command('init')
       console.log(chalk.yellow('⚠'), configPath, 'already exists')
     }
 
-    // Create sample index.mdx in content/
-    const indexPath = path.join(contentDir, 'index.mdx')
-    if (!fs.existsSync(indexPath)) {
+    // Create sample index.mdx only if content dir is empty
+    const contentFiles = fs.readdirSync(contentDir)
+    if (contentFiles.length === 0) {
+      const indexPath = path.join(contentDir, 'index.mdx')
       fs.writeFileSync(indexPath, sampleMdx)
       console.log(chalk.green('✓'), 'Created', indexPath)
     }
