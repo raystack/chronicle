@@ -111,7 +111,7 @@ export function Search({ className }: SearchProps) {
                         <div className={styles.itemContent}>
                           {getResultIcon(result)}
                           <Text className={styles.pageText}>
-                            {stripMethod(result.content)}
+                            <HighlightedText html={stripMethod(result.content)} />
                           </Text>
                         </div>
                       </Command.Item>
@@ -132,7 +132,7 @@ export function Search({ className }: SearchProps) {
                         {result.type === "heading" ? (
                           <>
                             <Text className={styles.headingText}>
-                              {stripMethod(result.content)}
+                              <HighlightedText html={stripMethod(result.content)} />
                             </Text>
                             <Text className={styles.separator}>-</Text>
                             <Text className={styles.pageText}>
@@ -141,7 +141,7 @@ export function Search({ className }: SearchProps) {
                           </>
                         ) : (
                           <Text className={styles.pageText}>
-                            {stripMethod(result.content)}
+                            <HighlightedText html={stripMethod(result.content)} />
                           </Text>
                         )}
                       </div>
@@ -176,6 +176,10 @@ function extractMethod(content: string): string | null {
 function stripMethod(content: string): string {
   const first = content.split(" ")[0];
   return API_METHODS.has(first) ? content.slice(first.length + 1) : content;
+}
+
+function HighlightedText({ html, className }: { html: string; className?: string }) {
+  return <span className={className} dangerouslySetInnerHTML={{ __html: html }} />;
 }
 
 function getResultIcon(result: SortedResult): React.ReactNode {
