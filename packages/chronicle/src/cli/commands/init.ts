@@ -21,6 +21,7 @@ function createPackageJson(name: string): Record<string, unknown> {
   return {
     name,
     private: true,
+    type: 'module',
     scripts: {
       dev: 'chronicle dev',
       build: 'chronicle build',
@@ -74,6 +75,12 @@ export const initCommand = new Command('init')
       const template = createPackageJson(dirName)
       let updated = false
 
+      // Set type to module
+      if (existing.type !== 'module') {
+        existing.type = 'module'
+        updated = true
+      }
+
       // Merge missing scripts
       if (!existing.scripts) existing.scripts = {}
       for (const [key, value] of Object.entries(template.scripts as Record<string, string>)) {
@@ -126,18 +133,19 @@ export const initCommand = new Command('init')
       console.log(chalk.green('✓'), 'Created', indexPath)
     }
 
-    // Add .chronicle to .gitignore
+    // Add entries to .gitignore
     const gitignorePath = path.join(projectDir, '.gitignore')
-    const chronicleEntry = '.chronicle'
+    const gitignoreEntries = ['.chronicle', 'node_modules', '.next']
     if (fs.existsSync(gitignorePath)) {
       const existing = fs.readFileSync(gitignorePath, 'utf-8')
-      if (!existing.includes(chronicleEntry)) {
-        fs.appendFileSync(gitignorePath, `\n${chronicleEntry}\n`)
-        console.log(chalk.green('✓'), 'Added .chronicle to .gitignore')
+      const missing = gitignoreEntries.filter(e => !existing.includes(e))
+      if (missing.length > 0) {
+        fs.appendFileSync(gitignorePath, `\n${missing.join('\n')}\n`)
+        console.log(chalk.green('✓'), 'Added', missing.join(', '), 'to .gitignore')
       }
     } else {
-      fs.writeFileSync(gitignorePath, `${chronicleEntry}\n`)
-      console.log(chalk.green('✓'), 'Created .gitignore with .chronicle')
+      fs.writeFileSync(gitignorePath, `${gitignoreEntries.join('\n')}\n`)
+      console.log(chalk.green('✓'), 'Created .gitignore')
     }
 
     // Install dependencies
