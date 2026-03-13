@@ -34,6 +34,13 @@ jobs:
           mv package.tmp.json package.json
           echo "Canary version: $VERSION"
 
+      - name: Verify npm auth
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${NPM_CONFIG_TOKEN}" > ~/.npmrc
+          npm whoami
+        env:
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
+
       - name: Publish
         run: bun publish --tag canary --access public
         env:
