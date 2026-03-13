@@ -64,13 +64,49 @@ export const initCommand = new Command('init')
       console.log(chalk.green('✓'), 'Created', contentDir)
     }
 
-    // Create package.json in project root
+    // Create or update package.json in project root
     const packageJsonPath = path.join(projectDir, 'package.json')
     if (!fs.existsSync(packageJsonPath)) {
       fs.writeFileSync(packageJsonPath, JSON.stringify(createPackageJson(dirName), null, 2) + '\n')
       console.log(chalk.green('✓'), 'Created', packageJsonPath)
     } else {
-      console.log(chalk.yellow('⚠'), packageJsonPath, 'already exists')
+      const existing = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
+      const template = createPackageJson(dirName)
+      let updated = false
+
+      // Merge missing scripts
+      if (!existing.scripts) existing.scripts = {}
+      for (const [key, value] of Object.entries(template.scripts as Record<string, string>)) {
+        if (!existing.scripts[key]) {
+          existing.scripts[key] = value
+          updated = true
+        }
+      }
+
+      // Merge missing dependencies
+      if (!existing.dependencies) existing.dependencies = {}
+      for (const [key, value] of Object.entries(template.dependencies as Record<string, string>)) {
+        if (!existing.dependencies[key]) {
+          existing.dependencies[key] = value
+          updated = true
+        }
+      }
+
+      // Merge missing devDependencies
+      if (!existing.devDependencies) existing.devDependencies = {}
+      for (const [key, value] of Object.entries(template.devDependencies as Record<string, string>)) {
+        if (!existing.devDependencies[key]) {
+          existing.devDependencies[key] = value
+          updated = true
+        }
+      }
+
+      if (updated) {
+        fs.writeFileSync(packageJsonPath, JSON.stringify(existing, null, 2) + '\n')
+        console.log(chalk.green('✓'), 'Updated', packageJsonPath, 'with missing scripts/deps')
+      } else {
+        console.log(chalk.yellow('⚠'), packageJsonPath, 'already has all required entries')
+      }
     }
 
     // Create chronicle.yaml in project root
