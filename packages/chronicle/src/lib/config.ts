@@ -12,8 +12,16 @@ const defaultConfig: ChronicleConfig = {
 }
 
 function resolveConfigPath(): string | null {
+  // Check project root via env var
+  const projectRoot = process.env.CHRONICLE_PROJECT_ROOT
+  if (projectRoot) {
+    const rootPath = path.join(projectRoot, CONFIG_FILE)
+    if (fs.existsSync(rootPath)) return rootPath
+  }
+  // Check cwd
   const cwdPath = path.join(process.cwd(), CONFIG_FILE)
   if (fs.existsSync(cwdPath)) return cwdPath
+  // Check content dir
   const contentDir = process.env.CHRONICLE_CONTENT_DIR
   if (contentDir) {
     const contentPath = path.join(contentDir, CONFIG_FILE)

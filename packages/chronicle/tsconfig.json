@@ -22,7 +22,7 @@
     "moduleResolution": "bundler",
     "paths": {
       "@/*": ["./src/*"],
-      "@/.source": ["./.source/index"]
+      "@/.source/*": ["./.source/*"]
     }
   },
   "include": ["src", ".source", "source.config.ts"],

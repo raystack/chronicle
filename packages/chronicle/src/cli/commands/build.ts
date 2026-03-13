@@ -23,6 +23,7 @@ export const buildCommand = new Command('build')
       cwd: scaffoldPath,
       env: {
         ...process.env,
+        CHRONICLE_PROJECT_ROOT: process.cwd(),
         CHRONICLE_CONTENT_DIR: './content',
       },
     })

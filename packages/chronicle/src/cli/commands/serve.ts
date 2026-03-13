@@ -19,6 +19,7 @@ export const serveCommand = new Command('serve')
 
     const env = {
       ...process.env,
+      CHRONICLE_PROJECT_ROOT: process.cwd(),
       CHRONICLE_CONTENT_DIR: './content',
     }
 
