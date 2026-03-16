@@ -6,22 +6,23 @@ import { buildApiRoutes } from '@/lib/api-routes'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const config = loadConfig()
-  const baseUrl = config.url ?? ''
+  if (!config.url) return []
+
+  const baseUrl = config.url.replace(/\/$/, '')
 
   const docPages = source.getPages().map((page) => ({
     url: `${baseUrl}/${page.slugs.join('/')}`,
-    lastModified: page.data.lastModified ? new Date(page.data.lastModified) : new Date(),
+    ...(page.data.lastModified && { lastModified: new Date(page.data.lastModified) }),
   }))
 
   const apiPages = config.api?.length
     ? buildApiRoutes(loadApiSpecs(config.api)).map((route) => ({
         url: `${baseUrl}/apis/${route.slug.join('/')}`,
-        lastModified: new Date(),
       }))
     : []
 
   return [
-    { url: baseUrl, lastModified: new Date() },
+    { url: baseUrl },
     ...docPages,
     ...apiPages,
   ]

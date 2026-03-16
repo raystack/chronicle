@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, ResolvingMetadata } from 'next'
 import { notFound } from 'next/navigation'
 import type { MDXContent } from 'mdx/types'
 import { loadConfig } from '@/lib/config'
@@ -17,23 +17,39 @@ interface PageData {
   toc: { title: string; url: string; depth: number }[]
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: PageProps,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
   const { slug } = await params
   const page = source.getPage(slug)
   if (!page) return {}
+  const config = loadConfig()
   const data = page.data as PageData
-  const ogParams = new URLSearchParams({ title: data.title })
-  if (data.description) ogParams.set('description', data.description)
+  const parentMetadata = await parent
 
-  return {
+  const metadata: Metadata = {
     title: data.title,
     description: data.description,
-    openGraph: {
+  }
+
+  if (config.url) {
+    const ogParams = new URLSearchParams({ title: data.title })
+    if (data.description) ogParams.set('description', data.description)
+    metadata.openGraph = {
+      ...parentMetadata.openGraph,
       title: data.title,
       description: data.description,
       images: [{ url: `/og?${ogParams.toString()}`, width: 1200, height: 630 }],
-    },
+    }
+    metadata.twitter = {
+      ...parentMetadata.twitter,
+      title: data.title,
+      description: data.description,
+    }
   }
+
+  return metadata
 }
 
 export default async function DocsPage({ params }: PageProps) {

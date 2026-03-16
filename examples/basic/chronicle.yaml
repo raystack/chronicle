@@ -25,7 +25,7 @@ api:
       url: https://frontier.raystack.org
       description: Frontier Server
 analytics:
-  enabled: true
+  enabled: false
   googleAnalytics:
     measurementId: G-XXXXXXXXXX
 footer:

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, ResolvingMetadata } from 'next'
 import { notFound } from 'next/navigation'
 import type { OpenAPIV3 } from 'openapi-types'
 import { Flex, Headline, Text } from '@raystack/apsara'
@@ -11,22 +11,35 @@ interface PageProps {
   params: Promise<{ slug?: string[] }>
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata(
+  { params }: PageProps,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
   const { slug } = await params
   const config = loadConfig()
   const specs = loadApiSpecs(config.api ?? [])
+  const parentMetadata = await parent
 
   if (!slug || slug.length === 0) {
     const apiDescription = `API documentation for ${config.title}`
-    return {
+    const metadata: Metadata = {
       title: 'API Reference',
       description: apiDescription,
-      openGraph: {
+    }
+    if (config.url) {
+      metadata.openGraph = {
+        ...parentMetadata.openGraph,
         title: 'API Reference',
         description: apiDescription,
         images: [{ url: `/og?title=${encodeURIComponent('API Reference')}&description=${encodeURIComponent(apiDescription)}`, width: 1200, height: 630 }],
-      },
+      }
+      metadata.twitter = {
+        ...parentMetadata.twitter,
+        title: 'API Reference',
+        description: apiDescription,
+      }
     }
+    return metadata
   }
 
   const match = findApiOperation(specs, slug)
@@ -36,18 +49,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const title = operation.summary ?? `${match.method.toUpperCase()} ${match.path}`
   const description = operation.description
 
-  const ogParams = new URLSearchParams({ title })
-  if (description) ogParams.set('description', description)
+  const metadata: Metadata = { title, description }
 
-  return {
-    title,
-    description,
-    openGraph: {
+  if (config.url) {
+    const ogParams = new URLSearchParams({ title })
+    if (description) ogParams.set('description', description)
+    metadata.openGraph = {
+      ...parentMetadata.openGraph,
       title,
       description,
       images: [{ url: `/og?${ogParams.toString()}`, width: 1200, height: 630 }],
-    },
+    }
+    metadata.twitter = {
+      ...parentMetadata.twitter,
+      title,
+      description,
+    }
   }
+
+  return metadata
 }
 
 export default async function ApiPage({ params }: PageProps) {
