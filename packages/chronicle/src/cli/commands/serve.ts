@@ -1,32 +1,39 @@
 import { Command } from 'commander'
 import { spawn } from 'child_process'
 import path from 'path'
-import { fileURLToPath } from 'url'
+import fs from 'fs'
 import chalk from 'chalk'
-import { resolveContentDir, loadCLIConfig, attachLifecycleHandlers } from '@/cli/utils'
-
-const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
-const nextBin = path.join(PACKAGE_ROOT, 'node_modules', '.bin', process.platform === 'win32' ? 'next.cmd' : 'next')
+import { attachLifecycleHandlers, resolveNextCli } from '@/cli/utils'
 
 export const serveCommand = new Command('serve')
   .description('Build and start production server')
   .option('-p, --port <port>', 'Port number', '3000')
-  .option('-c, --content <path>', 'Content directory')
   .action((options) => {
-    const contentDir = resolveContentDir(options.content)
-    loadCLIConfig(contentDir)
+    const scaffoldPath = path.join(process.cwd(), '.chronicle')
+    if (!fs.existsSync(scaffoldPath)) {
+      console.log(chalk.red('Error: .chronicle/ not found. Run'), chalk.cyan('chronicle init'), chalk.red('first.'))
+      process.exit(1)
+    }
+
+    let nextCli: string
+    try {
+      nextCli = resolveNextCli()
+    } catch {
+      console.log(chalk.red('Error: Next.js CLI not found. Run'), chalk.cyan('chronicle init'), chalk.red('first.'))
+      process.exit(1)
+    }
 
     const env = {
       ...process.env,
-      CHRONICLE_CONTENT_DIR: contentDir,
+      CHRONICLE_PROJECT_ROOT: process.cwd(),
+      CHRONICLE_CONTENT_DIR: './content',
     }
 
     console.log(chalk.cyan('Building for production...'))
-    console.log(chalk.gray(`Content: ${contentDir}`))
 
-    const buildChild = spawn(nextBin, ['build'], {
+    const buildChild = spawn(process.execPath, [nextCli, 'build'], {
       stdio: 'inherit',
-      cwd: PACKAGE_ROOT,
+      cwd: scaffoldPath,
       env,
     })
 
@@ -41,9 +48,9 @@ export const serveCommand = new Command('serve')
 
       console.log(chalk.cyan('Starting production server...'))
 
-      const startChild = spawn(nextBin, ['start', '-p', options.port], {
+      const startChild = spawn(process.execPath, [nextCli, 'start', '-p', options.port], {
         stdio: 'inherit',
-        cwd: PACKAGE_ROOT,
+        cwd: scaffoldPath,
         env,
       })
 

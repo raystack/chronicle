@@ -13,22 +13,23 @@ WORKDIR /app/packages/chronicle
 COPY --from=deps /app /app
 COPY packages/chronicle ./
 RUN bun build-cli.ts
-
-# --- runner ---
-FROM base AS runner
-WORKDIR /app/packages/chronicle
-
-COPY --from=builder /app /app
-
 RUN chmod +x bin/chronicle.js
 RUN ln -s /app/packages/chronicle/bin/chronicle.js /usr/local/bin/chronicle
 
-RUN mkdir -p /app/content && ln -s /app/content /app/packages/chronicle/content
+# --- init project ---
+WORKDIR /docs
+RUN bun add /app/packages/chronicle
+RUN chronicle init
 
-VOLUME /app/content
+# --- runner ---
+FROM base AS runner
+WORKDIR /docs
 
-ENV CHRONICLE_CONTENT_DIR=./content
-WORKDIR /app/packages/chronicle
+COPY --from=builder /docs /docs
+COPY --from=builder /app/packages/chronicle /app/packages/chronicle
+RUN ln -s /app/packages/chronicle/bin/chronicle.js /usr/local/bin/chronicle
+
+VOLUME /docs/content
 
 EXPOSE 3000
 

@@ -11,11 +11,29 @@ const defaultConfig: ChronicleConfig = {
   search: { enabled: true, placeholder: 'Search...' },
 }
 
-export function loadConfig(): ChronicleConfig {
-  const dir = process.env.CHRONICLE_CONTENT_DIR ?? process.cwd()
-  const configPath = path.join(dir, CONFIG_FILE)
+function resolveConfigPath(): string | null {
+  // Check project root via env var
+  const projectRoot = process.env.CHRONICLE_PROJECT_ROOT
+  if (projectRoot) {
+    const rootPath = path.join(projectRoot, CONFIG_FILE)
+    if (fs.existsSync(rootPath)) return rootPath
+  }
+  // Check cwd
+  const cwdPath = path.join(process.cwd(), CONFIG_FILE)
+  if (fs.existsSync(cwdPath)) return cwdPath
+  // Check content dir
+  const contentDir = process.env.CHRONICLE_CONTENT_DIR
+  if (contentDir) {
+    const contentPath = path.join(contentDir, CONFIG_FILE)
+    if (fs.existsSync(contentPath)) return contentPath
+  }
+  return null
+}
 
-  if (!fs.existsSync(configPath)) {
+export function loadConfig(): ChronicleConfig {
+  const configPath = resolveConfigPath()
+
+  if (!configPath) {
     return defaultConfig
   }
 
