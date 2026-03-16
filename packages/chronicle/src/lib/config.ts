@@ -51,5 +51,6 @@ export function loadConfig(): ChronicleConfig {
     footer: userConfig.footer,
     api: userConfig.api,
     llms: { enabled: false, ...userConfig.llms },
+    analytics: { enabled: false, ...userConfig.analytics },
   }
 }

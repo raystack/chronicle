@@ -1,6 +1,7 @@
 export interface ChronicleConfig {
   title: string
   description?: string
+  url?: string
   logo?: LogoConfig
   theme?: ThemeConfig
   navigation?: NavigationConfig
@@ -8,10 +9,20 @@ export interface ChronicleConfig {
   footer?: FooterConfig
   api?: ApiConfig[]
   llms?: LlmsConfig
+  analytics?: AnalyticsConfig
 }
 
 export interface LlmsConfig {
   enabled?: boolean
+}
+
+export interface AnalyticsConfig {
+  enabled?: boolean
+  googleAnalytics?: GoogleAnalyticsConfig
+}
+
+export interface GoogleAnalyticsConfig {
+  measurementId: string
 }
 
 export interface ApiConfig {

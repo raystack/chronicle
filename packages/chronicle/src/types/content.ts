@@ -5,6 +5,7 @@ export interface Frontmatter {
   description?: string
   order?: number
   icon?: string
+  lastModified?: string
 }
 
 export interface Page {

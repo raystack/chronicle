@@ -11,6 +11,7 @@ export const docs = defineDocs({
   docs: {
     schema: frontmatterSchema.extend({
       order: z.number().optional(),
+      lastModified: z.string().optional(),
     }),
     postprocess: {
       includeProcessedMarkdown: true,
