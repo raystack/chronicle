@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import type { OpenAPIV3 } from 'openapi-types'
 import { Flex, Headline, Text } from '@raystack/apsara'
@@ -8,6 +9,45 @@ import { EndpointPage } from '@/components/api'
 
 interface PageProps {
   params: Promise<{ slug?: string[] }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params
+  const config = loadConfig()
+  const specs = loadApiSpecs(config.api ?? [])
+
+  if (!slug || slug.length === 0) {
+    const apiDescription = `API documentation for ${config.title}`
+    return {
+      title: 'API Reference',
+      description: apiDescription,
+      openGraph: {
+        title: 'API Reference',
+        description: apiDescription,
+        images: [{ url: `/og?title=${encodeURIComponent('API Reference')}&description=${encodeURIComponent(apiDescription)}`, width: 1200, height: 630 }],
+      },
+    }
+  }
+
+  const match = findApiOperation(specs, slug)
+  if (!match) return {}
+
+  const operation = match.operation as OpenAPIV3.OperationObject
+  const title = operation.summary ?? `${match.method.toUpperCase()} ${match.path}`
+  const description = operation.description
+
+  const ogParams = new URLSearchParams({ title })
+  if (description) ogParams.set('description', description)
+
+  return {
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      images: [{ url: `/og?${ogParams.toString()}`, width: 1200, height: 630 }],
+    },
+  }
 }
 
 export default async function ApiPage({ params }: PageProps) {
