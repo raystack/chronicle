@@ -9,6 +9,7 @@
     "vitest": "^4.1.0"
   },
   "dependencies": {
-    "react-router-dom": "^7.13.1"
+    "react-router-dom": "^7.13.1",
+    "satori": "^0.25.0"
   }
 }

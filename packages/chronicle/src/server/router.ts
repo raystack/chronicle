@@ -1,6 +1,12 @@
-export interface RouteHandler {
-  (req: Request): Response | Promise<Response>
-}
+import { handleHealth } from './handlers/health'
+import { handleSearch } from './handlers/search'
+import { handleApisProxy } from './handlers/apis-proxy'
+import { handleOg } from './handlers/og'
+import { handleLlms, handleLlmsFull } from './handlers/llms'
+import { handleSitemap } from './handlers/sitemap'
+import { handleRobots } from './handlers/robots'
+
+export type RouteHandler = (req: Request) => Response | Promise<Response>
 
 interface Route {
   pattern: URLPattern
@@ -16,17 +22,14 @@ function addRoute(path: string, handler: RouteHandler) {
   })
 }
 
-// API routes (stub handlers — replaced in Phase 4)
-addRoute('/api/search', () => new Response(JSON.stringify([]), { headers: { 'content-type': 'application/json' } }))
-addRoute('/api/health', () => new Response('ok'))
-addRoute('/api/apis-proxy', () => new Response('not implemented', { status: 501 }))
-
-// Static content routes (stub handlers — replaced in Phase 4)
-addRoute('/og', () => new Response('not implemented', { status: 501 }))
-addRoute('/llms.txt', () => new Response('', { headers: { 'content-type': 'text/plain' } }))
-addRoute('/llms-full.txt', () => new Response('', { headers: { 'content-type': 'text/plain' } }))
-addRoute('/sitemap.xml', () => new Response('<urlset/>', { headers: { 'content-type': 'application/xml' } }))
-addRoute('/robots.txt', () => new Response('User-agent: *\nAllow: /', { headers: { 'content-type': 'text/plain' } }))
+addRoute('/api/health', handleHealth)
+addRoute('/api/search', handleSearch)
+addRoute('/api/apis-proxy', handleApisProxy)
+addRoute('/og', handleOg)
+addRoute('/llms.txt', handleLlms)
+addRoute('/llms-full.txt', handleLlmsFull)
+addRoute('/sitemap.xml', handleSitemap)
+addRoute('/robots.txt', handleRobots)
 
 export function matchRoute(url: string): RouteHandler | null {
   for (const route of routes) {
