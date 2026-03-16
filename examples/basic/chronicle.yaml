@@ -1,5 +1,6 @@
 title: My Documentation
 description: Documentation powered by Chronicle
+url: https://docs.example.com
 contentDir: .
 theme:
   name: default
@@ -23,6 +24,10 @@ api:
     server:
       url: https://frontier.raystack.org
       description: Frontier Server
+analytics:
+  enabled: true
+  googleAnalytics:
+    measurementId: G-XXXXXXXXXX
 footer:
   copyright: "© 2024 Chronicle. All rights reserved."
   links:
