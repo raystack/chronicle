@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { useLocation, Link as RouterLink } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import { Flex } from '@raystack/apsara'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import type { ThemePageProps, PageTreeItem } from '@/types'
@@ -58,18 +58,18 @@ export function Page({ page, config, tree }: ThemePageProps) {
         <Flex align="center" className={styles.navbar}>
           <Flex align="center" gap="small" className={styles.navLeft}>
             {prev ? (
-              <RouterLink to={prev.url!} className={styles.arrow} aria-label="Previous page">
+              <Link to={prev.url!} className={styles.arrow} aria-label="Previous page">
                 <ChevronLeftIcon width={14} height={14} />
-              </RouterLink>
+              </Link>
             ) : (
               <button disabled className={styles.arrowDisabled} aria-label="Previous page">
                 <ChevronLeftIcon width={14} height={14} />
               </button>
             )}
             {next ? (
-              <RouterLink to={next.url!} className={styles.arrow} aria-label="Next page">
+              <Link to={next.url!} className={styles.arrow} aria-label="Next page">
                 <ChevronRightIcon width={14} height={14} />
-              </RouterLink>
+              </Link>
             ) : (
               <button disabled className={styles.arrowDisabled} aria-label="Next page">
                 <ChevronRightIcon width={14} height={14} />
@@ -82,9 +82,9 @@ export function Page({ page, config, tree }: ThemePageProps) {
                   {i === crumbs.length - 1 ? (
                     <span className={styles.crumbActive}>{crumb.label}</span>
                   ) : (
-                    <RouterLink to={crumb.href} className={styles.crumbLink}>
+                    <Link to={crumb.href} className={styles.crumbLink}>
                       {crumb.label}
-                    </RouterLink>
+                    </Link>
                   )}
                 </span>
               ))}

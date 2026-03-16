@@ -5,6 +5,6 @@ import { App } from './App'
 hydrateRoot(
   document.getElementById('root') as HTMLElement,
   <BrowserRouter>
-    <App url={window.location.href} />
+    <App />
   </BrowserRouter>,
 )

@@ -7,7 +7,7 @@ export function render(url: string, options?: RenderToPipeableStreamOptions) {
 
   return renderToPipeableStream(
     <StaticRouter location={pathname}>
-      <App url={url} />
+      <App />
     </StaticRouter>,
     options,
   )

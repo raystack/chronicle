@@ -1,6 +1,7 @@
 import '@raystack/apsara/normalize.css'
 import '@raystack/apsara/style.css'
 import { ThemeProvider } from '@raystack/apsara'
+import { useLocation } from 'react-router-dom'
 import { loadConfig } from '@/lib/config'
 import { Head } from '@/lib/head'
 import { DocsLayout } from '@/pages/DocsLayout'
@@ -9,13 +10,7 @@ import { ApiLayout } from '@/pages/ApiLayout'
 import { ApiPage } from '@/pages/ApiPage'
 import { NotFound } from '@/pages/NotFound'
 
-interface AppProps {
-  url: string
-}
-
-function resolveRoute(url: string) {
-  const { pathname } = new URL(url, 'http://localhost')
-
+function resolveRoute(pathname: string) {
   if (pathname.startsWith('/apis')) {
     const slug = pathname.replace(/^\/apis\/?/, '').split('/').filter(Boolean)
     return { type: 'api' as const, slug }
@@ -25,9 +20,10 @@ function resolveRoute(url: string) {
   return { type: 'docs' as const, slug }
 }
 
-export function App({ url }: AppProps) {
+export function App() {
+  const { pathname } = useLocation()
   const config = loadConfig()
-  const route = resolveRoute(url)
+  const route = resolveRoute(pathname)
 
   return (
     <ThemeProvider enableSystem>

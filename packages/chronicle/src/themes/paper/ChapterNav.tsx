@@ -1,6 +1,6 @@
 'use client'
 
-import { useLocation, Link as RouterLink } from 'react-router-dom'
+import { useLocation, Link } from 'react-router-dom'
 import { MethodBadge } from '@/components/api/method-badge'
 import type { PageTree, PageTreeItem } from '@/types'
 import styles from './ChapterNav.module.css'
@@ -83,13 +83,13 @@ function ChapterItem({ item, pathname }: { item: PageTreeItem; pathname: string 
 
   return (
     <li>
-      <RouterLink
+      <Link
         to={item.url ?? '#'}
         className={`${styles.link} ${isActive ? styles.active : ''}`}
       >
         {icon && <span className={styles.icon}>{icon}</span>}
         <span>{item.name}</span>
-      </RouterLink>
+      </Link>
     </li>
   )
 }

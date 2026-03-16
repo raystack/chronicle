@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useEffect, useRef } from "react";
-import { useLocation, Link as RouterLink } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { cx } from "class-variance-authority";
-import { Flex, Navbar, Headline, Link, Sidebar, Button } from "@raystack/apsara";
+import { Flex, Navbar, Headline, Sidebar, Button } from "@raystack/apsara";
 import { RectangleStackIcon } from "@heroicons/react/24/outline";
 import { ClientThemeSwitcher } from "@/components/ui/client-theme-switcher";
 import { Search } from "@/components/ui/search";
@@ -44,21 +44,21 @@ export function Layout({ children, config, tree, classNames }: ThemeLayoutProps)
     <Flex direction="column" className={cx(styles.layout, classNames?.layout)}>
       <Navbar className={styles.header}>
         <Navbar.Start>
-          <RouterLink to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <Link to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
             <Headline size="small" weight="medium" as="h1">
               {config.title}
             </Headline>
-          </RouterLink>
+          </Link>
         </Navbar.Start>
         <Navbar.End>
           <Flex gap="medium" align="center" className={styles.navActions}>
             {config.api?.map((api) => (
-              <RouterLink key={api.basePath} to={api.basePath} className={styles.navButton}>
+              <Link key={api.basePath} to={api.basePath} className={styles.navButton}>
                 {api.name} API
-              </RouterLink>
+              </Link>
             ))}
             {config.navigation?.links?.map((link) => (
-              <Link key={link.href} href={link.href}>
+              <Link key={link.href} to={link.href}>
                 {link.label}
               </Link>
             ))}
@@ -117,7 +117,7 @@ function SidebarNode({
 
   const isActive = pathname === item.url;
   const href = item.url ?? "#";
-  const link = useMemo(() => <RouterLink to={href} />, [href]);
+  const link = useMemo(() => <Link to={href} />, [href]);
 
   return (
     <Sidebar.Item

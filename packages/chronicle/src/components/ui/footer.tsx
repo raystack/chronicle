@@ -1,4 +1,5 @@
-import { Flex, Link, Text } from "@raystack/apsara";
+import { Link } from "react-router-dom";
+import { Flex, Text } from "@raystack/apsara";
 import type { FooterConfig } from "@/types";
 import styles from "./footer.module.css";
 
@@ -18,7 +19,7 @@ export function Footer({ config }: FooterProps) {
         {config?.links && config.links.length > 0 && (
           <Flex gap="medium" className={styles.links}>
             {config.links.map((link) => (
-              <Link key={link.href} href={link.href} className={styles.link}>
+              <Link key={link.href} to={link.href} className={styles.link}>
                 {link.label}
               </Link>
             ))}

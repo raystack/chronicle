@@ -1,12 +1,11 @@
 'use client'
 
-import { Link as RouterLink } from 'react-router-dom'
-import { Link as ApsaraLink } from '@raystack/apsara'
+import { Link } from 'react-router-dom'
 import type { ComponentProps } from 'react'
 
 type LinkProps = ComponentProps<'a'>
 
-export function Link({ href, children, ...props }: LinkProps) {
+export function MdxLink({ href, children, ...props }: LinkProps) {
   if (!href) {
     return <span {...props}>{children}</span>
   }
@@ -14,25 +13,25 @@ export function Link({ href, children, ...props }: LinkProps) {
   const isExternal = href.startsWith('http://') || href.startsWith('https://')
   const isAnchor = href.startsWith('#')
 
-  if (isAnchor) {
+  if (isExternal) {
     return (
-      <ApsaraLink href={href} {...props}>
+      <a href={href} target="_blank" rel="noopener noreferrer" {...props}>
         {children}
-      </ApsaraLink>
+      </a>
     )
   }
 
-  if (isExternal) {
+  if (isAnchor) {
     return (
-      <ApsaraLink href={href} target="_blank" rel="noopener noreferrer" {...props}>
+      <a href={href} {...props}>
         {children}
-      </ApsaraLink>
+      </a>
     )
   }
 
   return (
-    <RouterLink to={href} className={props.className}>
+    <Link to={href} className={props.className}>
       {children}
-    </RouterLink>
+    </Link>
   )
 }

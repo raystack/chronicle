@@ -1,6 +1,6 @@
 import type { MDXComponents } from 'mdx/types'
 import { Image } from './image'
-import { Link } from './link'
+import { MdxLink } from './link'
 import { MdxTable, MdxThead, MdxTbody, MdxTr, MdxTh, MdxTd } from './table'
 import { MdxPre, MdxCode } from './code'
 import { MdxDetails, MdxSummary } from './details'
@@ -12,7 +12,7 @@ import { Tabs } from '@raystack/apsara'
 export const mdxComponents: MDXComponents = {
   p: MdxParagraph,
   img: Image,
-  a: Link,
+  a: MdxLink,
   table: MdxTable,
   thead: MdxThead,
   tbody: MdxTbody,
@@ -32,4 +32,4 @@ export const mdxComponents: MDXComponents = {
 }
 
 export { Image } from './image'
-export { Link } from './link'
+export { MdxLink } from './link'
