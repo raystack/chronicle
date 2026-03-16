@@ -50,7 +50,7 @@ export default function RootLayout({
             }, null, 2)}
           </script>
         )}
-        <Providers>{children}</Providers>
+        <Providers analytics={config.analytics ?? { enabled: false }}>{children}</Providers>
       </body>
     </html>
   )
