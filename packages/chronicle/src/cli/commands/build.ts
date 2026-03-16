@@ -14,7 +14,13 @@ export const buildCommand = new Command('build')
       process.exit(1)
     }
 
-    const nextCli = resolveNextCli()
+    let nextCli: string
+    try {
+      nextCli = resolveNextCli()
+    } catch {
+      console.log(chalk.red('Error: Next.js CLI not found. Run'), chalk.cyan('chronicle init'), chalk.red('first.'))
+      process.exit(1)
+    }
 
     console.log(chalk.cyan('Building for production...'))
 

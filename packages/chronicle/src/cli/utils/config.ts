@@ -28,7 +28,7 @@ export function loadCLIConfig(contentDir: string): CLIConfig {
   const configPath = resolveConfigPath(contentDir)
 
   if (!configPath) {
-    console.log(chalk.red('Error: chronicle.yaml not found in'), process.cwd(), 'or', contentDir)
+    console.log(chalk.red(`Error: chronicle.yaml not found in '${process.cwd()}' or '${contentDir}'`))
     console.log(chalk.gray(`Run 'chronicle init' to create one`))
     process.exit(1)
   }

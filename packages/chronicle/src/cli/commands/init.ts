@@ -5,7 +5,7 @@ import path from 'path'
 import chalk from 'chalk'
 import { stringify } from 'yaml'
 import type { ChronicleConfig } from '@/types'
-import { loadCLIConfig, scaffoldDir, detectPackageManager } from '@/cli/utils'
+import { loadCLIConfig, scaffoldDir, detectPackageManager, getChronicleVersion } from '@/cli/utils'
 
 
 function createConfig(): ChronicleConfig {
@@ -28,7 +28,7 @@ function createPackageJson(name: string): Record<string, unknown> {
       start: 'chronicle start',
     },
     dependencies: {
-      '@raystack/chronicle': 'latest',
+      '@raystack/chronicle': `^${getChronicleVersion()}`,
     },
     devDependencies: {
       '@raystack/tools-config': '0.56.0',

@@ -59,7 +59,7 @@ function createPackageJson(): Record<string, unknown> {
     name: 'chronicle-docs',
     private: true,
     dependencies: {
-      '@raystack/chronicle': 'latest',
+      '@raystack/chronicle': `^${getChronicleVersion()}`,
     },
     devDependencies: {
       '@raystack/tools-config': '0.56.0',
@@ -93,9 +93,15 @@ function ensureDeps() {
   }
 }
 
+export function getChronicleVersion(): string {
+  const pkgPath = path.join(PACKAGE_ROOT, 'package.json')
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+  return pkg.version
+}
+
 export function resolveNextCli(): string {
-  const cwdRequire = createRequire(path.join(process.cwd(), 'package.json'))
-  return cwdRequire.resolve('next/dist/bin/next')
+  const chronicleRequire = createRequire(path.join(PACKAGE_ROOT, 'package.json'))
+  return chronicleRequire.resolve('next/dist/bin/next')
 }
 
 export function scaffoldDir(contentDir: string): string {
