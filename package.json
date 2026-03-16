@@ -4,5 +4,8 @@
   "workspaces": ["packages/*", "examples/*"],
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "vitest": "^4.1.0"
   }
 }
