@@ -5,7 +5,7 @@ import { loadApiSpecs } from '@/lib/openapi'
 import { buildApiPageTree } from '@/lib/api-routes'
 import { getTheme } from '@/themes/registry'
 import { Search } from '@/components/ui/search'
-import styles from '@/app/apis/[[...slug]]/layout.module.css'
+import styles from './ApiLayout.module.css'
 
 interface ApiLayoutProps {
   children: ReactNode
