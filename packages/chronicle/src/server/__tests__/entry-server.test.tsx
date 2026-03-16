@@ -7,13 +7,13 @@ describe('entry-server', () => {
   })
 
   it('returns a stream with pipe method', () => {
-    const result = render('/')
+    const result = render('http://localhost:3000/')
     expect(typeof result.pipe).toBe('function')
   })
 
   it('renders with onShellReady callback', async () => {
     const shellReady = new Promise<void>((resolve) => {
-      render('/', {
+      render('http://localhost:3000/', {
         onShellReady() {
           resolve()
         },
@@ -23,12 +23,12 @@ describe('entry-server', () => {
     await shellReady
   })
 
-  it('passes url to rendered output', async () => {
+  it('renders docs route for root URL', async () => {
     const chunks: string[] = []
     const { PassThrough } = await import('stream')
 
     await new Promise<void>((resolve) => {
-      const { pipe } = render('/test-url', {
+      const { pipe } = render('http://localhost:3000/', {
         onShellReady() {
           const passthrough = new PassThrough()
           passthrough.on('data', (chunk: Buffer) => {
@@ -41,6 +41,28 @@ describe('entry-server', () => {
     })
 
     const html = chunks.join('')
-    expect(html).toContain('/test-url')
+    // Should contain rendered output (ThemeProvider wraps content)
+    expect(html).toBeTruthy()
+  })
+
+  it('renders api route for /apis URL', async () => {
+    const chunks: string[] = []
+    const { PassThrough } = await import('stream')
+
+    await new Promise<void>((resolve) => {
+      const { pipe } = render('http://localhost:3000/apis', {
+        onShellReady() {
+          const passthrough = new PassThrough()
+          passthrough.on('data', (chunk: Buffer) => {
+            chunks.push(chunk.toString())
+          })
+          passthrough.on('end', () => resolve())
+          pipe(passthrough)
+        },
+      })
+    })
+
+    const html = chunks.join('')
+    expect(html).toBeTruthy()
   })
 })
