@@ -1,59 +1,52 @@
 import { Command } from 'commander'
-import { spawn } from 'child_process'
 import path from 'path'
-import fs from 'fs'
 import chalk from 'chalk'
-import { attachLifecycleHandlers, resolveNextCli } from '@/cli/utils'
+import { resolveContentDir } from '@/cli/utils/config'
+import { PACKAGE_ROOT } from '@/cli/utils/resolve'
 
 export const serveCommand = new Command('serve')
   .description('Build and start production server')
   .option('-p, --port <port>', 'Port number', '3000')
-  .action((options) => {
-    const scaffoldPath = path.join(process.cwd(), '.chronicle')
-    if (!fs.existsSync(scaffoldPath)) {
-      console.log(chalk.red('Error: .chronicle/ not found. Run'), chalk.cyan('chronicle init'), chalk.red('first.'))
-      process.exit(1)
-    }
+  .option('-c, --content <path>', 'Content directory')
+  .option('-o, --outDir <path>', 'Output directory', 'dist')
+  .action(async (options) => {
+    const contentDir = resolveContentDir(options.content)
+    const port = parseInt(options.port, 10)
+    const outDir = path.resolve(options.outDir)
 
-    let nextCli: string
-    try {
-      nextCli = resolveNextCli()
-    } catch {
-      console.log(chalk.red('Error: Next.js CLI not found. Run'), chalk.cyan('chronicle init'), chalk.red('first.'))
-      process.exit(1)
-    }
+    process.env.CHRONICLE_PROJECT_ROOT = process.cwd()
+    process.env.CHRONICLE_CONTENT_DIR = contentDir
 
-    const env = {
-      ...process.env,
-      CHRONICLE_PROJECT_ROOT: process.cwd(),
-      CHRONICLE_CONTENT_DIR: './content',
-    }
-
+    // Build
     console.log(chalk.cyan('Building for production...'))
 
-    const buildChild = spawn(process.execPath, [nextCli, 'build'], {
-      stdio: 'inherit',
-      cwd: scaffoldPath,
-      env,
+    const { build } = await import('vite')
+    const { createViteConfig } = await import('@/server/vite-config')
+
+    const baseConfig = await createViteConfig({ root: PACKAGE_ROOT, contentDir })
+
+    await build({
+      ...baseConfig,
+      build: {
+        outDir: path.join(outDir, 'client'),
+        ssrManifest: true,
+        rollupOptions: {
+          input: path.resolve(PACKAGE_ROOT, 'src/server/index.html'),
+        },
+      },
     })
 
-    process.once('SIGINT', () => buildChild.kill('SIGINT'))
-    process.once('SIGTERM', () => buildChild.kill('SIGTERM'))
-
-    buildChild.on('close', (code) => {
-      if (code !== 0) {
-        console.log(chalk.red('Build failed'))
-        process.exit(code ?? 1)
-      }
-
-      console.log(chalk.cyan('Starting production server...'))
-
-      const startChild = spawn(process.execPath, [nextCli, 'start', '-p', options.port], {
-        stdio: 'inherit',
-        cwd: scaffoldPath,
-        env,
-      })
-
-      attachLifecycleHandlers(startChild)
+    await build({
+      ...baseConfig,
+      build: {
+        outDir: path.join(outDir, 'server'),
+        ssr: path.resolve(PACKAGE_ROOT, 'src/server/entry-server.tsx'),
+      },
     })
+
+    // Start
+    console.log(chalk.cyan('Starting production server...'))
+
+    const { startProdServer } = await import('@/server/prod')
+    await startProdServer({ port, root: PACKAGE_ROOT, distDir: outDir })
   })

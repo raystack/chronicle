@@ -5,8 +5,7 @@ import path from 'path'
 import chalk from 'chalk'
 import { stringify } from 'yaml'
 import type { ChronicleConfig } from '@/types'
-import { loadCLIConfig, scaffoldDir, detectPackageManager, getChronicleVersion } from '@/cli/utils'
-
+import { detectPackageManager, getChronicleVersion } from '@/cli/utils/scaffold'
 
 function createConfig(): ChronicleConfig {
   return {
@@ -59,29 +58,27 @@ export const initCommand = new Command('init')
     const dirName = path.basename(projectDir) || 'docs'
     const contentDir = path.join(projectDir, options.content)
 
-    // Create content directory if it doesn't exist
+    // Create content directory
     if (!fs.existsSync(contentDir)) {
       fs.mkdirSync(contentDir, { recursive: true })
-      console.log(chalk.green('✓'), 'Created', contentDir)
+      console.log(chalk.green('\u2713'), 'Created', contentDir)
     }
 
-    // Create or update package.json in project root
+    // Create or update package.json
     const packageJsonPath = path.join(projectDir, 'package.json')
     if (!fs.existsSync(packageJsonPath)) {
       fs.writeFileSync(packageJsonPath, JSON.stringify(createPackageJson(dirName), null, 2) + '\n')
-      console.log(chalk.green('✓'), 'Created', packageJsonPath)
+      console.log(chalk.green('\u2713'), 'Created', packageJsonPath)
     } else {
       const existing = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'))
       const template = createPackageJson(dirName)
       let updated = false
 
-      // Set type to module
       if (existing.type !== 'module') {
         existing.type = 'module'
         updated = true
       }
 
-      // Merge missing scripts
       if (!existing.scripts) existing.scripts = {}
       for (const [key, value] of Object.entries(template.scripts as Record<string, string>)) {
         if (!existing.scripts[key]) {
@@ -90,7 +87,6 @@ export const initCommand = new Command('init')
         }
       }
 
-      // Merge missing dependencies
       if (!existing.dependencies) existing.dependencies = {}
       for (const [key, value] of Object.entries(template.dependencies as Record<string, string>)) {
         if (!existing.dependencies[key]) {
@@ -99,7 +95,6 @@ export const initCommand = new Command('init')
         }
       }
 
-      // Merge missing devDependencies
       if (!existing.devDependencies) existing.devDependencies = {}
       for (const [key, value] of Object.entries(template.devDependencies as Record<string, string>)) {
         if (!existing.devDependencies[key]) {
@@ -110,42 +105,42 @@ export const initCommand = new Command('init')
 
       if (updated) {
         fs.writeFileSync(packageJsonPath, JSON.stringify(existing, null, 2) + '\n')
-        console.log(chalk.green('✓'), 'Updated', packageJsonPath, 'with missing scripts/deps')
+        console.log(chalk.green('\u2713'), 'Updated', packageJsonPath)
       } else {
-        console.log(chalk.yellow('⚠'), packageJsonPath, 'already has all required entries')
+        console.log(chalk.yellow('\u26a0'), packageJsonPath, 'already has all required entries')
       }
     }
 
-    // Create chronicle.yaml in project root
+    // Create chronicle.yaml
     const configPath = path.join(projectDir, 'chronicle.yaml')
     if (!fs.existsSync(configPath)) {
       fs.writeFileSync(configPath, stringify(createConfig()))
-      console.log(chalk.green('✓'), 'Created', configPath)
+      console.log(chalk.green('\u2713'), 'Created', configPath)
     } else {
-      console.log(chalk.yellow('⚠'), configPath, 'already exists')
+      console.log(chalk.yellow('\u26a0'), configPath, 'already exists')
     }
 
-    // Create sample index.mdx only if content dir is empty
+    // Create sample index.mdx
     const contentFiles = fs.readdirSync(contentDir)
     if (contentFiles.length === 0) {
       const indexPath = path.join(contentDir, 'index.mdx')
       fs.writeFileSync(indexPath, sampleMdx)
-      console.log(chalk.green('✓'), 'Created', indexPath)
+      console.log(chalk.green('\u2713'), 'Created', indexPath)
     }
 
-    // Add entries to .gitignore
+    // Update .gitignore
     const gitignorePath = path.join(projectDir, '.gitignore')
-    const gitignoreEntries = ['.chronicle', 'node_modules', '.next']
+    const gitignoreEntries = ['node_modules', '.source', 'dist']
     if (fs.existsSync(gitignorePath)) {
       const existing = fs.readFileSync(gitignorePath, 'utf-8')
       const missing = gitignoreEntries.filter(e => !existing.includes(e))
       if (missing.length > 0) {
         fs.appendFileSync(gitignorePath, `\n${missing.join('\n')}\n`)
-        console.log(chalk.green('✓'), 'Added', missing.join(', '), 'to .gitignore')
+        console.log(chalk.green('\u2713'), 'Added', missing.join(', '), 'to .gitignore')
       }
     } else {
       fs.writeFileSync(gitignorePath, `${gitignoreEntries.join('\n')}\n`)
-      console.log(chalk.green('✓'), 'Created .gitignore')
+      console.log(chalk.green('\u2713'), 'Created .gitignore')
     }
 
     // Install dependencies
@@ -153,11 +148,7 @@ export const initCommand = new Command('init')
     console.log(chalk.cyan(`\nInstalling dependencies with ${pm}...`))
     execSync(`${pm} install`, { cwd: projectDir, stdio: 'inherit' })
 
-    // Scaffold .chronicle/ directory
-    loadCLIConfig(contentDir)
-    scaffoldDir(contentDir)
-
     const runCmd = pm === 'npm' ? 'npx' : pm === 'bun' ? 'bunx' : `${pm} dlx`
-    console.log(chalk.green('\n✓ Chronicle initialized!'))
+    console.log(chalk.green('\n\u2713 Chronicle initialized!'))
     console.log('\nRun', chalk.cyan(`${runCmd} chronicle dev`), 'to start development server')
   })

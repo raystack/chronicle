@@ -1,39 +1,21 @@
 import { Command } from 'commander'
-import { spawn } from 'child_process'
-import path from 'path'
-import fs from 'fs'
 import chalk from 'chalk'
-import { attachLifecycleHandlers, resolveNextCli } from '@/cli/utils'
+import { resolveContentDir } from '@/cli/utils/config'
+import { PACKAGE_ROOT } from '@/cli/utils/resolve'
 
 export const devCommand = new Command('dev')
   .description('Start development server')
   .option('-p, --port <port>', 'Port number', '3000')
-  .action((options) => {
-    const scaffoldPath = path.join(process.cwd(), '.chronicle')
-    if (!fs.existsSync(scaffoldPath)) {
-      console.log(chalk.red('Error: .chronicle/ not found. Run'), chalk.cyan('chronicle init'), chalk.red('first.'))
-      process.exit(1)
-    }
+  .option('-c, --content <path>', 'Content directory')
+  .action(async (options) => {
+    const contentDir = resolveContentDir(options.content)
+    const port = parseInt(options.port, 10)
 
-    let nextCli: string
-    try {
-      nextCli = resolveNextCli()
-    } catch {
-      console.log(chalk.red('Error: Next.js CLI not found. Run'), chalk.cyan('chronicle init'), chalk.red('first.'))
-      process.exit(1)
-    }
+    process.env.CHRONICLE_PROJECT_ROOT = process.cwd()
+    process.env.CHRONICLE_CONTENT_DIR = contentDir
 
     console.log(chalk.cyan('Starting dev server...'))
 
-    const child = spawn(process.execPath, [nextCli, 'dev', '-p', options.port], {
-      stdio: 'inherit',
-      cwd: scaffoldPath,
-      env: {
-        ...process.env,
-        CHRONICLE_PROJECT_ROOT: process.cwd(),
-        CHRONICLE_CONTENT_DIR: './content',
-      },
-    })
-
-    attachLifecycleHandlers(child)
+    const { startDevServer } = await import('@/server/dev')
+    await startDevServer({ port, root: PACKAGE_ROOT, contentDir })
   })
