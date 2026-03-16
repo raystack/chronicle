@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { usePathname, Link as NextLink } from '@/lib/router'
+import { useLocation, Link as RouterLink } from 'react-router-dom'
 import { Flex } from '@raystack/apsara'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import type { ThemePageProps, PageTreeItem } from '@/types'
@@ -40,7 +40,7 @@ function findInTree(items: PageTreeItem[], path: string): PageTreeItem | undefin
 }
 
 export function Page({ page, config, tree }: ThemePageProps) {
-  const pathname = usePathname()
+  const { pathname } = useLocation()
 
   const { prev, next, crumbs } = useMemo(() => {
     const pages = flattenTree(tree.children)
@@ -58,18 +58,18 @@ export function Page({ page, config, tree }: ThemePageProps) {
         <Flex align="center" className={styles.navbar}>
           <Flex align="center" gap="small" className={styles.navLeft}>
             {prev ? (
-              <NextLink href={prev.url!} className={styles.arrow} aria-label="Previous page">
+              <RouterLink to={prev.url!} className={styles.arrow} aria-label="Previous page">
                 <ChevronLeftIcon width={14} height={14} />
-              </NextLink>
+              </RouterLink>
             ) : (
               <button disabled className={styles.arrowDisabled} aria-label="Previous page">
                 <ChevronLeftIcon width={14} height={14} />
               </button>
             )}
             {next ? (
-              <NextLink href={next.url!} className={styles.arrow} aria-label="Next page">
+              <RouterLink to={next.url!} className={styles.arrow} aria-label="Next page">
                 <ChevronRightIcon width={14} height={14} />
-              </NextLink>
+              </RouterLink>
             ) : (
               <button disabled className={styles.arrowDisabled} aria-label="Next page">
                 <ChevronRightIcon width={14} height={14} />
@@ -82,9 +82,9 @@ export function Page({ page, config, tree }: ThemePageProps) {
                   {i === crumbs.length - 1 ? (
                     <span className={styles.crumbActive}>{crumb.label}</span>
                   ) : (
-                    <NextLink href={crumb.href} className={styles.crumbLink}>
+                    <RouterLink to={crumb.href} className={styles.crumbLink}>
                       {crumb.label}
-                    </NextLink>
+                    </RouterLink>
                   )}
                 </span>
               ))}

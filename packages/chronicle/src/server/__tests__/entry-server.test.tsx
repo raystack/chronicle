@@ -12,15 +12,13 @@ describe('entry-server', () => {
   })
 
   it('renders with onShellReady callback', async () => {
-    const shellReady = new Promise<void>((resolve) => {
+    await new Promise<void>((resolve) => {
       render('http://localhost:3000/', {
         onShellReady() {
           resolve()
         },
       })
     })
-
-    await shellReady
   })
 
   it('renders docs route for root URL', async () => {
@@ -41,7 +39,6 @@ describe('entry-server', () => {
     })
 
     const html = chunks.join('')
-    // Should contain rendered output (ThemeProvider wraps content)
     expect(html).toBeTruthy()
   })
 

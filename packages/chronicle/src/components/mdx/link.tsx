@@ -1,6 +1,6 @@
 'use client'
 
-import { Link as NextLink } from '@/lib/router'
+import { Link as RouterLink } from 'react-router-dom'
 import { Link as ApsaraLink } from '@raystack/apsara'
 import type { ComponentProps } from 'react'
 
@@ -31,8 +31,8 @@ export function Link({ href, children, ...props }: LinkProps) {
   }
 
   return (
-    <NextLink href={href} className={props.className}>
+    <RouterLink to={href} className={props.className}>
       {children}
-    </NextLink>
+    </RouterLink>
   )
 }

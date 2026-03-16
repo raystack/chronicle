@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useEffect, useRef } from "react";
-import { usePathname, Link as NextLink } from "@/lib/router";
+import { useLocation, Link as RouterLink } from "react-router-dom";
 import { cx } from "class-variance-authority";
 import { Flex, Navbar, Headline, Link, Sidebar, Button } from "@raystack/apsara";
 import { RectangleStackIcon } from "@heroicons/react/24/outline";
@@ -24,7 +24,7 @@ const iconMap: Record<string, React.ReactNode> = {
 let savedScrollTop = 0;
 
 export function Layout({ children, config, tree, classNames }: ThemeLayoutProps) {
-  const pathname = usePathname();
+  const { pathname } = useLocation();
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -44,18 +44,18 @@ export function Layout({ children, config, tree, classNames }: ThemeLayoutProps)
     <Flex direction="column" className={cx(styles.layout, classNames?.layout)}>
       <Navbar className={styles.header}>
         <Navbar.Start>
-          <NextLink href="/" style={{ textDecoration: 'none', color: 'inherit' }}>
+          <RouterLink to="/" style={{ textDecoration: 'none', color: 'inherit' }}>
             <Headline size="small" weight="medium" as="h1">
               {config.title}
             </Headline>
-          </NextLink>
+          </RouterLink>
         </Navbar.Start>
         <Navbar.End>
           <Flex gap="medium" align="center" className={styles.navActions}>
             {config.api?.map((api) => (
-              <NextLink key={api.basePath} href={api.basePath} className={styles.navButton}>
+              <RouterLink key={api.basePath} to={api.basePath} className={styles.navButton}>
                 {api.name} API
-              </NextLink>
+              </RouterLink>
             ))}
             {config.navigation?.links?.map((link) => (
               <Link key={link.href} href={link.href}>
@@ -117,7 +117,7 @@ function SidebarNode({
 
   const isActive = pathname === item.url;
   const href = item.url ?? "#";
-  const link = useMemo(() => <NextLink href={href} scroll={false} />, [href]);
+  const link = useMemo(() => <RouterLink to={href} />, [href]);
 
   return (
     <Sidebar.Item

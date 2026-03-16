@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "@/lib/router";
+import { useNavigate } from "react-router-dom";
 import { Button, Command, Dialog, Text } from "@raystack/apsara";
 import { cx } from "class-variance-authority";
 import { useDocsSearch } from "fumadocs-core/search/client";
@@ -31,7 +31,7 @@ interface SearchProps {
 
 export function Search({ className }: SearchProps) {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const { search, setSearch, query } = useDocsSearch({
     type: "fetch",
@@ -43,9 +43,9 @@ export function Search({ className }: SearchProps) {
   const onSelect = useCallback(
     (url: string) => {
       setOpen(false);
-      router.push(url);
+      navigate(url);
     },
-    [router],
+    [navigate],
   );
 
   useEffect(() => {

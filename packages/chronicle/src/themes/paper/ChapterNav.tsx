@@ -1,6 +1,6 @@
 'use client'
 
-import { usePathname, Link as NextLink } from '@/lib/router'
+import { useLocation, Link as RouterLink } from 'react-router-dom'
 import { MethodBadge } from '@/components/api/method-badge'
 import type { PageTree, PageTreeItem } from '@/types'
 import styles from './ChapterNav.module.css'
@@ -30,7 +30,7 @@ function buildChapterIndices(children: PageTreeItem[]): Map<PageTreeItem, number
 }
 
 export function ChapterNav({ tree }: ChapterNavProps) {
-  const pathname = usePathname()
+  const { pathname } = useLocation()
   const chapterIndices = buildChapterIndices(tree.children)
 
   return (
@@ -83,13 +83,13 @@ function ChapterItem({ item, pathname }: { item: PageTreeItem; pathname: string 
 
   return (
     <li>
-      <NextLink
-        href={item.url ?? '#'}
+      <RouterLink
+        to={item.url ?? '#'}
         className={`${styles.link} ${isActive ? styles.active : ''}`}
       >
         {icon && <span className={styles.icon}>{icon}</span>}
         <span>{item.name}</span>
-      </NextLink>
+      </RouterLink>
     </li>
   )
 }

@@ -1,6 +1,14 @@
 import { renderToPipeableStream, type RenderToPipeableStreamOptions } from 'react-dom/server'
+import { StaticRouter } from 'react-router-dom'
 import { App } from './App'
 
 export function render(url: string, options?: RenderToPipeableStreamOptions) {
-  return renderToPipeableStream(<App url={url} />, options)
+  const pathname = new URL(url, 'http://localhost').pathname
+
+  return renderToPipeableStream(
+    <StaticRouter location={pathname}>
+      <App url={url} />
+    </StaticRouter>,
+    options,
+  )
 }
