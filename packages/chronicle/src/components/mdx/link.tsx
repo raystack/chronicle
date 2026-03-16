@@ -1,6 +1,6 @@
 'use client'
 
-import NextLink from 'next/link'
+import { Link as NextLink } from '@/lib/router'
 import { Link as ApsaraLink } from '@raystack/apsara'
 import type { ComponentProps } from 'react'
 

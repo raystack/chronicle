@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/lib/router";
 import { Button, Command, Dialog, Text } from "@raystack/apsara";
 import { cx } from "class-variance-authority";
 import { useDocsSearch } from "fumadocs-core/search/client";

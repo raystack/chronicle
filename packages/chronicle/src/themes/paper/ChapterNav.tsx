@@ -1,7 +1,6 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
-import NextLink from 'next/link'
+import { usePathname, Link as NextLink } from '@/lib/router'
 import { MethodBadge } from '@/components/api/method-badge'
 import type { PageTree, PageTreeItem } from '@/types'
 import styles from './ChapterNav.module.css'

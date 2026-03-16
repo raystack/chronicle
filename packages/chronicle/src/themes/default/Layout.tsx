@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useEffect, useRef } from "react";
-import { usePathname } from "next/navigation";
-import NextLink from "next/link";
+import { usePathname, Link as NextLink } from "@/lib/router";
 import { cx } from "class-variance-authority";
 import { Flex, Navbar, Headline, Link, Sidebar, Button } from "@raystack/apsara";
 import { RectangleStackIcon } from "@heroicons/react/24/outline";

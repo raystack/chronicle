@@ -1,8 +1,7 @@
 'use client'
 
 import { useMemo } from 'react'
-import { usePathname } from 'next/navigation'
-import NextLink from 'next/link'
+import { usePathname, Link as NextLink } from '@/lib/router'
 import { Flex } from '@raystack/apsara'
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline'
 import type { ThemePageProps, PageTreeItem } from '@/types'

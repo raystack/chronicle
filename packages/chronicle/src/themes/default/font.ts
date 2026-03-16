@@ -1,6 +1,4 @@
-import { Inter } from 'next/font/google'
-
-export const inter = Inter({
-  subsets: ['latin'],
-  display: 'swap',
-})
+export const inter = {
+  className: 'chronicle-inter',
+  style: { fontFamily: "'Inter', system-ui, -apple-system, sans-serif" },
+}

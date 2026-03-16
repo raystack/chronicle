@@ -1,6 +1,7 @@
 import '@raystack/apsara/normalize.css'
 import '@raystack/apsara/style.css'
 import { ThemeProvider } from '@raystack/apsara'
+import { RouterProvider } from '@/lib/router'
 import { loadConfig } from '@/lib/config'
 import { Head } from '@/lib/head'
 import { DocsLayout } from '@/pages/DocsLayout'
@@ -30,18 +31,20 @@ export function App({ url }: AppProps) {
   const route = resolveRoute(url)
 
   return (
-    <ThemeProvider enableSystem>
-      <RootHead config={config} />
-      {route.type === 'api' ? (
-        <ApiLayout>
-          <ApiPage slug={route.slug} />
-        </ApiLayout>
-      ) : (
-        <DocsLayout>
-          <DocsPage slug={route.slug} />
-        </DocsLayout>
-      )}
-    </ThemeProvider>
+    <RouterProvider initialUrl={url}>
+      <ThemeProvider enableSystem>
+        <RootHead config={config} />
+        {route.type === 'api' ? (
+          <ApiLayout>
+            <ApiPage slug={route.slug} />
+          </ApiLayout>
+        ) : (
+          <DocsLayout>
+            <DocsPage slug={route.slug} />
+          </DocsLayout>
+        )}
+      </ThemeProvider>
+    </RouterProvider>
   )
 }
 
