@@ -39,6 +39,17 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
+        {config.url && (
+          <script type="application/ld+json">
+            {JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'WebSite',
+              name: config.title,
+              description: config.description,
+              url: config.url,
+            }, null, 2)}
+          </script>
+        )}
         <Providers>{children}</Providers>
       </body>
     </html>

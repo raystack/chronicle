@@ -53,20 +53,33 @@ export default async function DocsPage({ params }: PageProps) {
 
   const tree = buildPageTree()
 
+  const pageUrl = config.url ? `${config.url}/${(slug ?? []).join('/')}` : undefined
+
   return (
-    <Page
-      page={{
-        slug: slug ?? [],
-        frontmatter: {
-          title: data.title,
+    <>
+      <script type="application/ld+json">
+        {JSON.stringify({
+          '@context': 'https://schema.org',
+          '@type': 'Article',
+          headline: data.title,
           description: data.description,
-        },
-        content: <MDXBody components={mdxComponents} />,
-        toc: data.toc ?? [],
-      }}
-      config={config}
-      tree={tree}
-    />
+          ...(pageUrl && { url: pageUrl }),
+        }, null, 2)}
+      </script>
+      <Page
+        page={{
+          slug: slug ?? [],
+          frontmatter: {
+            title: data.title,
+            description: data.description,
+          },
+          content: <MDXBody components={mdxComponents} />,
+          toc: data.toc ?? [],
+        }}
+        config={config}
+        tree={tree}
+      />
+    </>
   )
 }
 
