@@ -8,6 +8,7 @@ export const buildCommand = new Command('build')
   .description('Build for production')
   .option('-c, --content <path>', 'Content directory')
   .option('-o, --outDir <path>', 'Output directory', 'dist')
+  .option('--adapter <adapter>', 'Deploy adapter (vercel)')
   .action(async (options) => {
     const contentDir = resolveContentDir(options.content)
     const outDir = path.resolve(options.outDir)
@@ -35,7 +36,11 @@ export const buildCommand = new Command('build')
       },
     })
 
-    // Build server bundle (noExternal: true to bundle all deps for portability)
+    // Build server bundle
+    const serverEntry = options.adapter === 'vercel'
+      ? path.resolve(PACKAGE_ROOT, 'src/server/entry-vercel.ts')
+      : path.resolve(PACKAGE_ROOT, 'src/server/entry-prod.ts')
+
     console.log(chalk.gray('Building server...'))
     await build({
       ...baseConfig,
@@ -44,9 +49,19 @@ export const buildCommand = new Command('build')
       },
       build: {
         outDir: path.join(outDir, 'server'),
-        ssr: path.resolve(PACKAGE_ROOT, 'src/server/entry-prod.ts'),
+        ssr: serverEntry,
       },
     })
 
     console.log(chalk.green('Build complete →'), outDir)
+
+    // Run Vercel adapter post-build
+    if (options.adapter === 'vercel') {
+      const { buildVercelOutput } = await import('@/server/adapters/vercel')
+      await buildVercelOutput({
+        distDir: outDir,
+        contentDir,
+        projectRoot: process.cwd(),
+      })
+    }
   })
