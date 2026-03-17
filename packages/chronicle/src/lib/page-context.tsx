@@ -47,6 +47,7 @@ export function PageProvider({ initialConfig, initialTree, initialPage, initialA
   const { pathname } = useLocation()
   const [tree, setTree] = useState<PageTree>(initialTree)
   const [page, setPage] = useState<PageData | null>(initialPage)
+  const [apiSpecs, setApiSpecs] = useState<ApiSpec[]>(initialApiSpecs)
   const [currentPath, setCurrentPath] = useState(pathname)
 
   useEffect(() => {
@@ -54,11 +55,20 @@ export function PageProvider({ initialConfig, initialTree, initialPage, initialA
     setCurrentPath(pathname)
 
     let cancelled = false
+
+    if (pathname.startsWith('/apis')) {
+      // Fetch API specs if not already loaded
+      if (apiSpecs.length === 0) {
+        fetch('/api/specs')
+          .then((res) => res.json())
+          .then((specs) => { if (!cancelled) setApiSpecs(specs) })
+          .catch(() => {})
+      }
+      return () => { cancelled = true }
+    }
+
     async function load() {
       const slug = pathname === '/' ? [] : pathname.slice(1).split('/').filter(Boolean)
-
-      // Skip non-docs routes — API pages use static specs from context
-      if (pathname.startsWith('/apis')) return
 
       const [sourcePage, newTree] = await Promise.all([getPage(slug), buildPageTree()])
       if (cancelled || !sourcePage) return
@@ -78,7 +88,7 @@ export function PageProvider({ initialConfig, initialTree, initialPage, initialA
   }, [pathname])
 
   return (
-    <PageContext.Provider value={{ config: initialConfig, tree, page, apiSpecs: initialApiSpecs }}>
+    <PageContext.Provider value={{ config: initialConfig, tree, page, apiSpecs }}>
       {children}
     </PageContext.Provider>
   )

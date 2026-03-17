@@ -74,7 +74,8 @@ export async function startDevServer(options: DevServerOptions) {
       ])
 
       let pageData = null
-      let embeddedData: any = { config, tree, slug, frontmatter: null, filePath: null, apiSpecs }
+      // Don't embed apiSpecs — too large. Client fetches via /api/specs
+      let embeddedData: any = { config, tree, slug, frontmatter: null, filePath: null }
 
       if (sourcePage) {
         const component = await source.loadPageComponent(sourcePage)

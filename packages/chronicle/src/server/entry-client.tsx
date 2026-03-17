@@ -15,7 +15,6 @@ interface EmbeddedData {
   slug: string[]
   frontmatter: { title: string; description?: string; order?: number }
   filePath: string
-  apiSpecs: ApiSpec[]
 }
 
 async function hydrate() {
@@ -30,7 +29,15 @@ async function hydrate() {
     if (embedded) {
       config = embedded.config
       tree = embedded.tree
-      apiSpecs = embedded.apiSpecs ?? []
+
+      // Fetch API specs if on /apis route
+      const isApiRoute = window.location.pathname.startsWith('/apis')
+      if (isApiRoute && config.api?.length) {
+        try {
+          const res = await fetch('/api/specs')
+          apiSpecs = await res.json()
+        } catch { /* will load on demand */ }
+      }
 
       const sourcePage = await getPage(embedded.slug)
       if (sourcePage) {

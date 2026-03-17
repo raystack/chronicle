@@ -5,6 +5,7 @@ import { handleOg } from './handlers/og'
 import { handleLlms } from './handlers/llms'
 import { handleSitemap } from './handlers/sitemap'
 import { handleRobots } from './handlers/robots'
+import { handleSpecs } from './handlers/specs'
 
 export type RouteHandler = (req: Request) => Response | Promise<Response>
 
@@ -25,6 +26,7 @@ function addRoute(path: string, handler: RouteHandler) {
 addRoute('/api/health', handleHealth)
 addRoute('/api/search', handleSearch)
 addRoute('/api/apis-proxy', handleApisProxy)
+addRoute('/api/specs', handleSpecs)
 addRoute('/og', handleOg)
 addRoute('/llms.txt', handleLlms)
 addRoute('/sitemap.xml', handleSitemap)
