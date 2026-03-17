@@ -119,13 +119,14 @@ export async function handleSearch(req: Request): Promise<Response> {
   const index = await getIndex()
 
   if (!query) {
-    const results = index.search('', { combineWith: 'OR' }).slice(0, 8).map((r) => ({
-      id: r.id,
-      url: r.url,
-      type: r.type,
-      content: r.title,
+    const contentDocs = await scanContent()
+    const suggestions = contentDocs.slice(0, 8).map((d) => ({
+      id: d.id,
+      url: d.url,
+      type: d.type,
+      content: d.title,
     }))
-    return Response.json(results)
+    return Response.json(suggestions)
   }
 
   const results = index.search(query).map((r) => ({
