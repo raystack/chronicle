@@ -49,7 +49,13 @@ export async function buildVercelOutput(options: VercelAdapterOptions) {
   const templateSrc = path.resolve(clientDir, 'src/server/index.html')
   await fs.copyFile(templateSrc, path.resolve(funcDir, 'index.html'))
 
-  // 5. Write .vc-config.json
+  // 5. Write package.json for ESM support
+  await fs.writeFile(
+    path.resolve(funcDir, 'package.json'),
+    JSON.stringify({ type: 'module' }, null, 2),
+  )
+
+  // 6. Write .vc-config.json
   await fs.writeFile(
     path.resolve(funcDir, '.vc-config.json'),
     JSON.stringify({
@@ -59,7 +65,7 @@ export async function buildVercelOutput(options: VercelAdapterOptions) {
     }, null, 2),
   )
 
-  // 6. Write config.json
+  // 7. Write config.json
   await fs.writeFile(
     path.resolve(outputDir, 'config.json'),
     JSON.stringify({
