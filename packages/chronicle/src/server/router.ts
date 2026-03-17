@@ -2,7 +2,7 @@ import { handleHealth } from './handlers/health'
 import { handleSearch } from './handlers/search'
 import { handleApisProxy } from './handlers/apis-proxy'
 import { handleOg } from './handlers/og'
-import { handleLlms, handleLlmsFull } from './handlers/llms'
+import { handleLlms } from './handlers/llms'
 import { handleSitemap } from './handlers/sitemap'
 import { handleRobots } from './handlers/robots'
 
@@ -27,7 +27,6 @@ addRoute('/api/search', handleSearch)
 addRoute('/api/apis-proxy', handleApisProxy)
 addRoute('/og', handleOg)
 addRoute('/llms.txt', handleLlms)
-addRoute('/llms-full.txt', handleLlmsFull)
 addRoute('/sitemap.xml', handleSitemap)
 addRoute('/robots.txt', handleRobots)
 

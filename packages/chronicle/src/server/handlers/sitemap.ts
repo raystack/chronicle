@@ -1,9 +1,9 @@
 import { loadConfig } from '@/lib/config'
-import { source } from '@/lib/source'
+import { getPages } from '@/lib/source'
 import { loadApiSpecs } from '@/lib/openapi'
 import { buildApiRoutes } from '@/lib/api-routes'
 
-export function handleSitemap(): Response {
+export async function handleSitemap(): Promise<Response> {
   const config = loadConfig()
   if (!config.url) {
     return new Response('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"/>', {
@@ -13,9 +13,10 @@ export function handleSitemap(): Response {
 
   const baseUrl = config.url.replace(/\/$/, '')
 
-  const docPages = source.getPages().map((page) => {
-    const lastmod = page.data.lastModified
-      ? `<lastmod>${new Date(page.data.lastModified).toISOString()}</lastmod>`
+  const pages = await getPages()
+  const docPages = pages.map((page) => {
+    const lastmod = page.frontmatter.lastModified
+      ? `<lastmod>${new Date(page.frontmatter.lastModified).toISOString()}</lastmod>`
       : ''
     return `<url><loc>${baseUrl}/${page.slugs.join('/')}</loc>${lastmod}</url>`
   })
