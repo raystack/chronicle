@@ -49,3 +49,42 @@
   overflow-x: auto;
   margin-bottom: var(--rs-space-5);
 }
+
+.content details {
+  border: 1px solid var(--rs-color-border-base-primary);
+  border-radius: var(--rs-radius-2);
+  margin: var(--rs-space-5) 0;
+  overflow: hidden;
+}
+
+.content details summary {
+  padding: var(--rs-space-4) var(--rs-space-5);
+  cursor: pointer;
+  font-weight: 500;
+  font-size: var(--rs-font-size-small);
+  color: var(--rs-color-text-base-primary);
+  background: var(--rs-color-background-base-secondary);
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: var(--rs-space-3);
+}
+
+.content details summary::-webkit-details-marker {
+  display: none;
+}
+
+.content details summary::before {
+  content: '▶';
+  font-size: 10px;
+  transition: transform 0.2s ease;
+  color: var(--rs-color-text-base-secondary);
+}
+
+.content details[open] > summary::before {
+  transform: rotate(90deg);
+}
+
+.content details > :not(summary) {
+  padding: var(--rs-space-4) var(--rs-space-5);
+}
