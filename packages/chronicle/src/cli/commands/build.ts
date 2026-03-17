@@ -50,6 +50,7 @@ export const buildCommand = new Command('build')
       build: {
         outDir: path.join(outDir, 'server'),
         ssr: serverEntry,
+        target: 'node22',
       },
     })
 

@@ -1,9 +1,11 @@
 // Vercel serverless function entry — built by Vite, deployed as catch-all function
 import type { IncomingMessage, ServerResponse } from 'http'
 import { readFileSync } from 'fs'
+import { fileURLToPath } from 'url'
 import path from 'path'
 import { handleRequest } from './request-handler'
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const templatePath = path.resolve(__dirname, 'index.html')
 const template = readFileSync(templatePath, 'utf-8')
 
