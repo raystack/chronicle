@@ -59,7 +59,7 @@ export async function buildVercelOutput(options: VercelAdapterOptions) {
   await fs.writeFile(
     path.resolve(funcDir, '.vc-config.json'),
     JSON.stringify({
-      runtime: 'nodejs22.x',
+      runtime: 'nodejs24.x',
       handler: 'entry-vercel.js',
       launcherType: 'Nodejs',
     }, null, 2),
