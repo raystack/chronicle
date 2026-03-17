@@ -3,15 +3,21 @@ import { createServer } from 'http'
 import { readFileSync, createReadStream } from 'fs'
 import fsPromises from 'fs/promises'
 import path from 'path'
-import React from 'react'
 import { render } from './entry-server'
 import { matchRoute } from './router'
 import { loadConfig } from '@/lib/config'
 import { loadApiSpecs } from '@/lib/openapi'
 import { getPage, loadPageComponent, buildPageTree } from '@/lib/source'
-import { mdxComponents } from '@/components/mdx'
+import { handleRequest } from './request-handler'
 
 export { render, matchRoute, loadConfig, loadApiSpecs, getPage, loadPageComponent, buildPageTree }
+
+async function writeResponse(res: import('http').ServerResponse, response: Response) {
+  res.statusCode = response.status
+  response.headers.forEach((value: string, key: string) => res.setHeader(key, value))
+  const body = await response.text()
+  res.end(body)
+}
 
 export async function startServer(options: { port: number; distDir: string }) {
   const { port, distDir } = options
@@ -23,19 +29,17 @@ export async function startServer(options: { port: number; distDir: string }) {
   const sirv = (await import('sirv')).default
   const assets = sirv(clientDir, { gzip: true })
 
+  const baseUrl = `http://localhost:${port}`
+
   const server = createServer(async (req, res) => {
     const url = req.url || '/'
 
     try {
-      // API routes
-      const routeHandler = matchRoute(new URL(url, `http://localhost:${port}`).href)
+      // API routes — handled by shared request handler
+      const routeHandler = matchRoute(new URL(url, baseUrl).href)
       if (routeHandler) {
-        const request = new Request(new URL(url, `http://localhost:${port}`))
-        const response = await routeHandler(request)
-        res.statusCode = response.status
-        response.headers.forEach((value: string, key: string) => res.setHeader(key, value))
-        const body = await response.text()
-        res.end(body)
+        const response = await routeHandler(new Request(new URL(url, baseUrl)))
+        await writeResponse(res, response)
         return
       }
 
@@ -67,43 +71,9 @@ export async function startServer(options: { port: number; distDir: string }) {
       })
       if (assetHandled) return
 
-      // Resolve page data
-      const pathname = new URL(url, `http://localhost:${port}`).pathname
-      const slug = pathname === '/' ? [] : pathname.slice(1).split('/').filter(Boolean)
-
-      const config = loadConfig()
-      const apiSpecs = config.api?.length ? loadApiSpecs(config.api) : []
-
-      const [tree, sourcePage] = await Promise.all([
-        buildPageTree(),
-        getPage(slug),
-      ])
-
-      let pageData = null
-      let embeddedData: any = { config, tree, slug, frontmatter: null, filePath: null }
-
-      if (sourcePage) {
-        const component = await loadPageComponent(sourcePage)
-        pageData = {
-          slug,
-          frontmatter: sourcePage.frontmatter,
-          content: component ? React.createElement(component, { components: mdxComponents }) : null,
-        }
-        embeddedData.frontmatter = sourcePage.frontmatter
-        embeddedData.filePath = sourcePage.filePath
-      }
-
-      // SSR render
-      const html = render(url, { config, tree, page: pageData, apiSpecs })
-
-      const dataScript = `<script>window.__PAGE_DATA__ = ${JSON.stringify(embeddedData)}</script>`
-      const finalHtml = template
-        .replace('<!--head-outlet-->', `<!--head-outlet-->${dataScript}`)
-        .replace('<!--ssr-outlet-->', html)
-
-      res.setHeader('Content-Type', 'text/html')
-      res.statusCode = 200
-      res.end(finalHtml)
+      // SSR render — handled by shared request handler
+      const response = await handleRequest(url, { template, baseUrl })
+      await writeResponse(res, response)
     } catch (e) {
       console.error(e)
       res.statusCode = 500
