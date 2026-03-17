@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
 import { useLocation } from 'react-router-dom'
 import type { ChronicleConfig, Frontmatter, PageTree } from '@/types'
+import type { ApiSpec } from '@/lib/openapi'
 import { getPage, loadPageComponent, buildPageTree } from '@/lib/source'
 import { mdxComponents } from '@/components/mdx'
 import React from 'react'
@@ -15,6 +16,7 @@ interface PageContextValue {
   config: ChronicleConfig
   tree: PageTree
   page: PageData | null
+  apiSpecs: ApiSpec[]
 }
 
 const PageContext = createContext<PageContextValue | null>(null)
@@ -27,6 +29,7 @@ export function usePageContext(): PageContextValue {
       config: { title: 'Documentation' },
       tree: { name: 'root', children: [] },
       page: null,
+      apiSpecs: [],
     }
   }
   return ctx
@@ -36,10 +39,11 @@ interface PageProviderProps {
   initialConfig: ChronicleConfig
   initialTree: PageTree
   initialPage: PageData | null
+  initialApiSpecs: ApiSpec[]
   children: ReactNode
 }
 
-export function PageProvider({ initialConfig, initialTree, initialPage, children }: PageProviderProps) {
+export function PageProvider({ initialConfig, initialTree, initialPage, initialApiSpecs, children }: PageProviderProps) {
   const { pathname } = useLocation()
   const [tree, setTree] = useState<PageTree>(initialTree)
   const [page, setPage] = useState<PageData | null>(initialPage)
@@ -53,7 +57,7 @@ export function PageProvider({ initialConfig, initialTree, initialPage, children
     async function load() {
       const slug = pathname === '/' ? [] : pathname.slice(1).split('/').filter(Boolean)
 
-      // Skip non-docs routes
+      // Skip non-docs routes — API pages use static specs from context
       if (pathname.startsWith('/apis')) return
 
       const [sourcePage, newTree] = await Promise.all([getPage(slug), buildPageTree()])
@@ -74,7 +78,7 @@ export function PageProvider({ initialConfig, initialTree, initialPage, children
   }, [pathname])
 
   return (
-    <PageContext.Provider value={{ config: initialConfig, tree, page }}>
+    <PageContext.Provider value={{ config: initialConfig, tree, page, apiSpecs: initialApiSpecs }}>
       {children}
     </PageContext.Provider>
   )

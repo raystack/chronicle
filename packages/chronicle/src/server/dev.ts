@@ -65,13 +65,16 @@ export async function startDevServer(options: DevServerOptions) {
 
       const config = loadConfig()
 
+      const { loadApiSpecs } = await vite.ssrLoadModule(path.resolve(root, 'src/lib/openapi.ts'))
+      const apiSpecs = config.api?.length ? loadApiSpecs(config.api) : []
+
       const [tree, sourcePage] = await Promise.all([
         source.buildPageTree(),
         source.getPage(slug),
       ])
 
       let pageData = null
-      let embeddedData: any = { config, tree, slug, frontmatter: null, filePath: null }
+      let embeddedData: any = { config, tree, slug, frontmatter: null, filePath: null, apiSpecs }
 
       if (sourcePage) {
         const component = await source.loadPageComponent(sourcePage)
@@ -97,7 +100,7 @@ export async function startDevServer(options: DevServerOptions) {
 
       const { render } = await vite.ssrLoadModule(path.resolve(root, 'src/server/entry-server.tsx'))
 
-      const html = render(url, { config, tree, page: pageData })
+      const html = render(url, { config, tree, page: pageData, apiSpecs })
       const finalHtml = template.replace('<!--ssr-outlet-->', html)
 
       res.setHeader('Content-Type', 'text/html')

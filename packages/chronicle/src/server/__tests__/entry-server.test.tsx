@@ -9,6 +9,7 @@ const mockData: SSRData = {
     frontmatter: { title: 'Test' },
     content: null,
   },
+  apiSpecs: [],
 }
 
 describe('entry-server', () => {
