@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { Button, Command, Dialog, Text } from "@raystack/apsara";
 import { cx } from "class-variance-authority";
 import { DocumentIcon, HashtagIcon } from "@heroicons/react/24/outline";
-import { isMacOs } from "react-device-detect";
 import { MethodBadge } from "@/components/api/method-badge";
 import styles from "./search.module.css";
 
@@ -45,7 +44,7 @@ function SearchShortcutKey({ className }: { className?: string }) {
   const [key, setKey] = useState("\u2318");
 
   useEffect(() => {
-    setKey(isMacOs ? "\u2318" : "Ctrl");
+    setKey(navigator.platform?.startsWith("Mac") ? "\u2318" : "Ctrl");
   }, []);
 
   return (
