@@ -25,6 +25,12 @@ export async function createViteConfig(options: ViteConfigOptions): Promise<Inli
         '@': path.resolve(root, 'src'),
         '@content': contentDir,
       },
+      dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
+    },
+    server: {
+      fs: {
+        allow: [root, contentDir],
+      },
     },
     plugins: [
       mdx({
