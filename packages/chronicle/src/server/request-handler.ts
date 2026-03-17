@@ -51,7 +51,8 @@ export async function handleRequest(url: string, options: RequestHandlerOptions)
 
   const html = render(url, { config, tree, page: pageData, apiSpecs })
 
-  const dataScript = `<script>window.__PAGE_DATA__ = ${JSON.stringify(embeddedData)}</script>`
+  const safeJson = JSON.stringify(embeddedData).replace(/</g, '\\u003c')
+  const dataScript = `<script>window.__PAGE_DATA__ = ${safeJson}</script>`
   const finalHtml = template
     .replace('<!--head-outlet-->', `<!--head-outlet-->${dataScript}`)
     .replace('<!--ssr-outlet-->', html)

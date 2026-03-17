@@ -18,23 +18,27 @@ interface SearchResult {
 function useSearch(query: string) {
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    clearTimeout(timerRef.current);
+    let cancelled = false;
+    if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(async () => {
       setIsLoading(true);
       try {
         const params = new URLSearchParams();
         if (query) params.set("query", query);
         const res = await fetch(`/api/search?${params}`);
-        setResults(await res.json());
+        if (!cancelled) setResults(await res.json());
       } catch {
-        setResults([]);
+        if (!cancelled) setResults([]);
       }
-      setIsLoading(false);
+      if (!cancelled) setIsLoading(false);
     }, 100);
-    return () => clearTimeout(timerRef.current);
+    return () => {
+      cancelled = true;
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
   }, [query]);
 
   return { results, isLoading };

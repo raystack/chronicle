@@ -9,6 +9,7 @@ import { loadConfig } from '@/lib/config'
 import { loadApiSpecs } from '@/lib/openapi'
 import { getPage, loadPageComponent, buildPageTree } from '@/lib/source'
 import { handleRequest } from './request-handler'
+import { safePath } from './utils/safe-path'
 
 export { render, matchRoute, loadConfig, loadApiSpecs, getPage, loadPageComponent, buildPageTree }
 
@@ -45,8 +46,8 @@ export async function startServer(options: { port: number; distDir: string }) {
 
       // Serve static files from content dir (skip .md/.mdx)
       const contentDir = process.env.CHRONICLE_CONTENT_DIR || process.cwd()
-      const contentFile = path.join(contentDir, decodeURIComponent(url.split('?')[0]))
-      if (!url.endsWith('.md') && !url.endsWith('.mdx')) {
+      const contentFile = safePath(contentDir, url)
+      if (contentFile && !url.endsWith('.md') && !url.endsWith('.mdx')) {
         try {
           const stat = await fsPromises.stat(contentFile)
           if (stat.isFile()) {
@@ -77,7 +78,7 @@ export async function startServer(options: { port: number; distDir: string }) {
     } catch (e) {
       console.error(e)
       res.statusCode = 500
-      res.end((e as Error).message)
+      res.end('Internal Server Error')
     }
   })
 

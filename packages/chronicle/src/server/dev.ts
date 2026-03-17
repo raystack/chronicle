@@ -5,6 +5,7 @@ import { createReadStream } from 'fs'
 import path from 'path'
 import chalk from 'chalk'
 import { createViteConfig } from './vite-config'
+import { safePath } from './utils/safe-path'
 
 export interface DevServerOptions {
   port: number
@@ -38,8 +39,8 @@ export async function startDevServer(options: DevServerOptions) {
       }
 
       // Serve static files from content dir (skip .md/.mdx)
-      const contentFile = path.join(contentDir, decodeURIComponent(url.split('?')[0]))
-      if (!url.endsWith('.md') && !url.endsWith('.mdx')) {
+      const contentFile = safePath(contentDir, url)
+      if (contentFile && !url.endsWith('.md') && !url.endsWith('.mdx')) {
         try {
           const stat = await fsPromises.stat(contentFile)
           if (stat.isFile()) {
@@ -119,7 +120,8 @@ export async function startDevServer(options: DevServerOptions) {
       template = await vite.transformIndexHtml(url, template)
 
       // Embed page data for client hydration
-      const dataScript = `<script>window.__PAGE_DATA__ = ${JSON.stringify(embeddedData)}</script>`
+      const safeJson = JSON.stringify(embeddedData).replace(/</g, '\\u003c')
+      const dataScript = `<script>window.__PAGE_DATA__ = ${safeJson}</script>`
       template = template.replace('<!--head-outlet-->', `<!--head-outlet-->${dataScript}`)
 
       const { render } = await vite.ssrLoadModule(path.resolve(root, 'src/server/entry-server.tsx'))

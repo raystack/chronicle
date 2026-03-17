@@ -20,6 +20,11 @@ export async function handleApisProxy(req: Request): Promise<Response> {
     return Response.json({ error: `Unknown spec: ${specName}` }, { status: 404 })
   }
 
+  // Validate path doesn't contain protocol or escape the base URL
+  if (/^[a-z]+:\/\//i.test(path) || path.includes('..')) {
+    return Response.json({ error: 'Invalid path' }, { status: 400 })
+  }
+
   const url = spec.server.url + path
 
   try {

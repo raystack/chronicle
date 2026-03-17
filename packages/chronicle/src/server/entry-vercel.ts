@@ -23,6 +23,6 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   } catch (e) {
     console.error(e)
     res.statusCode = 500
-    res.end((e as Error).message)
+    res.end('Internal Server Error')
   }
 }

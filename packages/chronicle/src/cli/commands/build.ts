@@ -13,6 +13,12 @@ export const buildCommand = new Command('build')
     const contentDir = resolveContentDir(options.content)
     const outDir = path.resolve(options.outDir)
 
+    const VALID_ADAPTERS = ['vercel']
+    if (options.adapter && !VALID_ADAPTERS.includes(options.adapter)) {
+      console.error(chalk.red(`Unknown adapter: ${options.adapter}. Valid adapters: ${VALID_ADAPTERS.join(', ')}`))
+      process.exit(1)
+    }
+
     process.env.CHRONICLE_PROJECT_ROOT = process.cwd()
     process.env.CHRONICLE_CONTENT_DIR = contentDir
 
