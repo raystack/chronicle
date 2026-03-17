@@ -29,19 +29,22 @@ export const buildCommand = new Command('build')
       build: {
         outDir: path.join(outDir, 'client'),
         ssrManifest: true,
-        rollupOptions: {
+        rolldownOptions: {
           input: path.resolve(PACKAGE_ROOT, 'src/server/index.html'),
         },
       },
     })
 
-    // Build server bundle
+    // Build server bundle (noExternal: true to bundle all deps for portability)
     console.log(chalk.gray('Building server...'))
     await build({
       ...baseConfig,
+      ssr: {
+        noExternal: true,
+      },
       build: {
         outDir: path.join(outDir, 'server'),
-        ssr: path.resolve(PACKAGE_ROOT, 'src/server/entry-server.tsx'),
+        ssr: path.resolve(PACKAGE_ROOT, 'src/server/entry-prod.ts'),
       },
     })
 
