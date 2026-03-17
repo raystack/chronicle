@@ -41,7 +41,7 @@ export async function createViteConfig(options: ViteConfigOptions): Promise<Inli
           remarkDirective,
         ],
         rehypePlugins: [
-          [rehypeShiki, { themes: { light: 'github-light', dark: 'github-dark' } }],
+          [rehypeShiki, { themes: { light: 'github-light', dark: 'github-dark' }, defaultColor: false }],
         ],
         mdExtensions: ['.md'],
         mdxExtensions: ['.mdx'],
