@@ -1,6 +1,7 @@
 // Production server entry — built by Vite, loaded by prod.ts at runtime
 import { createServer } from 'http'
-import { readFileSync } from 'fs'
+import { readFileSync, createReadStream } from 'fs'
+import fsPromises from 'fs/promises'
 import path from 'path'
 import React from 'react'
 import { render } from './entry-server'
@@ -38,7 +39,28 @@ export async function startServer(options: { port: number; distDir: string }) {
         return
       }
 
-      // Static assets
+      // Serve static files from content dir (skip .md/.mdx)
+      const contentDir = process.env.CHRONICLE_CONTENT_DIR || process.cwd()
+      const contentFile = path.join(contentDir, decodeURIComponent(url.split('?')[0]))
+      if (!url.endsWith('.md') && !url.endsWith('.mdx')) {
+        try {
+          const stat = await fsPromises.stat(contentFile)
+          if (stat.isFile()) {
+            const ext = path.extname(contentFile).toLowerCase()
+            const mimeTypes: Record<string, string> = {
+              '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+              '.gif': 'image/gif', '.svg': 'image/svg+xml', '.webp': 'image/webp',
+              '.ico': 'image/x-icon', '.pdf': 'application/pdf', '.json': 'application/json',
+              '.yaml': 'text/yaml', '.yml': 'text/yaml', '.txt': 'text/plain',
+            }
+            res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream')
+            createReadStream(contentFile).pipe(res)
+            return
+          }
+        } catch { /* fall through */ }
+      }
+
+      // Static assets from dist/client
       const assetHandled = await new Promise<boolean>((resolve) => {
         assets(req, res, () => resolve(false))
         res.on('close', () => resolve(true))

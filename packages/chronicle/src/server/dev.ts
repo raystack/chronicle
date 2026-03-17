@@ -1,5 +1,7 @@
 import { createServer as createViteServer } from 'vite'
 import { createServer } from 'http'
+import fsPromises from 'fs/promises'
+import { createReadStream } from 'fs'
 import path from 'path'
 import chalk from 'chalk'
 import { createViteConfig } from './vite-config'
@@ -8,13 +10,6 @@ export interface DevServerOptions {
   port: number
   root: string
   contentDir: string
-}
-
-function isStaticAsset(url: string): boolean {
-  return url.startsWith('/@') ||
-    url.startsWith('/node_modules/') ||
-    url.startsWith('/__vite') ||
-    /\.(js|ts|tsx|css|ico|png|jpg|svg|woff2?|ttf|eot|map)(\?|$)/.test(url)
 }
 
 export async function startDevServer(options: DevServerOptions) {
@@ -33,8 +28,37 @@ export async function startDevServer(options: DevServerOptions) {
     const url = req.url || '/'
 
     try {
-      // Let Vite handle static assets, HMR, and module requests
-      if (isStaticAsset(url)) {
+      // Let Vite handle its own requests (HMR, modules)
+      if (url.startsWith('/@') || url.startsWith('/__vite') || url.startsWith('/node_modules/')) {
+        vite.middlewares(req, res, () => {
+          res.statusCode = 404
+          res.end()
+        })
+        return
+      }
+
+      // Serve static files from content dir (skip .md/.mdx)
+      const contentFile = path.join(contentDir, decodeURIComponent(url.split('?')[0]))
+      if (!url.endsWith('.md') && !url.endsWith('.mdx')) {
+        try {
+          const stat = await fsPromises.stat(contentFile)
+          if (stat.isFile()) {
+            const ext = path.extname(contentFile).toLowerCase()
+            const mimeTypes: Record<string, string> = {
+              '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+              '.gif': 'image/gif', '.svg': 'image/svg+xml', '.webp': 'image/webp',
+              '.ico': 'image/x-icon', '.pdf': 'application/pdf', '.json': 'application/json',
+              '.yaml': 'text/yaml', '.yml': 'text/yaml', '.txt': 'text/plain',
+            }
+            res.setHeader('Content-Type', mimeTypes[ext] || 'application/octet-stream')
+            createReadStream(contentFile).pipe(res)
+            return
+          }
+        } catch { /* fall through to SSR */ }
+      }
+
+      // Let Vite handle JS/CSS/TS module requests and other static assets
+      if (/\.(js|ts|tsx|css|map)(\?|$)/.test(url)) {
         vite.middlewares(req, res, () => {
           res.statusCode = 404
           res.end()
@@ -91,8 +115,7 @@ export async function startDevServer(options: DevServerOptions) {
       }
 
       // SSR render
-      const { readFileSync } = await import('fs')
-      let template = readFileSync(templatePath, 'utf-8')
+      let template = await fsPromises.readFile(templatePath, 'utf-8')
       template = await vite.transformIndexHtml(url, template)
 
       // Embed page data for client hydration
