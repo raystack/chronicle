@@ -53,6 +53,7 @@
     "react-router-dom": "^7.13.1",
     "remark-directive": "^4.0.0",
     "remark-gfm": "^4.0.1",
+    "@shikijs/rehype": "^4.0.2",
     "remark-frontmatter": "^5.0.0",
     "remark-mdx-frontmatter": "^5.2.0",
     "satori": "^0.25.0",

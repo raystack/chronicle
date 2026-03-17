@@ -6,6 +6,7 @@ import remarkDirective from 'remark-directive'
 import remarkGfm from 'remark-gfm'
 import remarkFrontmatter from 'remark-frontmatter'
 import remarkMdxFrontmatter from 'remark-mdx-frontmatter'
+import rehypeShiki from '@shikijs/rehype'
 
 export interface ViteConfigOptions {
   root: string
@@ -32,6 +33,9 @@ export async function createViteConfig(options: ViteConfigOptions): Promise<Inli
           remarkMdxFrontmatter,
           remarkGfm,
           remarkDirective,
+        ],
+        rehypePlugins: [
+          [rehypeShiki, { themes: { light: 'github-light', dark: 'github-dark' } }],
         ],
         mdExtensions: ['.md'],
         mdxExtensions: ['.mdx'],

@@ -38,6 +38,18 @@
   margin-bottom: var(--rs-space-3);
 }
 
+.content :global(pre code span) {
+  color: var(--shiki-light);
+}
+
+:global([data-theme="dark"]) .content :global(pre code span) {
+  color: var(--shiki-dark);
+}
+
+:global([data-theme="dark"]) .content :global(pre) {
+  background-color: var(--shiki-dark-bg, #24292e);
+}
+
 .content img {
   max-width: 100%;
   height: auto;
