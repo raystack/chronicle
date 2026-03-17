@@ -130,7 +130,7 @@ export const initCommand = new Command('init')
 
     // Update .gitignore
     const gitignorePath = path.join(projectDir, '.gitignore')
-    const gitignoreEntries = ['node_modules', '.source', 'dist']
+    const gitignoreEntries = ['node_modules', 'dist']
     if (fs.existsSync(gitignorePath)) {
       const existing = fs.readFileSync(gitignorePath, 'utf-8')
       const missing = gitignoreEntries.filter(e => !existing.includes(e))

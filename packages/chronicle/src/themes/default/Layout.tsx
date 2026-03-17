@@ -53,7 +53,7 @@ export function Layout({ children, config, tree, classNames }: ThemeLayoutProps)
         <Navbar.End>
           <Flex gap="medium" align="center" className={styles.navActions}>
             {config.api?.map((api) => (
-              <Link key={api.basePath} to={api.basePath} className={styles.navButton}>
+              <Link key={api.name} to={api.basePath} className={styles.navButton}>
                 {api.name} API
               </Link>
             ))}

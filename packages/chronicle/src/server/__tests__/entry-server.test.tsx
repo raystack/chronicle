@@ -1,65 +1,34 @@
 import { describe, it, expect } from 'vitest'
-import { render } from '../entry-server'
+import { render, type SSRData } from '../entry-server'
+
+const mockData: SSRData = {
+  config: { title: 'Test Site' },
+  tree: { name: 'root', children: [] },
+  page: {
+    slug: [],
+    frontmatter: { title: 'Test' },
+    content: null,
+  },
+}
 
 describe('entry-server', () => {
   it('exports a render function', () => {
     expect(typeof render).toBe('function')
   })
 
-  it('returns a stream with pipe method', () => {
-    const result = render('http://localhost:3000/')
-    expect(typeof result.pipe).toBe('function')
+  it('returns an HTML string', () => {
+    const html = render('http://localhost:3000/', mockData)
+    expect(typeof html).toBe('string')
+    expect(html.length).toBeGreaterThan(0)
   })
 
-  it('renders with onShellReady callback', async () => {
-    await new Promise<void>((resolve) => {
-      render('http://localhost:3000/', {
-        onShellReady() {
-          resolve()
-        },
-      })
-    })
-  })
-
-  it('renders docs route for root URL', async () => {
-    const chunks: string[] = []
-    const { PassThrough } = await import('stream')
-
-    await new Promise<void>((resolve) => {
-      const { pipe } = render('http://localhost:3000/', {
-        onShellReady() {
-          const passthrough = new PassThrough()
-          passthrough.on('data', (chunk: Buffer) => {
-            chunks.push(chunk.toString())
-          })
-          passthrough.on('end', () => resolve())
-          pipe(passthrough)
-        },
-      })
-    })
-
-    const html = chunks.join('')
+  it('renders docs route for root URL', () => {
+    const html = render('http://localhost:3000/', mockData)
     expect(html).toBeTruthy()
   })
 
-  it('renders api route for /apis URL', async () => {
-    const chunks: string[] = []
-    const { PassThrough } = await import('stream')
-
-    await new Promise<void>((resolve) => {
-      const { pipe } = render('http://localhost:3000/apis', {
-        onShellReady() {
-          const passthrough = new PassThrough()
-          passthrough.on('data', (chunk: Buffer) => {
-            chunks.push(chunk.toString())
-          })
-          passthrough.on('end', () => resolve())
-          pipe(passthrough)
-        },
-      })
-    })
-
-    const html = chunks.join('')
+  it('renders api route for /apis URL', () => {
+    const html = render('http://localhost:3000/apis', mockData)
     expect(html).toBeTruthy()
   })
 })

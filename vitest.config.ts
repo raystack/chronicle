@@ -4,10 +4,7 @@ import path from 'path'
 export default defineConfig({
   resolve: {
     alias: [
-      { find: '@/.source/server', replacement: path.resolve(__dirname, 'packages/chronicle/src/__mocks__/source-server.ts') },
-      { find: '@/.source', replacement: path.resolve(__dirname, 'packages/chronicle/.source') },
-      { find: 'next/font/google', replacement: path.resolve(__dirname, 'packages/chronicle/src/__mocks__/next-font-google.ts') },
-      { find: 'next/navigation', replacement: path.resolve(__dirname, 'packages/chronicle/src/__mocks__/next-navigation.ts') },
+      { find: '@content', replacement: path.resolve(__dirname, 'packages/chronicle/content') },
       { find: '@', replacement: path.resolve(__dirname, 'packages/chronicle/src') },
     ],
   },

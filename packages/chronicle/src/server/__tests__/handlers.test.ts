@@ -30,12 +30,12 @@ describe('handleRobots', () => {
 
 describe('handleSitemap', () => {
   it('returns application/xml content type', async () => {
-    const response = handleSitemap()
+    const response = await handleSitemap()
     expect(response.headers.get('content-type')).toBe('application/xml')
   })
 
   it('returns valid XML structure', async () => {
-    const response = handleSitemap()
+    const response = await handleSitemap()
     const xml = await response.text()
     expect(xml).toContain('<urlset')
   })
@@ -70,8 +70,8 @@ describe('handleApisProxy', () => {
 })
 
 describe('handleLlms', () => {
-  it('returns 404 when llms not enabled', () => {
-    const response = handleLlms()
+  it('returns 404 when llms not enabled', async () => {
+    const response = await handleLlms()
     expect(response.status).toBe(404)
   })
 })

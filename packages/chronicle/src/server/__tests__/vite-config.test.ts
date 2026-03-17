@@ -7,21 +7,19 @@ describe('createViteConfig', () => {
       root: '/tmp/test',
       contentDir: '/tmp/test/content',
       isDev: true,
-    }).catch((e) => {
-      // Expected to fail because source.config.ts doesn't exist at /tmp/test
-      // But we can verify the function signature works
-      return null
     })
 
-    // Config creation requires real source.config.ts, so it fails in test env
-    // This test verifies the function exists and is callable
-    expect(typeof createViteConfig).toBe('function')
+    expect(config.root).toBe('/tmp/test')
+    expect(config.configFile).toBe(false)
   })
 
   it('accepts isDev option', async () => {
-    expect(typeof createViteConfig).toBe('function')
-    // Verify the interface accepts all expected options
-    const options = { root: '/test', contentDir: '/test/content', isDev: false }
-    expect(options.isDev).toBe(false)
+    const config = await createViteConfig({
+      root: '/tmp/test',
+      contentDir: '/tmp/test/content',
+      isDev: false,
+    })
+
+    expect(config.root).toBe('/tmp/test')
   })
 })
