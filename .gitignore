@@ -135,3 +135,5 @@ dist
 
 dist
 examples/frontier
+.claude
+.vercel
