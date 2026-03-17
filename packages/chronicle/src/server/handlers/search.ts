@@ -16,7 +16,35 @@ interface SearchDocument {
 }
 
 let searchIndex: MiniSearch<SearchDocument> | null = null
+let cachedDocs: SearchDocument[] | null = null
 
+function createIndex(docs: SearchDocument[]): MiniSearch<SearchDocument> {
+  const index = new MiniSearch<SearchDocument>({
+    fields: ['title', 'content'],
+    storeFields: ['url', 'title', 'type'],
+    searchOptions: {
+      boost: { title: 2 },
+      fuzzy: 0.2,
+      prefix: true,
+    },
+  })
+  index.addAll(docs)
+  return index
+}
+
+// Try loading pre-built search index (generated at build time)
+async function loadPrebuiltIndex(): Promise<SearchDocument[] | null> {
+  try {
+    // In bundled server, search-index.json is next to the entry file
+    const indexPath = path.resolve(__dirname, 'search-index.json')
+    const raw = await fs.readFile(indexPath, 'utf-8')
+    return JSON.parse(raw)
+  } catch {
+    return null
+  }
+}
+
+// Fallback: scan filesystem at runtime (dev mode)
 function getContentDir(): string {
   return process.env.CHRONICLE_CONTENT_DIR || path.join(process.cwd(), 'content')
 }
@@ -91,25 +119,29 @@ function buildApiDocs(): SearchDocument[] {
   return docs
 }
 
-async function getIndex(): Promise<MiniSearch<SearchDocument>> {
-  if (searchIndex) return searchIndex
+async function loadDocuments(): Promise<SearchDocument[]> {
+  // Try pre-built index first
+  const prebuilt = await loadPrebuiltIndex()
+  if (prebuilt) return prebuilt
 
+  // Fallback to filesystem scanning (dev mode)
   const [contentDocs, apiDocs] = await Promise.all([
     scanContent(),
     Promise.resolve(buildApiDocs()),
   ])
+  return [...contentDocs, ...apiDocs]
+}
 
-  searchIndex = new MiniSearch<SearchDocument>({
-    fields: ['title', 'content'],
-    storeFields: ['url', 'title', 'type'],
-    searchOptions: {
-      boost: { title: 2 },
-      fuzzy: 0.2,
-      prefix: true,
-    },
-  })
+async function getDocs(): Promise<SearchDocument[]> {
+  if (cachedDocs) return cachedDocs
+  cachedDocs = await loadDocuments()
+  return cachedDocs
+}
 
-  searchIndex.addAll([...contentDocs, ...apiDocs])
+async function getIndex(): Promise<MiniSearch<SearchDocument>> {
+  if (searchIndex) return searchIndex
+  const docs = await getDocs()
+  searchIndex = createIndex(docs)
   return searchIndex
 }
 
@@ -119,8 +151,8 @@ export async function handleSearch(req: Request): Promise<Response> {
   const index = await getIndex()
 
   if (!query) {
-    const contentDocs = await scanContent()
-    const suggestions = contentDocs.slice(0, 8).map((d) => ({
+    const docs = await getDocs()
+    const suggestions = docs.filter(d => d.type === 'page').slice(0, 8).map((d) => ({
       id: d.id,
       url: d.url,
       type: d.type,

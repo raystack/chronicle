@@ -54,6 +54,12 @@ export const buildCommand = new Command('build')
       },
     })
 
+    // Generate search index
+    console.log(chalk.gray('Building search index...'))
+    const { generateSearchIndex } = await import('@/server/build-search-index')
+    const docCount = await generateSearchIndex(contentDir, path.join(outDir, 'server'))
+    console.log(chalk.gray(`  Indexed ${docCount} documents`))
+
     console.log(chalk.green('Build complete →'), outDir)
 
     // Run Vercel adapter post-build
