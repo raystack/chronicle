@@ -1,10 +1,63 @@
 import { hydrateRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
+import { PageProvider } from '@/lib/page-context'
 import { App } from './App'
+import { getPage, loadPageComponent, buildPageTree } from '@/lib/source'
+import { mdxComponents } from '@/components/mdx'
+import type { ChronicleConfig, PageTree } from '@/types'
+import type { ReactNode } from 'react'
+import React from 'react'
 
-hydrateRoot(
-  document.getElementById('root') as HTMLElement,
-  <BrowserRouter>
-    <App />
-  </BrowserRouter>,
-)
+interface EmbeddedData {
+  config: ChronicleConfig
+  tree: PageTree
+  slug: string[]
+  frontmatter: { title: string; description?: string; order?: number }
+  filePath: string
+}
+
+async function hydrate() {
+  try {
+    const embedded: EmbeddedData | undefined = (window as any).__PAGE_DATA__
+
+    let config: ChronicleConfig = { title: 'Documentation' }
+    let tree: PageTree = { name: 'root', children: [] }
+    let page: { slug: string[]; frontmatter: any; content: ReactNode } | null = null
+
+    if (embedded) {
+      config = embedded.config
+      tree = embedded.tree
+
+      const sourcePage = await getPage(embedded.slug)
+      if (sourcePage) {
+        const component = await loadPageComponent(sourcePage)
+        page = {
+          slug: embedded.slug,
+          frontmatter: embedded.frontmatter,
+          content: component ? React.createElement(component, { components: mdxComponents }) : null,
+        }
+      } else {
+        page = {
+          slug: embedded.slug,
+          frontmatter: embedded.frontmatter,
+          content: null,
+        }
+      }
+    } else {
+      tree = await buildPageTree()
+    }
+
+    hydrateRoot(
+      document.getElementById('root') as HTMLElement,
+      <BrowserRouter>
+        <PageProvider initialConfig={config} initialTree={tree} initialPage={page}>
+          <App />
+        </PageProvider>
+      </BrowserRouter>,
+    )
+  } catch (err) {
+    console.error('Hydration failed:', err)
+  }
+}
+
+hydrate()

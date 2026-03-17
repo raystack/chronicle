@@ -1,15 +1,20 @@
 import { createServer as createViteServer } from 'vite'
 import { createServer } from 'http'
-import { PassThrough } from 'stream'
 import path from 'path'
 import chalk from 'chalk'
 import { createViteConfig } from './vite-config'
-import { matchRoute } from './router'
 
 export interface DevServerOptions {
   port: number
   root: string
   contentDir: string
+}
+
+function isStaticAsset(url: string): boolean {
+  return url.startsWith('/@') ||
+    url.startsWith('/node_modules/') ||
+    url.startsWith('/__vite') ||
+    /\.(js|ts|tsx|css|ico|png|jpg|svg|woff2?|ttf|eot|map)(\?|$)/.test(url)
 }
 
 export async function startDevServer(options: DevServerOptions) {
@@ -28,54 +33,76 @@ export async function startDevServer(options: DevServerOptions) {
     const url = req.url || '/'
 
     try {
-      // Check API/static routes first
+      // Let Vite handle static assets, HMR, and module requests
+      if (isStaticAsset(url)) {
+        vite.middlewares(req, res, () => {
+          res.statusCode = 404
+          res.end()
+        })
+        return
+      }
+
+      // Check API/static routes (load through Vite SSR for import.meta.glob support)
+      const { matchRoute } = await vite.ssrLoadModule(path.resolve(root, 'src/server/router.ts'))
       const routeHandler = matchRoute(new URL(url, `http://localhost:${port}`).href)
       if (routeHandler) {
         const request = new Request(new URL(url, `http://localhost:${port}`))
         const response = await routeHandler(request)
         res.statusCode = response.status
-        response.headers.forEach((value, key) => res.setHeader(key, value))
+        response.headers.forEach((value: string, key: string) => res.setHeader(key, value))
         const body = await response.text()
         res.end(body)
         return
       }
 
-      // Let Vite handle static assets and HMR
-      const isHandled = await new Promise<boolean>((resolve) => {
-        vite.middlewares(req, res, () => resolve(false))
-        res.on('close', () => resolve(true))
-      })
-      if (isHandled) return
+      // Resolve page data before SSR render
+      const pathname = new URL(url, `http://localhost:${port}`).pathname
+      const slug = pathname === '/' ? [] : pathname.slice(1).split('/').filter(Boolean)
+
+      const source = await vite.ssrLoadModule(path.resolve(root, 'src/lib/source.ts'))
+      const { mdxComponents } = await vite.ssrLoadModule(path.resolve(root, 'src/components/mdx/index.tsx'))
+      const { loadConfig } = await vite.ssrLoadModule(path.resolve(root, 'src/lib/config.ts'))
+
+      const config = loadConfig()
+
+      const [tree, sourcePage] = await Promise.all([
+        source.buildPageTree(),
+        source.getPage(slug),
+      ])
+
+      let pageData = null
+      let embeddedData: any = { config, tree, slug, frontmatter: null, filePath: null }
+
+      if (sourcePage) {
+        const component = await source.loadPageComponent(sourcePage)
+        const React = await import('react')
+        const MDXBody = component
+        pageData = {
+          slug,
+          frontmatter: sourcePage.frontmatter,
+          content: MDXBody ? React.createElement(MDXBody, { components: mdxComponents }) : null,
+        }
+        embeddedData.frontmatter = sourcePage.frontmatter
+        embeddedData.filePath = sourcePage.filePath
+      }
 
       // SSR render
       const { readFileSync } = await import('fs')
       let template = readFileSync(templatePath, 'utf-8')
       template = await vite.transformIndexHtml(url, template)
 
+      // Embed page data for client hydration
+      const dataScript = `<script>window.__PAGE_DATA__ = ${JSON.stringify(embeddedData)}</script>`
+      template = template.replace('<!--head-outlet-->', `<!--head-outlet-->${dataScript}`)
+
       const { render } = await vite.ssrLoadModule(path.resolve(root, 'src/server/entry-server.tsx'))
 
-      const { pipe } = render(url, {
-        onShellReady() {
-          res.setHeader('Content-Type', 'text/html')
-          res.statusCode = 200
+      const html = render(url, { config, tree, page: pageData })
+      const finalHtml = template.replace('<!--ssr-outlet-->', html)
 
-          const [before, after] = template.split('<!--ssr-outlet-->')
-          res.write(before)
-
-          const passthrough = new PassThrough()
-          passthrough.on('end', () => {
-            res.end(after)
-          })
-
-          pipe(passthrough)
-        },
-        onShellError(error: unknown) {
-          res.statusCode = 500
-          res.setHeader('Content-Type', 'text/html')
-          res.end('<pre>SSR Error</pre>')
-          console.error(error)
-        },
-      })
+      res.setHeader('Content-Type', 'text/html')
+      res.statusCode = 200
+      res.end(finalHtml)
     } catch (e) {
       vite.ssrFixStacktrace(e as Error)
       console.error(e)

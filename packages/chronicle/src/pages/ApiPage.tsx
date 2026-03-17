@@ -1,8 +1,6 @@
 import type { OpenAPIV3 } from 'openapi-types'
 import { Flex, Headline, Text } from '@raystack/apsara'
-import { loadConfig } from '@/lib/config'
-import { loadApiSpecs } from '@/lib/openapi'
-import { findApiOperation } from '@/lib/api-routes'
+import { usePageContext } from '@/lib/page-context'
 import { EndpointPage } from '@/components/api'
 import { Head } from '@/lib/head'
 import type { ApiSpec } from '@/lib/openapi'
@@ -12,44 +10,15 @@ interface ApiPageProps {
 }
 
 export function ApiPage({ slug }: ApiPageProps) {
-  const config = loadConfig()
-  const specs = loadApiSpecs(config.api ?? [])
+  const { config } = usePageContext()
 
-  if (slug.length === 0) {
-    return (
-      <>
-        <Head
-          title="API Reference"
-          description={`API documentation for ${config.title}`}
-          config={config}
-        />
-        <ApiLanding specs={specs} />
-      </>
-    )
-  }
-
-  const match = findApiOperation(specs, slug)
-  if (!match) return null
-
-  const operation = match.operation as OpenAPIV3.OperationObject
-  const title = operation.summary ?? `${match.method.toUpperCase()} ${match.path}`
-
+  // TODO: API specs need to be loaded server-side and passed via context
   return (
-    <>
-      <Head
-        title={title}
-        description={operation.description}
-        config={config}
-      />
-      <EndpointPage
-        method={match.method}
-        path={match.path}
-        operation={match.operation}
-        serverUrl={match.spec.server.url}
-        specName={match.spec.name}
-        auth={match.spec.auth}
-      />
-    </>
+    <Head
+      title="API Reference"
+      description={`API documentation for ${config.title}`}
+      config={config}
+    />
   )
 }
 

@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react'
 import { cx } from 'class-variance-authority'
-import { loadConfig } from '@/lib/config'
-import { loadApiSpecs } from '@/lib/openapi'
-import { buildApiPageTree } from '@/lib/api-routes'
+import { usePageContext } from '@/lib/page-context'
 import { getTheme } from '@/themes/registry'
 import { Search } from '@/components/ui/search'
 import styles from './ApiLayout.module.css'
@@ -12,10 +10,10 @@ interface ApiLayoutProps {
 }
 
 export function ApiLayout({ children }: ApiLayoutProps) {
-  const config = loadConfig()
+  const { config } = usePageContext()
   const { Layout, className } = getTheme(config.theme?.name)
-  const specs = loadApiSpecs(config.api ?? [])
-  const tree = buildApiPageTree(specs)
+  // TODO: API specs need to be loaded server-side and passed via context
+  const tree = { name: 'root', children: [] }
 
   return (
     <Layout config={config} tree={tree} classNames={{

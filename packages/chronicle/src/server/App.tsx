@@ -2,13 +2,13 @@ import '@raystack/apsara/normalize.css'
 import '@raystack/apsara/style.css'
 import { ThemeProvider } from '@raystack/apsara'
 import { useLocation } from 'react-router-dom'
-import { loadConfig } from '@/lib/config'
+import { usePageContext } from '@/lib/page-context'
 import { Head } from '@/lib/head'
 import { DocsLayout } from '@/pages/DocsLayout'
 import { DocsPage } from '@/pages/DocsPage'
 import { ApiLayout } from '@/pages/ApiLayout'
 import { ApiPage } from '@/pages/ApiPage'
-import { NotFound } from '@/pages/NotFound'
+import type { ChronicleConfig } from '@/types'
 
 function resolveRoute(pathname: string) {
   if (pathname.startsWith('/apis')) {
@@ -22,7 +22,7 @@ function resolveRoute(pathname: string) {
 
 export function App() {
   const { pathname } = useLocation()
-  const config = loadConfig()
+  const { config } = usePageContext()
   const route = resolveRoute(pathname)
 
   return (
@@ -41,7 +41,7 @@ export function App() {
   )
 }
 
-function RootHead({ config }: { config: ReturnType<typeof loadConfig> }) {
+function RootHead({ config }: { config: ChronicleConfig }) {
   return (
     <Head
       title={config.title}

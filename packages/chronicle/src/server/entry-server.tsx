@@ -1,14 +1,28 @@
-import { renderToPipeableStream, type RenderToPipeableStreamOptions } from 'react-dom/server'
+import { renderToString } from 'react-dom/server'
 import { StaticRouter } from 'react-router-dom'
+import { PageProvider } from '@/lib/page-context'
 import { App } from './App'
+import type { ReactNode } from 'react'
+import type { ChronicleConfig, Frontmatter, PageTree } from '@/types'
 
-export function render(url: string, options?: RenderToPipeableStreamOptions) {
+export interface SSRData {
+  config: ChronicleConfig
+  tree: PageTree
+  page: {
+    slug: string[]
+    frontmatter: Frontmatter
+    content: ReactNode
+  } | null
+}
+
+export function render(url: string, data: SSRData): string {
   const pathname = new URL(url, 'http://localhost').pathname
 
-  return renderToPipeableStream(
+  return renderToString(
     <StaticRouter location={pathname}>
-      <App />
+      <PageProvider initialConfig={data.config} initialTree={data.tree} initialPage={data.page}>
+        <App />
+      </PageProvider>
     </StaticRouter>,
-    options,
   )
 }

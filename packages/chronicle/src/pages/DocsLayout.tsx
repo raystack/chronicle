@@ -1,6 +1,5 @@
 import type { ReactNode } from 'react'
-import { loadConfig } from '@/lib/config'
-import { buildPageTree } from '@/lib/source'
+import { usePageContext } from '@/lib/page-context'
 import { getTheme } from '@/themes/registry'
 
 interface DocsLayoutProps {
@@ -8,8 +7,7 @@ interface DocsLayoutProps {
 }
 
 export function DocsLayout({ children }: DocsLayoutProps) {
-  const config = loadConfig()
-  const tree = buildPageTree()
+  const { config, tree } = usePageContext()
   const { Layout, className } = getTheme(config.theme?.name)
 
   return (
