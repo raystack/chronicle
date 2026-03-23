@@ -1,4 +1,8 @@
 import type { ReactNode } from 'react'
+import type { TableOfContents } from 'fumadocs-core/toc'
+
+export type { Root, Node, Item, Folder, Separator } from 'fumadocs-core/page-tree'
+export type { TOCItemType, TableOfContents } from 'fumadocs-core/toc'
 
 export interface Frontmatter {
   title: string
@@ -12,25 +16,5 @@ export interface Page {
   slug: string[]
   frontmatter: Frontmatter
   content: ReactNode
-  toc: TocItem[]
-}
-
-export interface TocItem {
-  title: string
-  url: string
-  depth: number
-}
-
-export interface PageTreeItem {
-  type: 'page' | 'folder' | 'separator'
-  name: string
-  url?: string
-  order?: number
-  icon?: string
-  children?: PageTreeItem[]
-}
-
-export interface PageTree {
-  name: string
-  children: PageTreeItem[]
+  toc: TableOfContents
 }
