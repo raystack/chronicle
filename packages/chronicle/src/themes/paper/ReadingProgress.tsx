@@ -2,7 +2,7 @@
 
 import { cx } from 'class-variance-authority';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { TocItem } from '@/types';
+import type { TOCItemType } from 'fumadocs-core/toc';
 import styles from './ReadingProgress.module.css';
 
 interface Heading {
@@ -68,7 +68,7 @@ function resolveOverlaps(headings: Heading[], maxPosition: number): Heading[] {
 }
 
 interface ReadingProgressProps {
-  items: TocItem[];
+  items: TOCItemType[];
 }
 
 export function ReadingProgress({ items }: ReadingProgressProps) {

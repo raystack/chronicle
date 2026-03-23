@@ -14,7 +14,8 @@ import { MethodBadge } from '@/components/api/method-badge';
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
 import { Footer } from '@/components/ui/footer';
 import { Search } from '@/components/ui/search';
-import type { PageTreeItem, ThemeLayoutProps } from '@/types';
+import type { Node } from 'fumadocs-core/page-tree';
+import type { ThemeLayoutProps } from '@/types';
 import styles from './Layout.module.css';
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -96,9 +97,9 @@ export function Layout({
           className={cx(styles.sidebar, classNames?.sidebar)}
         >
           <Sidebar.Main ref={scrollRef}>
-            {tree.children.map(item => (
+            {tree.children.map((item, i) => (
               <SidebarNode
-                key={item.url ?? item.name}
+                key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
                 item={item}
                 pathname={pathname}
               />
@@ -118,23 +119,24 @@ function SidebarNode({
   item,
   pathname
 }: {
-  item: PageTreeItem;
+  item: Node;
   pathname: string;
 }) {
   if (item.type === 'separator') {
     return null;
   }
 
-  if (item.type === 'folder' && item.children) {
+  if (item.type === 'folder') {
+    const icon = typeof item.icon === 'string' ? iconMap[item.icon] : item.icon;
     return (
       <Sidebar.Group
-        label={item.name}
-        leadingIcon={item.icon ? iconMap[item.icon] : undefined}
+        label={item.name?.toString() ?? ''}
+        leadingIcon={icon ?? undefined}
         classNames={{ items: styles.groupItems }}
       >
-        {item.children.map(child => (
+        {item.children.map((child, i) => (
           <SidebarNode
-            key={child.url ?? child.name}
+            key={child.type === 'page' ? child.url : (child.name?.toString() ?? i)}
             item={child}
             pathname={pathname}
           />
@@ -145,13 +147,14 @@ function SidebarNode({
 
   const isActive = pathname === item.url;
   const href = item.url ?? '#';
+  const icon = typeof item.icon === 'string' ? iconMap[item.icon] : item.icon;
   const link = useMemo(() => <RouterLink to={href} />, [href]);
 
   return (
     <Sidebar.Item
       href={href}
       active={isActive}
-      leadingIcon={item.icon ? iconMap[item.icon] : undefined}
+      leadingIcon={icon ?? undefined}
       as={link}
     >
       {item.name}

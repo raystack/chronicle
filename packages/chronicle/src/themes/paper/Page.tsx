@@ -2,46 +2,12 @@ import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { Flex } from '@raystack/apsara';
 import { useMemo } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router';
+import { getBreadcrumbItems } from 'fumadocs-core/breadcrumb';
+import { flattenTree } from 'fumadocs-core/page-tree';
 import { Search } from '@/components/ui/search';
-import type { PageTreeItem, ThemePageProps } from '@/types';
+import type { ThemePageProps } from '@/types';
 import styles from './Page.module.css';
 import { ReadingProgress } from './ReadingProgress';
-
-function flattenTree(items: PageTreeItem[]): PageTreeItem[] {
-  const result: PageTreeItem[] = [];
-  for (const item of items) {
-    if (item.type === 'page' && item.url) result.push(item);
-    if (item.children) result.push(...flattenTree(item.children));
-  }
-  return result;
-}
-
-function findBreadcrumb(
-  items: PageTreeItem[],
-  slug: string[]
-): { label: string; href: string }[] {
-  const result: { label: string; href: string }[] = [];
-  for (let i = 0; i < slug.length; i++) {
-    const path = '/' + slug.slice(0, i + 1).join('/');
-    const found = findInTree(items, path);
-    result.push({ label: found?.name ?? slug[i], href: path });
-  }
-  return result;
-}
-
-function findInTree(
-  items: PageTreeItem[],
-  path: string
-): PageTreeItem | undefined {
-  for (const item of items) {
-    if (item.url === path) return item;
-    if (item.children) {
-      const found = findInTree(item.children, path);
-      if (found) return found;
-    }
-  }
-  return undefined;
-}
 
 export function Page({ page, config, tree }: ThemePageProps) {
   const { pathname } = useLocation();
@@ -49,12 +15,20 @@ export function Page({ page, config, tree }: ThemePageProps) {
   const { prev, next, crumbs } = useMemo(() => {
     const pages = flattenTree(tree.children);
     const currentIndex = pages.findIndex(p => p.url === pathname);
+    const breadcrumbItems = getBreadcrumbItems(
+      pathname,
+      tree,
+      { includePage: true }
+    );
     return {
       prev: currentIndex > 0 ? pages[currentIndex - 1] : null,
       next: currentIndex < pages.length - 1 ? pages[currentIndex + 1] : null,
-      crumbs: findBreadcrumb(tree.children, page.slug)
+      crumbs: breadcrumbItems.map(item => ({
+        label: item.name,
+        href: item.url ?? pathname,
+      })),
     };
-  }, [tree, pathname, page.slug]);
+  }, [tree, pathname]);
 
   return (
     <>
@@ -63,7 +37,7 @@ export function Page({ page, config, tree }: ThemePageProps) {
           <Flex align='center' gap='small' className={styles.navLeft}>
             {prev ? (
               <RouterLink
-                to={prev.url!}
+                to={prev.url}
                 className={styles.arrow}
                 aria-label='Previous page'
               >
@@ -80,7 +54,7 @@ export function Page({ page, config, tree }: ThemePageProps) {
             )}
             {next ? (
               <RouterLink
-                to={next.url!}
+                to={next.url}
                 className={styles.arrow}
                 aria-label='Next page'
               >
