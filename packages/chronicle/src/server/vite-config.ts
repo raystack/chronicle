@@ -1,5 +1,6 @@
 import react from '@vitejs/plugin-react';
 import { remarkDirectiveAdmonition, remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
+import { defineConfig as defineFumadocsConfig } from 'fumadocs-mdx/config';
 import mdx from 'fumadocs-mdx/vite';
 import { nitro } from 'nitro/vite';
 import path from 'node:path';
@@ -28,30 +29,32 @@ export async function createViteConfig(
         ...(preset && { preset }),
       }),
       mdx({
-        mdxOptions: {
-          remarkPlugins: [
-            remarkDirective,
-            [remarkDirectiveAdmonition, {
-              tags: {
-                CalloutContainer: 'Callout',
-                CalloutTitle: 'CalloutTitle',
-                CalloutDescription: 'CalloutDescription',
-              },
-              types: {
-                note: 'accent',
-                tip: 'accent',
-                info: 'accent',
-                warn: 'attention',
-                warning: 'attention',
-                danger: 'alert',
-                caution: 'alert',
-                success: 'success',
-              },
-            }],
-            remarkUnusedDirectives,
-            remarkMdxMermaid,
-          ],
-        },
+        default: defineFumadocsConfig({
+          mdxOptions: {
+            remarkPlugins: [
+              remarkDirective,
+              [remarkDirectiveAdmonition, {
+                tags: {
+                  CalloutContainer: 'Callout',
+                  CalloutTitle: 'CalloutTitle',
+                  CalloutDescription: 'CalloutDescription',
+                },
+                types: {
+                  note: 'accent',
+                  tip: 'accent',
+                  info: 'accent',
+                  warn: 'attention',
+                  warning: 'attention',
+                  danger: 'alert',
+                  caution: 'alert',
+                  success: 'success',
+                },
+              }],
+              remarkUnusedDirectives,
+              remarkMdxMermaid,
+            ],
+          },
+        }),
       }, { index: false }),
       react()
     ],

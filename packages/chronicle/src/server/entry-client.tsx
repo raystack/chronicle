@@ -2,6 +2,7 @@ import '@vitejs/plugin-react/preamble';
 import React from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
+import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
 import { mdxComponents } from '@/components/mdx';
 import { PageProvider } from '@/lib/page-context';
 import type { ChronicleConfig, Frontmatter, PageTree } from '@/types';
@@ -42,14 +43,16 @@ async function hydrate() {
     hydrateRoot(
       document.getElementById('root') as HTMLElement,
       <BrowserRouter>
-        <PageProvider
-          initialConfig={config}
-          initialTree={tree}
-          initialPage={page}
-          initialApiSpecs={apiSpecs}
-        >
-          <App />
-        </PageProvider>
+        <ReactRouterProvider>
+          <PageProvider
+            initialConfig={config}
+            initialTree={tree}
+            initialPage={page}
+            initialApiSpecs={apiSpecs}
+          >
+            <App />
+          </PageProvider>
+        </ReactRouterProvider>
       </BrowserRouter>
     );
   } catch (err) {

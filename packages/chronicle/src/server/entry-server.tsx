@@ -4,6 +4,7 @@ import path from 'node:path';
 import React from 'react';
 import { renderToReadableStream } from 'react-dom/server.edge';
 import { StaticRouter } from 'react-router';
+import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
 import { mdxComponents } from '@/components/mdx';
 import { loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
@@ -74,14 +75,16 @@ export default {
         <body>
           <div id="root">
             <StaticRouter location={pathname}>
-              <PageProvider
-                initialConfig={config}
-                initialTree={tree}
-                initialPage={pageData}
-                initialApiSpecs={apiSpecs}
-              >
-                <App />
-              </PageProvider>
+              <ReactRouterProvider>
+                <PageProvider
+                  initialConfig={config}
+                  initialTree={tree}
+                  initialPage={pageData}
+                  initialApiSpecs={apiSpecs}
+                >
+                  <App />
+                </PageProvider>
+              </ReactRouterProvider>
             </StaticRouter>
           </div>
         </body>
