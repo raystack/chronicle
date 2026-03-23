@@ -17,7 +17,7 @@ export const buildCommand = new Command('build')
 
     console.log(chalk.cyan('Building for production...'));
 
-    const { build } = await import('vite');
+    const { createBuilder } = await import('vite');
     const { createViteConfig } = await import('@/server/vite-config');
 
     const config = await createViteConfig({
@@ -27,7 +27,8 @@ export const buildCommand = new Command('build')
       preset: options.preset
     });
 
-    await build(config);
+    const builder = await createBuilder({ ...config, builder: {} });
+    await builder.buildApp();
 
     console.log(chalk.green('Build complete'));
   });

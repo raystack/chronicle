@@ -23,7 +23,6 @@ export async function createViteConfig(
       nitro({
         serverDir: path.resolve(packageRoot, 'src/server'),
         ...(preset && { preset }),
-        noExternals: true,
       }),
       mdx({}, { index: false }),
       react()
