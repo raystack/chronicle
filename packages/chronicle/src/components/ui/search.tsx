@@ -7,7 +7,6 @@ import { cx } from "class-variance-authority";
 import { useDocsSearch } from "fumadocs-core/search/client";
 import type { SortedResult } from "fumadocs-core/search";
 import { DocumentIcon, HashtagIcon } from "@heroicons/react/24/outline";
-import { isMacOs } from "react-device-detect";
 import { MethodBadge } from "@/components/api/method-badge";
 import styles from "./search.module.css";
 
@@ -15,7 +14,8 @@ function SearchShortcutKey({ className }: { className?: string }) {
   const [key, setKey] = useState("⌘");
 
   useEffect(() => {
-    setKey(isMacOs ? "⌘" : "Ctrl");
+    const isMac = navigator.platform?.toUpperCase().includes("MAC");
+    setKey(isMac ? "⌘" : "Ctrl");
   }, []);
 
   return (
