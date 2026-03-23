@@ -15,7 +15,8 @@
     "chronicle": "./bin/chronicle.js"
   },
   "scripts": {
-    "build:cli": "bun build-cli.ts"
+    "build:cli": "bun build-cli.ts",
+    "lint": "biome lint src/"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.13",
@@ -46,6 +47,7 @@
     "fumadocs-mdx": "^14.2.6",
     "glob": "^11.0.0",
     "gray-matter": "^4.0.3",
+    "h3": "^2.0.1-rc.16",
     "lodash": "^4.17.23",
     "mermaid": "^11.13.0",
     "minisearch": "^7.2.0",
@@ -55,6 +57,7 @@
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.13.1",
     "remark-directive": "^4.0.0",
+    "remark-parse": "^11.0.0",
     "remark-frontmatter": "^5.0.0",
     "remark-gfm": "^4.0.1",
     "remark-mdx-frontmatter": "^5.2.0",

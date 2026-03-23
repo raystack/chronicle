@@ -1,0 +1,69 @@
+import { defineHandler, HTTPError } from 'nitro';
+import { loadConfig } from '@/lib/config';
+import { loadApiSpecs } from '@/lib/openapi';
+
+interface ProxyRequest {
+  specName: string;
+  method: string;
+  path: string;
+  headers?: Record<string, string>;
+  body?: unknown;
+}
+
+export default defineHandler(async event => {
+  if (event.req.method !== 'POST') {
+    throw new HTTPError({ status: 405, message: 'Method not allowed' });
+  }
+
+  const { specName, method, path, headers, body } =
+    (await event.req.json()) as ProxyRequest;
+
+  if (!specName || !method || !path) {
+    throw new HTTPError({
+      status: 400,
+      message: 'Missing specName, method, or path'
+    });
+  }
+
+  const config = loadConfig();
+  const specs = loadApiSpecs(config.api ?? []);
+  const spec = specs.find(s => s.name === specName);
+
+  if (!spec) {
+    throw new HTTPError({ status: 404, message: `Unknown spec: ${specName}` });
+  }
+
+  if (/^[a-z]+:\/\//i.test(path) || path.includes('..')) {
+    throw new HTTPError({ status: 400, message: 'Invalid path' });
+  }
+
+  const url = spec.server.url + path;
+
+  try {
+    const response = await fetch(url, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined
+    });
+
+    const contentType = response.headers.get('content-type') ?? '';
+    const responseBody = contentType.includes('application/json')
+      ? await response.json()
+      : await response.text();
+
+    return {
+      status: response.status,
+      statusText: response.statusText,
+      body: responseBody
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? `${error.message}${error.cause ? `: ${(error.cause as Error).message}` : ''}`
+        : 'Request failed';
+    throw new HTTPError({
+      status: 502,
+      message: `Could not reach ${url}\n${message}`
+    });
+  }
+});
