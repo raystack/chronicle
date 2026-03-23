@@ -44,6 +44,7 @@ export async function createViteConfig(
         '@content': path.resolve(packageRoot, '.content'),
       },
       conditions: ['module-sync', 'import', 'node'],
+      preserveSymlinks: true,
       dedupe: [
         'react',
         'react-dom',
