@@ -1,16 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { loader } from 'fumadocs-core/source';
+import type { Root, Node, Folder } from 'fumadocs-core/page-tree';
 import matter from 'gray-matter';
 import type { MDXContent } from 'mdx/types';
-import type { Frontmatter, PageTree, PageTreeItem } from '@/types';
-
-export interface SourcePage {
-  url: string;
-  slugs: string[];
-  filePath: string;
-  frontmatter: Frontmatter;
-}
 
 function getContentDir(): string {
   return __CHRONICLE_CONTENT_DIR__ || path.join(process.cwd(), 'content');
@@ -43,7 +36,7 @@ async function scanFiles(contentDir: string) {
           files.push({
             type: 'page',
             path: relativePath,
-            data: { ...data, _absolutePath: fullPath }
+            data: { ...data, _relativePath: relativePath }
           });
         } else if (entry.name === 'meta.json' || entry.name === 'meta.yaml') {
           const raw = await fs.readFile(fullPath, 'utf-8');
@@ -63,7 +56,6 @@ async function scanFiles(contentDir: string) {
 }
 
 let cachedSource: ReturnType<typeof loader> | null = null;
-let cachedPages: SourcePage[] | null = null;
 
 async function getSource() {
   if (cachedSource) return cachedSource;
@@ -76,111 +68,78 @@ async function getSource() {
   return cachedSource;
 }
 
+export { getSource as source };
+
 export function invalidate() {
   cachedSource = null;
-  cachedPages = null;
 }
 
-export async function getPages(): Promise<SourcePage[]> {
-  if (cachedPages) return cachedPages;
+function getOrder(node: Node, orderMap: Map<string, number>): number | undefined {
+  if (node.type === 'page') return orderMap.get(node.url);
+  if (node.type === 'folder') {
+    if (node.index) return orderMap.get(node.index.url);
+    for (const child of node.children) {
+      const o = getOrder(child, orderMap);
+      if (o !== undefined) return o;
+    }
+  }
+  return undefined;
+}
 
+function sortNodes(nodes: Node[], orderMap: Map<string, number>): Node[] {
+  return [...nodes]
+    .map(n =>
+      n.type === 'folder'
+        ? ({ ...n, children: sortNodes(n.children, orderMap) } as Folder)
+        : n
+    )
+    .sort(
+      (a, b) =>
+        (getOrder(a, orderMap) ?? Number.MAX_SAFE_INTEGER) -
+        (getOrder(b, orderMap) ?? Number.MAX_SAFE_INTEGER)
+    );
+}
+
+function sortTreeByOrder(tree: Root, pages: { url: string; data: unknown }[]): Root {
+  const orderMap = new Map<string, number>();
+  for (const page of pages) {
+    const d = page.data as Record<string, unknown>;
+    const order = d.order as number | undefined;
+    if (order !== undefined) orderMap.set(page.url, order);
+    if (page.url === '/') orderMap.set('/', order ?? 0);
+  }
+  return { ...tree, children: sortNodes(tree.children, orderMap) };
+}
+
+export async function getPageTree(): Promise<Root> {
   const s = await getSource();
-  cachedPages = s.getPages().map(page => {
-    const data = page.data as Record<string, unknown>;
-    return {
-      url: page.url,
-      slugs: page.slugs,
-      filePath: (data._absolutePath as string) ?? '',
-      frontmatter: {
-        title:
-          (data.title as string) ??
-          page.slugs[page.slugs.length - 1] ??
-          'Untitled',
-        description: data.description as string | undefined,
-        order: data.order as number | undefined,
-        icon: data.icon as string | undefined,
-        lastModified: data.lastModified as string | undefined
-      }
-    };
-  });
-
-  return cachedPages;
+  return sortTreeByOrder(s.pageTree as Root, s.getPages());
 }
 
-export async function getPage(slug?: string[]): Promise<SourcePage | null> {
-  const pages = await getPages();
-  const targetUrl = !slug || slug.length === 0 ? '/' : `/${slug.join('/')}`;
-  return pages.find(p => p.url === targetUrl) ?? null;
+export async function getPages() {
+  const s = await getSource();
+  return s.getPages();
+}
+
+export async function getPage(slugs?: string[]) {
+  const s = await getSource();
+  return s.getPage(slugs);
 }
 
 export async function loadPageComponent(
-  page: SourcePage
+  relativePath: string
 ): Promise<MDXContent | null> {
-  if (!page.filePath) return null;
+  if (!relativePath) return null;
+  const contentDir = getContentDir();
+  const fullPath = path.join(contentDir, relativePath);
   try {
-    await fs.access(page.filePath);
+    await fs.access(fullPath);
   } catch {
     return null;
   }
-  const contentDir = getContentDir();
-  const relativePath = path.relative(contentDir, page.filePath);
   const withoutExt = relativePath.replace(/\.(mdx|md)$/, '');
   const mod = relativePath.endsWith('.md')
     ? await import(`../../.content/${withoutExt}.md`)
     : await import(`../../.content/${withoutExt}.mdx`);
   return mod.default;
-}
-
-export async function buildPageTree(): Promise<PageTree> {
-  const s = await getSource();
-  const pages = s.getPages();
-  const folders = new Map<string, PageTreeItem[]>();
-  const rootPages: PageTreeItem[] = [];
-
-  for (const page of pages) {
-    const data = page.data as Record<string, unknown>;
-    const isIndex = page.url === '/';
-    const item: PageTreeItem = {
-      type: 'page',
-      name: (data.title as string) ?? page.slugs.join('/') ?? 'Untitled',
-      url: page.url,
-      order: (data.order as number | undefined) ?? (isIndex ? 0 : undefined)
-    };
-
-    if (page.slugs.length > 1) {
-      const folder = page.slugs[0];
-      if (!folders.has(folder)) {
-        folders.set(folder, []);
-      }
-      folders.get(folder)?.push(item);
-    } else {
-      rootPages.push(item);
-    }
-  }
-
-  const sortByOrder = (items: PageTreeItem[]) =>
-    items.sort(
-      (a, b) =>
-        (a.order ?? Number.MAX_SAFE_INTEGER) -
-        (b.order ?? Number.MAX_SAFE_INTEGER)
-    );
-
-  const children: PageTreeItem[] = sortByOrder(rootPages);
-
-  const folderItems: PageTreeItem[] = [];
-  for (const [folder, items] of folders) {
-    const sorted = sortByOrder(items);
-    const indexPage = items.find(item => item.url === `/${folder}`);
-    const folderOrder = indexPage?.order ?? sorted[0]?.order;
-    folderItems.push({
-      type: 'folder',
-      name: `${folder.charAt(0).toUpperCase()}${folder.slice(1)}`,
-      order: folderOrder,
-      children: sorted
-    });
-  }
-
-  children.push(...sortByOrder(folderItems));
-
-  return { name: 'root', children };
 }

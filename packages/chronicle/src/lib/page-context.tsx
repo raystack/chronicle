@@ -8,7 +8,7 @@ import React, {
 import { useLocation } from 'react-router';
 import { mdxComponents } from '@/components/mdx';
 import type { ApiSpec } from '@/lib/openapi';
-import type { ChronicleConfig, Frontmatter, PageTree } from '@/types';
+import type { ChronicleConfig, Frontmatter, Root } from '@/types';
 
 interface PageData {
   slug: string[];
@@ -18,7 +18,7 @@ interface PageData {
 
 interface PageContextValue {
   config: ChronicleConfig;
-  tree: PageTree;
+  tree: Root;
   page: PageData | null;
   apiSpecs: ApiSpec[];
 }
@@ -31,7 +31,7 @@ export function usePageContext(): PageContextValue {
     console.error('usePageContext: no context found!');
     return {
       config: { title: 'Documentation' },
-      tree: { name: 'root', children: [] },
+      tree: { name: 'root', children: [] } as Root,
       page: null,
       apiSpecs: []
     };
@@ -41,7 +41,7 @@ export function usePageContext(): PageContextValue {
 
 interface PageProviderProps {
   initialConfig: ChronicleConfig;
-  initialTree: PageTree;
+  initialTree: Root;
   initialPage: PageData | null;
   initialApiSpecs: ApiSpec[];
   children: ReactNode;
@@ -65,7 +65,7 @@ export function PageProvider({
   children
 }: PageProviderProps) {
   const { pathname } = useLocation();
-  const [tree] = useState<PageTree>(initialTree);
+  const [tree] = useState<Root>(initialTree);
   const [page, setPage] = useState<PageData | null>(initialPage);
   const [apiSpecs, setApiSpecs] = useState<ApiSpec[]>(initialApiSpecs);
   const [currentPath, setCurrentPath] = useState(pathname);

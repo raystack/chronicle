@@ -16,8 +16,9 @@ export default defineHandler(async event => {
 
   const pages = await getPages();
   const docPages = pages.map(page => {
-    const lastmod = page.frontmatter.lastModified
-      ? `<lastmod>${new Date(page.frontmatter.lastModified).toISOString()}</lastmod>`
+    const data = page.data as Record<string, unknown>;
+    const lastmod = data.lastModified
+      ? `<lastmod>${new Date(data.lastModified as string).toISOString()}</lastmod>`
       : '';
     return `<url><loc>${baseUrl}/${page.slugs.join('/')}</loc>${lastmod}</url>`;
   });

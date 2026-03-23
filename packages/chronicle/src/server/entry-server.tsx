@@ -1,6 +1,5 @@
 import '@raystack/apsara/normalize.css';
 import '@raystack/apsara/style.css';
-import path from 'node:path';
 import React from 'react';
 import { renderToReadableStream } from 'react-dom/server.edge';
 import { StaticRouter } from 'react-router';
@@ -9,7 +8,7 @@ import { mdxComponents } from '@/components/mdx';
 import { loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
-import { buildPageTree, getPage, loadPageComponent } from '@/lib/source';
+import { getPageTree, getPage, loadPageComponent } from '@/lib/source';
 import { App } from './App';
 
 // @ts-expect-error virtual import from Nitro
@@ -28,23 +27,30 @@ export default {
       ? await loadApiSpecs(config.api).catch(() => [])
       : [];
 
-    const [tree, sourcePage] = await Promise.all([
-      buildPageTree(),
+    const [tree, page] = await Promise.all([
+      getPageTree(),
       getPage(slug),
     ]);
 
-    const pageData = sourcePage
+    const data = page?.data as Record<string, unknown> | undefined;
+    const relativePath = (data?._relativePath as string) ?? null;
+
+    const pageData = page
       ? {
           slug,
-          frontmatter: sourcePage.frontmatter,
-          content: await loadPageComponent(sourcePage).then(component =>
-            component ? React.createElement(component, { components: mdxComponents }) : null
-          ),
+          frontmatter: {
+            title: (data?.title as string) ?? slug[slug.length - 1] ?? 'Untitled',
+            description: data?.description as string | undefined,
+            order: data?.order as number | undefined,
+            icon: data?.icon as string | undefined,
+            lastModified: data?.lastModified as string | undefined,
+          },
+          content: relativePath
+            ? await loadPageComponent(relativePath).then(component =>
+                component ? React.createElement(component, { components: mdxComponents }) : null
+              )
+            : null,
         }
-      : null;
-
-    const relativePath = sourcePage
-      ? path.relative(__CHRONICLE_CONTENT_DIR__, sourcePage.filePath)
       : null;
 
     const embeddedData = {

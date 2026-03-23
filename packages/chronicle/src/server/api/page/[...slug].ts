@@ -1,4 +1,3 @@
-import path from 'node:path';
 import { defineHandler, HTTPError } from 'nitro';
 import { getPage } from '@/lib/source';
 
@@ -11,8 +10,17 @@ export default defineHandler(async event => {
     throw new HTTPError({ status: 404, message: 'Page not found' });
   }
 
-  const contentDir = __CHRONICLE_CONTENT_DIR__;
-  const relativePath = path.relative(contentDir, page.filePath);
+  const data = page.data as Record<string, unknown>;
+  const relativePath = (data._relativePath as string) ?? '';
 
-  return { frontmatter: page.frontmatter, relativePath };
+  return {
+    frontmatter: {
+      title: (data.title as string) ?? slug[slug.length - 1] ?? 'Untitled',
+      description: data.description as string | undefined,
+      order: data.order as number | undefined,
+      icon: data.icon as string | undefined,
+      lastModified: data.lastModified as string | undefined,
+    },
+    relativePath,
+  };
 });

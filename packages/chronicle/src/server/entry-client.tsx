@@ -5,14 +5,14 @@ import { BrowserRouter } from 'react-router';
 import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
 import { mdxComponents } from '@/components/mdx';
 import { PageProvider } from '@/lib/page-context';
-import type { ChronicleConfig, Frontmatter, PageTree } from '@/types';
+import type { ChronicleConfig, Frontmatter, Root } from '@/types';
 import type { ApiSpec } from '@/lib/openapi';
 import type { ReactNode } from 'react';
 import { App } from './App';
 
 interface EmbeddedData {
   config: ChronicleConfig;
-  tree: PageTree;
+  tree: Root;
   slug: string[];
   frontmatter: Frontmatter;
   relativePath: string;
@@ -27,7 +27,7 @@ async function hydrate() {
     const config: ChronicleConfig = embedded?.config ?? {
       title: 'Documentation'
     };
-    const tree: PageTree = embedded?.tree ?? { name: 'root', children: [] };
+    const tree: Root = embedded?.tree ?? { name: 'root', children: [] };
     const isApiPage =
       window.location.pathname.startsWith('/apis') && !!config.api?.length;
     const apiSpecs: ApiSpec[] = isApiPage

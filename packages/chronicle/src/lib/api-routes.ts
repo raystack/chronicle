@@ -1,6 +1,6 @@
 import type { OpenAPIV3 } from 'openapi-types'
 import slugify from 'slugify'
-import type { PageTree, PageTreeItem } from '@/types/content'
+import type { Root, Node, Item, Folder } from 'fumadocs-core/page-tree'
 import type { ApiSpec } from './openapi'
 
 export function getSpecSlug(spec: ApiSpec): string {
@@ -56,16 +56,15 @@ export function findApiOperation(specs: ApiSpec[], slug: string[]): ApiRouteMatc
   return null
 }
 
-export function buildApiPageTree(specs: ApiSpec[]): PageTree {
-  const children: PageTreeItem[] = []
+export function buildApiPageTree(specs: ApiSpec[]): Root {
+  const children: Node[] = []
 
   for (const spec of specs) {
     const specSlug = getSpecSlug(spec)
     const paths = spec.document.paths ?? {}
     const tags = spec.document.tags ?? []
 
-    // Group operations by tag (case-insensitive to avoid duplicates)
-    const opsByTag = new Map<string, PageTreeItem[]>()
+    const opsByTag = new Map<string, Item[]>()
     const tagDisplayName = new Map<string, string>()
 
     for (const [, pathItem] of Object.entries(paths)) {
@@ -90,7 +89,6 @@ export function buildApiPageTree(specs: ApiSpec[]): PageTree {
       }
     }
 
-    // Use doc.tags display names where available
     for (const t of tags) {
       const key = t.name.toLowerCase()
       if (opsByTag.has(key)) {
@@ -98,7 +96,7 @@ export function buildApiPageTree(specs: ApiSpec[]): PageTree {
       }
     }
 
-    const tagFolders: PageTreeItem[] = Array.from(opsByTag.entries()).map(([key, ops]) => ({
+    const tagFolders: Folder[] = Array.from(opsByTag.entries()).map(([key, ops]) => ({
       type: 'folder' as const,
       name: tagDisplayName.get(key) ?? key,
       icon: 'rectangle-stack',
@@ -110,7 +108,7 @@ export function buildApiPageTree(specs: ApiSpec[]): PageTree {
         type: 'folder',
         name: spec.name,
         children: tagFolders,
-      })
+      } as Folder)
     } else {
       children.push(...tagFolders)
     }
