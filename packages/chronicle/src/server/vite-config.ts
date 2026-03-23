@@ -28,7 +28,15 @@ export async function createViteConfig(
         },
       }),
       mdx({}, { index: false }),
-      react()
+      react(),
+      {
+        name: 'chronicle:content-alias',
+        resolveId(id) {
+          if (id.startsWith('@content/')) {
+            return path.resolve(packageRoot, '.content', id.slice('@content/'.length));
+          }
+        },
+      }
     ],
     resolve: {
       alias: {
