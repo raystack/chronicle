@@ -48,7 +48,10 @@ interface PageProviderProps {
 }
 
 async function loadMdxComponent(relativePath: string): Promise<ReactNode> {
-  const mod = await import(/* @vite-ignore */ `/.content/${relativePath}`);
+  const withoutExt = relativePath.replace(/\.(mdx|md)$/, '');
+  const mod = relativePath.endsWith('.md')
+    ? await import(`../../.content/${withoutExt}.md`)
+    : await import(`../../.content/${withoutExt}.mdx`);
   return mod.default
     ? React.createElement(mod.default, { components: mdxComponents })
     : null;

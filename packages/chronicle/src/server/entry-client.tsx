@@ -60,7 +60,10 @@ async function hydrate() {
 async function loadPage(
   embedded: EmbeddedData
 ): Promise<{ slug: string[]; frontmatter: Frontmatter; content: ReactNode }> {
-  const mod = await import(/* @vite-ignore */ `/.content/${embedded.relativePath}`);
+  const withoutExt = embedded.relativePath.replace(/\.(mdx|md)$/, '');
+  const mod = embedded.relativePath.endsWith('.md')
+    ? await import(`../../.content/${withoutExt}.md`)
+    : await import(`../../.content/${withoutExt}.mdx`);
   const content = mod.default
     ? React.createElement(mod.default, { components: mdxComponents })
     : null;

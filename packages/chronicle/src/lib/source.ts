@@ -126,8 +126,8 @@ export async function loadPageComponent(
   const relativePath = path.relative(contentDir, page.filePath);
   const withoutExt = relativePath.replace(/\.(mdx|md)$/, '');
   const mod = relativePath.endsWith('.md')
-    ? await import(`@content/${withoutExt}.md`)
-    : await import(`@content/${withoutExt}.mdx`);
+    ? await import(`../../.content/${withoutExt}.md`)
+    : await import(`../../.content/${withoutExt}.mdx`);
   return mod.default;
 }
 

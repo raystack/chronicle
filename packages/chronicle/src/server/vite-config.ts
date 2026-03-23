@@ -23,28 +23,15 @@ export async function createViteConfig(
       nitro({
         serverDir: path.resolve(packageRoot, 'src/server'),
         ...(preset && { preset }),
-        alias: {
-          '@content': path.resolve(packageRoot, '.content'),
-        },
       }),
       mdx({}, { index: false }),
-      react(),
-      {
-        name: 'chronicle:content-alias',
-        resolveId(id) {
-          if (id.startsWith('@content/')) {
-            return path.resolve(packageRoot, '.content', id.slice('@content/'.length));
-          }
-        },
-      }
+      react()
     ],
     resolve: {
       alias: {
         '@': path.resolve(packageRoot, 'src'),
-        '@content': path.resolve(packageRoot, '.content'),
       },
       conditions: ['module-sync', 'import', 'node'],
-      preserveSymlinks: true,
       dedupe: [
         'react',
         'react-dom',
