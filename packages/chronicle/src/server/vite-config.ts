@@ -31,14 +31,15 @@ export async function createViteConfig(
     resolve: {
       alias: {
         '@': path.resolve(packageRoot, 'src'),
-        '@content': path.resolve(packageRoot, '.content')
+        '@content': path.resolve(packageRoot, '.content'),
       },
       conditions: ['module-sync', 'import', 'node'],
       dedupe: [
         'react',
         'react-dom',
         'react/jsx-runtime',
-        'react/jsx-dev-runtime'
+        'react/jsx-dev-runtime',
+        'react-router',
       ]
     },
     server: {

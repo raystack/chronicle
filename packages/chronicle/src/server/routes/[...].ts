@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { defineHandler } from 'nitro';
 import React from 'react';
 import { mdxComponents } from '@/components/mdx';
@@ -27,7 +28,7 @@ export default defineHandler(async event => {
     tree,
     slug,
     frontmatter: null,
-    filePath: null
+    relativePath: null
   };
 
   if (sourcePage) {
@@ -40,7 +41,7 @@ export default defineHandler(async event => {
         : null
     };
     embeddedData.frontmatter = sourcePage.frontmatter;
-    embeddedData.filePath = sourcePage.filePath;
+    embeddedData.relativePath = path.relative(__CHRONICLE_CONTENT_DIR__, sourcePage.filePath);
   }
 
   const appHtml = await render(event.url.href, { config, tree, page: pageData, apiSpecs });

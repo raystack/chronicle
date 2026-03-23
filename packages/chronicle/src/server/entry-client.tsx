@@ -2,9 +2,11 @@ import '@vitejs/plugin-react/preamble';
 import React from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
+import { mdxComponents } from '@/components/mdx';
 import { PageProvider } from '@/lib/page-context';
 import type { ChronicleConfig, Frontmatter, PageTree } from '@/types';
 import type { ApiSpec } from '@/lib/openapi';
+import type { ReactNode } from 'react';
 import { App } from './App';
 
 interface EmbeddedData {
@@ -12,12 +14,8 @@ interface EmbeddedData {
   tree: PageTree;
   slug: string[];
   frontmatter: Frontmatter;
-  contentHtml: string;
+  relativePath: string;
 }
-
-// Capture SSR content before hydration
-const ssrContentHtml =
-  document.querySelector('[data-article-content]')?.innerHTML ?? '';
 
 async function hydrate() {
   try {
@@ -37,12 +35,8 @@ async function hydrate() {
           .catch(() => [])
       : [];
 
-    const page = embedded?.frontmatter
-      ? {
-          slug: embedded.slug,
-          frontmatter: embedded.frontmatter,
-          content: <div dangerouslySetInnerHTML={{ __html: embedded.contentHtml || ssrContentHtml }} />,
-        }
+    const page = embedded?.relativePath
+      ? await loadPage(embedded)
       : null;
 
     hydrateRoot(
@@ -61,6 +55,16 @@ async function hydrate() {
   } catch (err) {
     console.error('Hydration failed:', err);
   }
+}
+
+async function loadPage(
+  embedded: EmbeddedData
+): Promise<{ slug: string[]; frontmatter: Frontmatter; content: ReactNode }> {
+  const mod = await import(/* @vite-ignore */ `/.content/${embedded.relativePath}`);
+  const content = mod.default
+    ? React.createElement(mod.default, { components: mdxComponents })
+    : null;
+  return { slug: embedded.slug, frontmatter: embedded.frontmatter, content };
 }
 
 hydrate();

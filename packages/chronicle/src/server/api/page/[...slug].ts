@@ -1,8 +1,6 @@
-import React from 'react';
+import path from 'node:path';
 import { defineHandler, HTTPError } from 'nitro';
-import { mdxComponents } from '@/components/mdx';
-import { getPage, loadPageComponent } from '@/lib/source';
-import { renderToHtml } from '../../utils/render-to-html';
+import { getPage } from '@/lib/source';
 
 export default defineHandler(async event => {
   const slugParam = event.context.params?.slug ?? '';
@@ -13,10 +11,8 @@ export default defineHandler(async event => {
     throw new HTTPError({ status: 404, message: 'Page not found' });
   }
 
-  const component = await loadPageComponent(page);
-  const contentHtml = component
-    ? await renderToHtml(React.createElement(component, { components: mdxComponents }))
-    : '';
+  const contentDir = __CHRONICLE_CONTENT_DIR__;
+  const relativePath = path.relative(contentDir, page.filePath);
 
-  return { frontmatter: page.frontmatter, contentHtml };
+  return { frontmatter: page.frontmatter, relativePath };
 });

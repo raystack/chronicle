@@ -6,6 +6,7 @@ import React, {
   useState
 } from 'react';
 import { useLocation } from 'react-router';
+import { mdxComponents } from '@/components/mdx';
 import type { ApiSpec } from '@/lib/openapi';
 import type { ChronicleConfig, Frontmatter, PageTree } from '@/types';
 
@@ -46,6 +47,13 @@ interface PageProviderProps {
   children: ReactNode;
 }
 
+async function loadMdxComponent(relativePath: string): Promise<ReactNode> {
+  const mod = await import(/* @vite-ignore */ `/.content/${relativePath}`);
+  return mod.default
+    ? React.createElement(mod.default, { components: mdxComponents })
+    : null;
+}
+
 export function PageProvider({
   initialConfig,
   initialTree,
@@ -81,17 +89,15 @@ export function PageProvider({
       ? []
       : pathname.slice(1).split('/').filter(Boolean);
 
-    const apiPath = slug.length === 0 ? '/api/page' : `/api/page/${slug.join('/')}`;
+    const apiPath = slug.length === 0 ? '/api/page/' : `/api/page/${slug.join('/')}`;
 
     fetch(apiPath)
       .then(res => res.json())
-      .then((data: { frontmatter: Frontmatter; contentHtml: string }) => {
+      .then(async (data: { frontmatter: Frontmatter; relativePath: string }) => {
         if (cancelled.current) return;
-        setPage({
-          slug,
-          frontmatter: data.frontmatter,
-          content: <div dangerouslySetInnerHTML={{ __html: data.contentHtml }} />,
-        });
+        const content = await loadMdxComponent(data.relativePath);
+        if (cancelled.current) return;
+        setPage({ slug, frontmatter: data.frontmatter, content });
       })
       .catch(() => {});
 
