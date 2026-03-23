@@ -1,8 +1,11 @@
 import react from '@vitejs/plugin-react';
+import { remarkDirectiveAdmonition, remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
 import mdx from 'fumadocs-mdx/vite';
 import { nitro } from 'nitro/vite';
 import path from 'node:path';
+import remarkDirective from 'remark-directive';
 import { type InlineConfig } from 'vite';
+import remarkUnusedDirectives from '../lib/remark-unused-directives';
 
 export interface ViteConfigOptions {
   packageRoot: string;
@@ -24,7 +27,32 @@ export async function createViteConfig(
         serverDir: path.resolve(packageRoot, 'src/server'),
         ...(preset && { preset }),
       }),
-      mdx({}, { index: false }),
+      mdx({
+        mdxOptions: {
+          remarkPlugins: [
+            remarkDirective,
+            [remarkDirectiveAdmonition, {
+              tags: {
+                CalloutContainer: 'Callout',
+                CalloutTitle: 'CalloutTitle',
+                CalloutDescription: 'CalloutDescription',
+              },
+              types: {
+                note: 'accent',
+                tip: 'accent',
+                info: 'accent',
+                warn: 'attention',
+                warning: 'attention',
+                danger: 'alert',
+                caution: 'alert',
+                success: 'success',
+              },
+            }],
+            remarkUnusedDirectives,
+            remarkMdxMermaid,
+          ],
+        },
+      }, { index: false }),
       react()
     ],
     resolve: {
