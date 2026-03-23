@@ -23,6 +23,9 @@ export async function createViteConfig(
       nitro({
         serverDir: path.resolve(packageRoot, 'src/server'),
         ...(preset && { preset }),
+        alias: {
+          '@content': path.resolve(packageRoot, '.content'),
+        },
       }),
       mdx({}, { index: false }),
       react()
