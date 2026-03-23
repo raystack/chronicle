@@ -1,20 +1,25 @@
 .details {
-  border: 1px solid var(--rs-color-border-base-primary);
-  border-radius: var(--rs-radius-2);
   margin: var(--rs-space-5) 0;
 }
 
 .summary {
-  padding: var(--rs-space-4) var(--rs-space-5);
+  padding: var(--rs-space-2) var(--rs-space-4);
   cursor: pointer;
   font-weight: 500;
   font-size: var(--rs-font-size-small);
   color: var(--rs-color-text-base-primary);
-  background: var(--rs-color-background-base-secondary);
+  background: transparent;
+  border: 1px solid var(--rs-color-border-base-primary);
+  border-radius: var(--rs-radius-2);
   list-style: none;
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: var(--rs-space-3);
+  transition: background 0.15s ease;
+}
+
+.summary:hover {
+  background: var(--rs-color-background-base-secondary);
 }
 
 .summary::-webkit-details-marker {

@@ -76,13 +76,7 @@ export function invalidate() {
 
 function getOrder(node: Node, orderMap: Map<string, number>): number | undefined {
   if (node.type === 'page') return orderMap.get(node.url);
-  if (node.type === 'folder') {
-    if (node.index) return orderMap.get(node.index.url);
-    for (const child of node.children) {
-      const o = getOrder(child, orderMap);
-      if (o !== undefined) return o;
-    }
-  }
+  if (node.type === 'folder' && node.index) return orderMap.get(node.index.url);
   return undefined;
 }
 
