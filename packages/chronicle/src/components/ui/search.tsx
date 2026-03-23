@@ -1,21 +1,19 @@
-"use client";
-
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import { Button, Command, Dialog, Text } from "@raystack/apsara";
-import { cx } from "class-variance-authority";
-import { useDocsSearch } from "fumadocs-core/search/client";
-import type { SortedResult } from "fumadocs-core/search";
-import { DocumentIcon, HashtagIcon } from "@heroicons/react/24/outline";
-import { MethodBadge } from "@/components/api/method-badge";
-import styles from "./search.module.css";
+import { DocumentIcon, HashtagIcon } from '@heroicons/react/24/outline';
+import { Button, Command, Dialog, Text } from '@raystack/apsara';
+import { cx } from 'class-variance-authority';
+import type { SortedResult } from 'fumadocs-core/search';
+import { useDocsSearch } from 'fumadocs-core/search/client';
+import { useCallback, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { MethodBadge } from '@/components/api/method-badge';
+import styles from './search.module.css';
 
 function SearchShortcutKey({ className }: { className?: string }) {
-  const [key, setKey] = useState("⌘");
+  const [key, setKey] = useState('⌘');
 
   useEffect(() => {
-    const isMac = navigator.platform?.toUpperCase().includes("MAC");
-    setKey(isMac ? "⌘" : "Ctrl");
+    const isMac = navigator.platform?.toUpperCase().includes('MAC');
+    setKey(isMac ? '⌘' : 'Ctrl');
   }, []);
 
   return (
@@ -26,50 +24,50 @@ function SearchShortcutKey({ className }: { className?: string }) {
 }
 
 interface SearchProps {
-  className?: string
+  className?: string;
 }
 
 export function Search({ className }: SearchProps) {
   const [open, setOpen] = useState(false);
-  const router = useRouter();
+  const navigate = useNavigate();
 
   const { search, setSearch, query } = useDocsSearch({
-    type: "fetch",
-    api: "/api/search",
+    type: 'fetch',
+    api: '/api/search',
     delayMs: 100,
-    allowEmpty: true,
+    allowEmpty: true
   });
 
   const onSelect = useCallback(
     (url: string) => {
       setOpen(false);
-      router.push(url);
+      navigate(url);
     },
-    [router],
+    [navigate]
   );
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
-      if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+      if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        setOpen((open) => !open);
+        setOpen(open => !open);
       }
     };
 
-    document.addEventListener("keydown", down);
-    return () => document.removeEventListener("keydown", down);
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
   }, []);
 
   const results = deduplicateByUrl(
-    query.data === "empty" ? [] : (query.data ?? []),
+    query.data === 'empty' ? [] : (query.data ?? [])
   );
 
   return (
     <>
       <Button
-        variant="outline"
-        color="neutral"
-        size="small"
+        variant='outline'
+        color='neutral'
+        size='small'
         onClick={() => setOpen(true)}
         className={cx(styles.trigger, className)}
         trailingIcon={<SearchShortcutKey className={styles.kbd} />}
@@ -84,7 +82,7 @@ export function Search({ className }: SearchProps) {
           </Dialog.Title>
           <Command loop>
             <Command.Input
-              placeholder="Search"
+              placeholder='Search'
               value={search}
               onValueChange={setSearch}
               className={styles.input}
@@ -100,7 +98,7 @@ export function Search({ className }: SearchProps) {
               {!query.isLoading &&
                 search.length === 0 &&
                 results.length > 0 && (
-                  <Command.Group heading="Suggestions">
+                  <Command.Group heading='Suggestions'>
                     {results.slice(0, 8).map((result: SortedResult) => (
                       <Command.Item
                         key={result.id}
@@ -111,7 +109,9 @@ export function Search({ className }: SearchProps) {
                         <div className={styles.itemContent}>
                           {getResultIcon(result)}
                           <Text className={styles.pageText}>
-                            <HighlightedText html={stripMethod(result.content)} />
+                            <HighlightedText
+                              html={stripMethod(result.content)}
+                            />
                           </Text>
                         </div>
                       </Command.Item>
@@ -129,10 +129,12 @@ export function Search({ className }: SearchProps) {
                     <div className={styles.itemContent}>
                       {getResultIcon(result)}
                       <div className={styles.resultText}>
-                        {result.type === "heading" ? (
+                        {result.type === 'heading' ? (
                           <>
                             <Text className={styles.headingText}>
-                              <HighlightedText html={stripMethod(result.content)} />
+                              <HighlightedText
+                                html={stripMethod(result.content)}
+                              />
                             </Text>
                             <Text className={styles.separator}>-</Text>
                             <Text className={styles.pageText}>
@@ -141,7 +143,9 @@ export function Search({ className }: SearchProps) {
                           </>
                         ) : (
                           <Text className={styles.pageText}>
-                            <HighlightedText html={stripMethod(result.content)} />
+                            <HighlightedText
+                              html={stripMethod(result.content)}
+                            />
                           </Text>
                         )}
                       </div>
@@ -158,49 +162,57 @@ export function Search({ className }: SearchProps) {
 
 function deduplicateByUrl(results: SortedResult[]): SortedResult[] {
   const seen = new Set<string>();
-  return results.filter((r) => {
-    const base = r.url.split("#")[0];
+  return results.filter(r => {
+    const base = r.url.split('#')[0];
     if (seen.has(base)) return false;
     seen.add(base);
     return true;
   });
 }
 
-const API_METHODS = new Set(["GET", "POST", "PUT", "DELETE", "PATCH"]);
+const API_METHODS = new Set(['GET', 'POST', 'PUT', 'DELETE', 'PATCH']);
 
 function extractMethod(content: string): string | null {
-  const first = content.split(" ")[0];
+  const first = content.split(' ')[0];
   return API_METHODS.has(first) ? first : null;
 }
 
 function stripMethod(content: string): string {
-  const first = content.split(" ")[0];
+  const first = content.split(' ')[0];
   return API_METHODS.has(first) ? content.slice(first.length + 1) : content;
 }
 
-function HighlightedText({ html, className }: { html: string; className?: string }) {
-  return <span className={className} dangerouslySetInnerHTML={{ __html: html }} />;
+function HighlightedText({
+  html,
+  className
+}: {
+  html: string;
+  className?: string;
+}) {
+  return (
+    <span className={className} dangerouslySetInnerHTML={{ __html: html }} />
+  );
 }
 
 function getResultIcon(result: SortedResult): React.ReactNode {
-  if (!result.url.startsWith("/apis/")) {
-    return result.type === "page" ? (
+  if (!result.url.startsWith('/apis/')) {
+    return result.type === 'page' ? (
       <DocumentIcon className={styles.icon} />
     ) : (
       <HashtagIcon className={styles.icon} />
     );
   }
   const method = extractMethod(result.content);
-  return method ? <MethodBadge method={method} size="micro" /> : null;
+  return method ? <MethodBadge method={method} size='micro' /> : null;
 }
 
 function getPageTitle(url: string): string {
-  const path = url.split("#")[0];
-  const segments = path.split("/").filter(Boolean);
+  const path = url.split('#')[0];
+  const segments = path.split('/').filter(Boolean);
   const lastSegment = segments[segments.length - 1];
-  if (!lastSegment) return "Home";
+  if (!lastSegment) return 'Home';
   return lastSegment
-    .split("-")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 }

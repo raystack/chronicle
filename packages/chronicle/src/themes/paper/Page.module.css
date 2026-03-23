@@ -1,7 +1,12 @@
 .main {
   --paper-navbar-height: 40px;
   --paper-navbar-padding: var(--rs-space-3);
-  --paper-navbar-total: calc(var(--paper-navbar-height) + var(--paper-navbar-padding) * 2 + 1px);
+  --paper-navbar-total: calc(
+    var(--paper-navbar-height) +
+    var(--paper-navbar-padding) *
+    2 +
+    1px
+  );
 
   flex: 1;
   max-width: 1024px;
@@ -52,7 +57,7 @@
 }
 
 .breadcrumb {
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-family: "SF Mono", "Fira Code", monospace;
   font-size: var(--rs-font-size-small);
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -94,13 +99,15 @@
 }
 
 .content {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: Georgia, "Times New Roman", serif;
   line-height: 1.8;
   background: var(--rs-color-background-base-primary);
   padding: var(--rs-space-9);
   border-left: 1px solid var(--rs-color-border-base-primary);
   border-right: 1px solid var(--rs-color-border-base-primary);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.04);
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.08),
+    0 4px 12px rgba(0, 0, 0, 0.04);
   margin-bottom: var(--rs-space-9);
 }
 
