@@ -1,38 +1,30 @@
-import { Command } from 'commander'
-import { spawn } from 'child_process'
-import path from 'path'
-import fs from 'fs'
-import chalk from 'chalk'
-import { attachLifecycleHandlers, resolveNextCli } from '@/cli/utils'
+import chalk from 'chalk';
+import { Command } from 'commander';
+import { resolveContentDir } from '@/cli/utils/config';
+import { PACKAGE_ROOT } from '@/cli/utils/resolve';
 
 export const buildCommand = new Command('build')
   .description('Build for production')
-  .action(() => {
-    const scaffoldPath = path.join(process.cwd(), '.chronicle')
-    if (!fs.existsSync(scaffoldPath)) {
-      console.log(chalk.red('Error: .chronicle/ not found. Run'), chalk.cyan('chronicle init'), chalk.red('first.'))
-      process.exit(1)
-    }
+  .option('-c, --content <path>', 'Content directory')
+  .option(
+    '--preset <preset>',
+    'Deploy preset (vercel, cloudflare, node-server)'
+  )
+  .action(async options => {
+    const contentDir = resolveContentDir(options.content);
 
-    let nextCli: string
-    try {
-      nextCli = resolveNextCli()
-    } catch {
-      console.log(chalk.red('Error: Next.js CLI not found. Run'), chalk.cyan('chronicle init'), chalk.red('first.'))
-      process.exit(1)
-    }
+    console.log(chalk.cyan('Building for production...'));
 
-    console.log(chalk.cyan('Building for production...'))
+    const { build } = await import('vite');
+    const { createViteConfig } = await import('@/server/vite-config');
 
-    const child = spawn(process.execPath, [nextCli, 'build'], {
-      stdio: 'inherit',
-      cwd: scaffoldPath,
-      env: {
-        ...process.env,
-        CHRONICLE_PROJECT_ROOT: process.cwd(),
-        CHRONICLE_CONTENT_DIR: './content',
-      },
-    })
+    const config = await createViteConfig({
+      root: PACKAGE_ROOT,
+      contentDir,
+      preset: options.preset
+    });
 
-    attachLifecycleHandlers(child)
-  })
+    await build(config);
+
+    console.log(chalk.green('Build complete'));
+  });

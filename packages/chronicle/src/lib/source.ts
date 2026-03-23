@@ -1,9 +1,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import matter from 'gray-matter';
 import { loader } from 'fumadocs-core/source';
-import type { Frontmatter, PageTree, PageTreeItem } from '@/types';
+import matter from 'gray-matter';
 import type { MDXContent } from 'mdx/types';
+import type { Frontmatter, PageTree, PageTreeItem } from '@/types';
 
 export interface SourcePage {
   url: string;
@@ -17,13 +17,18 @@ function getContentDir(): string {
 }
 
 async function scanFiles(contentDir: string) {
-  const files: { type: 'page' | 'meta'; path: string; data: Record<string, unknown> }[] = [];
+  const files: {
+    type: 'page' | 'meta';
+    path: string;
+    data: Record<string, unknown>;
+  }[] = [];
 
   async function scan(dir: string, prefix: string[] = []) {
     try {
       const entries = await fs.readdir(dir, { withFileTypes: true });
       for (const entry of entries) {
-        if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
+        if (entry.name.startsWith('.') || entry.name === 'node_modules')
+          continue;
         const fullPath = path.join(dir, entry.name);
         const relativePath = [...prefix, entry.name].join('/');
 
@@ -35,14 +40,22 @@ async function scanFiles(contentDir: string) {
         if (entry.name.endsWith('.mdx') || entry.name.endsWith('.md')) {
           const raw = await fs.readFile(fullPath, 'utf-8');
           const { data } = matter(raw);
-          files.push({ type: 'page', path: relativePath, data: { ...data, _absolutePath: fullPath } });
+          files.push({
+            type: 'page',
+            path: relativePath,
+            data: { ...data, _absolutePath: fullPath }
+          });
         } else if (entry.name === 'meta.json' || entry.name === 'meta.yaml') {
           const raw = await fs.readFile(fullPath, 'utf-8');
-          const data = entry.name.endsWith('.json') ? JSON.parse(raw) : matter(raw).data;
+          const data = entry.name.endsWith('.json')
+            ? JSON.parse(raw)
+            : matter(raw).data;
           files.push({ type: 'meta', path: relativePath, data });
         }
       }
-    } catch { /* directory not readable */ }
+    } catch {
+      /* directory not readable */
+    }
   }
 
   await scan(contentDir);
@@ -58,7 +71,7 @@ async function getSource() {
   const files = await scanFiles(contentDir);
   cachedSource = loader({
     source: { files },
-    baseUrl: '/',
+    baseUrl: '/'
   });
   return cachedSource;
 }
@@ -79,12 +92,15 @@ export async function getPages(): Promise<SourcePage[]> {
       slugs: page.slugs,
       filePath: (data._absolutePath as string) ?? '',
       frontmatter: {
-        title: (data.title as string) ?? page.slugs[page.slugs.length - 1] ?? 'Untitled',
+        title:
+          (data.title as string) ??
+          page.slugs[page.slugs.length - 1] ??
+          'Untitled',
         description: data.description as string | undefined,
         order: data.order as number | undefined,
         icon: data.icon as string | undefined,
-        lastModified: data.lastModified as string | undefined,
-      },
+        lastModified: data.lastModified as string | undefined
+      }
     };
   });
 
@@ -97,7 +113,9 @@ export async function getPage(slug?: string[]): Promise<SourcePage | null> {
   return pages.find(p => p.url === targetUrl) ?? null;
 }
 
-export async function loadPageComponent(page: SourcePage): Promise<MDXContent | null> {
+export async function loadPageComponent(
+  page: SourcePage
+): Promise<MDXContent | null> {
   if (!page.filePath) return null;
   const mod = await import(/* @vite-ignore */ page.filePath);
   return mod.default;
@@ -116,7 +134,7 @@ export async function buildPageTree(): Promise<PageTree> {
       type: 'page',
       name: (data.title as string) ?? page.slugs.join('/') ?? 'Untitled',
       url: page.url,
-      order: (data.order as number | undefined) ?? (isIndex ? 0 : undefined),
+      order: (data.order as number | undefined) ?? (isIndex ? 0 : undefined)
     };
 
     if (page.slugs.length > 1) {
@@ -131,7 +149,11 @@ export async function buildPageTree(): Promise<PageTree> {
   }
 
   const sortByOrder = (items: PageTreeItem[]) =>
-    items.sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER));
+    items.sort(
+      (a, b) =>
+        (a.order ?? Number.MAX_SAFE_INTEGER) -
+        (b.order ?? Number.MAX_SAFE_INTEGER)
+    );
 
   const children: PageTreeItem[] = sortByOrder(rootPages);
 
@@ -144,7 +166,7 @@ export async function buildPageTree(): Promise<PageTree> {
       type: 'folder',
       name: `${folder.charAt(0).toUpperCase()}${folder.slice(1)}`,
       order: folderOrder,
-      children: sorted,
+      children: sorted
     });
   }
 

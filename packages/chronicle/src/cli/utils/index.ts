@@ -1,3 +1,3 @@
-export * from './config'
-export * from './process'
-export * from './scaffold'
+export * from './config';
+export * from './resolve';
+export * from './scaffold';

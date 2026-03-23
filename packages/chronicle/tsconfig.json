@@ -21,10 +21,9 @@
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "moduleResolution": "bundler",
     "paths": {
-      "@/*": ["./src/*"],
-      "@/.source/*": ["./.source/*"]
+      "@/*": ["./src/*"]
     }
   },
-  "include": ["src", ".source", "source.config.ts"],
+  "include": ["src"],
   "exclude": ["node_modules", "dist"]
 }
