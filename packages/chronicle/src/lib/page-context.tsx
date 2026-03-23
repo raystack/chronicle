@@ -6,9 +6,7 @@ import React, {
   useState
 } from 'react';
 import { useLocation } from 'react-router';
-import { mdxComponents } from '@/components/mdx';
 import type { ApiSpec } from '@/lib/openapi';
-import { buildPageTree, getPage, loadPageComponent } from '@/lib/source';
 import type { ChronicleConfig, Frontmatter, PageTree } from '@/types';
 
 interface PageData {
@@ -56,7 +54,7 @@ export function PageProvider({
   children
 }: PageProviderProps) {
   const { pathname } = useLocation();
-  const [tree, setTree] = useState<PageTree>(initialTree);
+  const [tree] = useState<PageTree>(initialTree);
   const [page, setPage] = useState<PageData | null>(initialPage);
   const [apiSpecs, setApiSpecs] = useState<ApiSpec[]>(initialApiSpecs);
   const [currentPath, setCurrentPath] = useState(pathname);
@@ -65,49 +63,39 @@ export function PageProvider({
     if (pathname === currentPath) return;
     setCurrentPath(pathname);
 
-    let cancelled = false;
+    const cancelled = { current: false };
 
     if (pathname.startsWith('/apis')) {
-      // Fetch API specs if not already loaded
       if (apiSpecs.length === 0) {
         fetch('/api/specs')
           .then(res => res.json())
           .then(specs => {
-            if (!cancelled) setApiSpecs(specs);
+            if (!cancelled.current) setApiSpecs(specs);
           })
           .catch(() => {});
       }
-      return () => {
-        cancelled = true;
-      };
+      return () => { cancelled.current = true; };
     }
 
-    async function load() {
-      const slug =
-        pathname === '/' ? [] : pathname.slice(1).split('/').filter(Boolean);
+    const slug = pathname === '/'
+      ? []
+      : pathname.slice(1).split('/').filter(Boolean);
 
-      const [sourcePage, newTree] = await Promise.all([
-        getPage(slug),
-        buildPageTree()
-      ]);
-      if (cancelled || !sourcePage) return;
+    const apiPath = slug.length === 0 ? '/api/page' : `/api/page/${slug.join('/')}`;
 
-      const component = await loadPageComponent(sourcePage);
-      if (cancelled) return;
+    fetch(apiPath)
+      .then(res => res.json())
+      .then((data: { frontmatter: Frontmatter; contentHtml: string }) => {
+        if (cancelled.current) return;
+        setPage({
+          slug,
+          frontmatter: data.frontmatter,
+          content: <div dangerouslySetInnerHTML={{ __html: data.contentHtml }} />,
+        });
+      })
+      .catch(() => {});
 
-      setTree(newTree);
-      setPage({
-        slug,
-        frontmatter: sourcePage.frontmatter,
-        content: component
-          ? React.createElement(component, { components: mdxComponents })
-          : null
-      });
-    }
-    load();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled.current = true; };
   }, [pathname]);
 
   return (
