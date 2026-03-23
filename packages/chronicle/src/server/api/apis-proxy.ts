@@ -26,7 +26,7 @@ export default defineHandler(async event => {
   }
 
   const config = loadConfig();
-  const specs = loadApiSpecs(config.api ?? []);
+  const specs = await loadApiSpecs(config.api ?? []);
   const spec = specs.find(s => s.name === specName);
 
   if (!spec) {

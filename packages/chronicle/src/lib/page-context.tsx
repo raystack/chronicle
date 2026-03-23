@@ -5,7 +5,7 @@ import React, {
   useEffect,
   useState
 } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { mdxComponents } from '@/components/mdx';
 import type { ApiSpec } from '@/lib/openapi';
 import { buildPageTree, getPage, loadPageComponent } from '@/lib/source';

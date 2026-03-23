@@ -4,7 +4,7 @@ import { cx } from 'class-variance-authority';
 import type { SortedResult } from 'fumadocs-core/search';
 import { useDocsSearch } from 'fumadocs-core/search/client';
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import styles from './search.module.css';
 

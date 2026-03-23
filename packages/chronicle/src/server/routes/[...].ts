@@ -12,7 +12,9 @@ export default defineHandler(async event => {
     pathname === '/' ? [] : pathname.slice(1).split('/').filter(Boolean);
 
   const config = loadConfig();
-  const apiSpecs = config.api?.length ? loadApiSpecs(config.api) : [];
+  const apiSpecs = config.api?.length
+    ? await loadApiSpecs(config.api).catch(() => [])
+    : [];
 
   const [tree, sourcePage] = await Promise.all([
     buildPageTree(),
@@ -41,7 +43,7 @@ export default defineHandler(async event => {
     embeddedData.filePath = sourcePage.filePath;
   }
 
-  const appHtml = render(event.url.href, { config, tree, page: pageData, apiSpecs });
+  const appHtml = await render(event.url.href, { config, tree, page: pageData, apiSpecs });
 
   const safeJson = JSON.stringify(embeddedData).replace(/</g, '\\u003c');
   const dataScript = `<script>window.__PAGE_DATA__ = ${safeJson}</script>`;

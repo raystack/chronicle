@@ -1,6 +1,6 @@
 import { Link as ApsaraLink } from '@raystack/apsara';
 import type { ComponentProps } from 'react';
-import { Link as RouterLink } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router';
 
 type LinkProps = ComponentProps<'a'>;
 

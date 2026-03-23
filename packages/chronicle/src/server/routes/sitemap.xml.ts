@@ -23,7 +23,7 @@ export default defineHandler(async event => {
   });
 
   const apiPages = config.api?.length
-    ? buildApiRoutes(loadApiSpecs(config.api)).map(
+    ? buildApiRoutes(await loadApiSpecs(config.api)).map(
         route => `<url><loc>${baseUrl}/apis/${route.slug.join('/')}</loc></url>`
       )
     : [];

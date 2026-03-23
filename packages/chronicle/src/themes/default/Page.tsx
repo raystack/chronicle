@@ -9,7 +9,7 @@ import { Toc } from './Toc';
 export function Page({ page, tree }: ThemePageProps) {
   return (
     <Flex className={styles.page}>
-      <article className={styles.article}>
+      <article className={styles.article} data-article-content>
         <Breadcrumbs slug={page.slug} tree={tree} />
         <div className={styles.content}>{page.content}</div>
       </article>

@@ -117,7 +117,10 @@ export async function loadPageComponent(
   page: SourcePage
 ): Promise<MDXContent | null> {
   if (!page.filePath) return null;
-  const mod = await import(/* @vite-ignore */ page.filePath);
+  const contentDir = getContentDir();
+  const relativePath = path.relative(contentDir, page.filePath);
+  const symlinkPath = path.join(__CHRONICLE_PACKAGE_ROOT__, '.content', relativePath);
+  const mod = await import(/* @vite-ignore */ symlinkPath);
   return mod.default;
 }
 

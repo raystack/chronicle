@@ -1,67 +1,43 @@
-import type { ReactNode } from 'react';
+import '@vitejs/plugin-react/preamble';
 import React from 'react';
 import { hydrateRoot } from 'react-dom/client';
-import { BrowserRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router';
 import { mdxComponents } from '@/components/mdx';
-import type { ApiSpec } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
-import { buildPageTree, getPage, loadPageComponent } from '@/lib/source';
 import type { ChronicleConfig, Frontmatter, PageTree } from '@/types';
+import type { ApiSpec } from '@/lib/openapi';
+import type { ReactNode } from 'react';
 import { App } from './App';
 
 interface EmbeddedData {
   config: ChronicleConfig;
   tree: PageTree;
   slug: string[];
-  frontmatter: { title: string; description?: string; order?: number };
+  frontmatter: Frontmatter;
   filePath: string;
 }
 
 async function hydrate() {
   try {
-    const embedded: EmbeddedData | undefined = (window as unknown as { __PAGE_DATA__?: EmbeddedData }).__PAGE_DATA__;
+    const embedded = (
+      window as unknown as { __PAGE_DATA__?: EmbeddedData }
+    ).__PAGE_DATA__;
 
-    let config: ChronicleConfig = { title: 'Documentation' };
-    let tree: PageTree = { name: 'root', children: [] };
-    let page: { slug: string[]; frontmatter: Frontmatter; content: ReactNode } | null =
-      null;
-    let apiSpecs: ApiSpec[] = [];
+    const config: ChronicleConfig = embedded?.config ?? {
+      title: 'Documentation'
+    };
+    const tree: PageTree = embedded?.tree ?? { name: 'root', children: [] };
+    const isApiPage =
+      window.location.pathname.startsWith('/apis') && !!config.api?.length;
+    const apiSpecs: ApiSpec[] = isApiPage
+      ? await fetch('/api/specs')
+          .then(r => r.json())
+          .catch(() => [])
+      : [];
 
-    if (embedded) {
-      config = embedded.config;
-      tree = embedded.tree;
-
-      // Fetch API specs if on /apis route
-      const isApiRoute = window.location.pathname.startsWith('/apis');
-      if (isApiRoute && config.api?.length) {
-        try {
-          const res = await fetch('/api/specs');
-          apiSpecs = await res.json();
-        } catch {
-          /* will load on demand */
-        }
-      }
-
-      const sourcePage = await getPage(embedded.slug);
-      if (sourcePage) {
-        const component = await loadPageComponent(sourcePage);
-        page = {
-          slug: embedded.slug,
-          frontmatter: embedded.frontmatter,
-          content: component
-            ? React.createElement(component, { components: mdxComponents })
-            : null
-        };
-      } else {
-        page = {
-          slug: embedded.slug,
-          frontmatter: embedded.frontmatter,
-          content: null
-        };
-      }
-    } else {
-      tree = await buildPageTree();
-    }
+    const page = embedded?.filePath
+      ? await loadPage(embedded)
+      : null;
 
     hydrateRoot(
       document.getElementById('root') as HTMLElement,
@@ -79,6 +55,20 @@ async function hydrate() {
   } catch (err) {
     console.error('Hydration failed:', err);
   }
+}
+
+async function loadPage(
+  embedded: EmbeddedData
+): Promise<{ slug: string[]; frontmatter: Frontmatter; content: ReactNode }> {
+  const contentDir = __CHRONICLE_CONTENT_DIR__;
+  const relativePath = embedded.filePath
+    .replace(contentDir, '')
+    .replace(/^\//, '');
+  const mod = await import(/* @vite-ignore */ `/.content/${relativePath}`);
+  const content = mod.default
+    ? React.createElement(mod.default, { components: mdxComponents })
+    : null;
+  return { slug: embedded.slug, frontmatter: embedded.frontmatter, content };
 }
 
 hydrate();

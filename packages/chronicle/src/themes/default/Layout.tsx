@@ -9,7 +9,7 @@ import {
 } from '@raystack/apsara';
 import { cx } from 'class-variance-authority';
 import { useEffect, useMemo, useRef } from 'react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
 import { Footer } from '@/components/ui/footer';

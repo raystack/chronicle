@@ -1,7 +1,7 @@
 import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
 import { Flex } from '@raystack/apsara';
 import { useMemo } from 'react';
-import { Link as RouterLink, useLocation } from 'react-router-dom';
+import { Link as RouterLink, useLocation } from 'react-router';
 import { Search } from '@/components/ui/search';
 import type { PageTreeItem, ThemePageProps } from '@/types';
 import styles from './Page.module.css';

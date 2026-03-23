@@ -19,7 +19,7 @@ function createConfig(): ChronicleConfig {
   };
 }
 
-function createPackageJson(name: string): Record<string, unknown> {
+async function createPackageJson(name: string): Promise<Record<string, unknown>> {
   return {
     name,
     private: true,
@@ -30,7 +30,7 @@ function createPackageJson(name: string): Record<string, unknown> {
       start: 'chronicle start'
     },
     dependencies: {
-      '@raystack/chronicle': `^${getChronicleVersion()}`
+      '@raystack/chronicle': `^${await getChronicleVersion()}`
     },
     devDependencies: {
       '@raystack/tools-config': '0.56.0',
@@ -56,7 +56,7 @@ This is your documentation home page.
 export const initCommand = new Command('init')
   .description('Initialize a new Chronicle project')
   .option('-c, --content <path>', 'Content directory name', 'content')
-  .action(options => {
+  .action(async options => {
     const projectDir = process.cwd();
     const dirName = path.basename(projectDir) || 'docs';
     const contentDir = path.join(projectDir, options.content);
@@ -70,12 +70,12 @@ export const initCommand = new Command('init')
     if (!fs.existsSync(packageJsonPath)) {
       fs.writeFileSync(
         packageJsonPath,
-        `${JSON.stringify(createPackageJson(dirName), null, 2)}\n`
+        `${JSON.stringify(await createPackageJson(dirName), null, 2)}\n`
       );
       console.log(chalk.green('\u2713'), 'Created', packageJsonPath);
     } else {
       const existing = JSON.parse(fs.readFileSync(packageJsonPath, 'utf-8'));
-      const template = createPackageJson(dirName);
+      const template = await createPackageJson(dirName);
       let updated = false;
 
       if (existing.type !== 'module') {
@@ -162,7 +162,7 @@ export const initCommand = new Command('init')
       console.log(chalk.green('\u2713'), 'Created .gitignore');
     }
 
-    const pm = detectPackageManager();
+    const pm = await detectPackageManager();
     console.log(chalk.cyan(`\nInstalling dependencies with ${pm}...`));
     execSync(`${pm} install`, { cwd: projectDir, stdio: 'inherit' });
 

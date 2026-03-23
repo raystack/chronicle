@@ -1,7 +1,7 @@
 import '@raystack/apsara/normalize.css';
 import '@raystack/apsara/style.css';
 import { ThemeProvider } from '@raystack/apsara';
-import { useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router';
 import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
 import { ApiLayout } from '@/pages/ApiLayout';

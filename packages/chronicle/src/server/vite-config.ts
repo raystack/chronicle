@@ -5,7 +5,8 @@ import path from 'node:path';
 import { type InlineConfig } from 'vite';
 
 export interface ViteConfigOptions {
-  root: string;
+  packageRoot: string;
+  projectRoot: string;
   contentDir: string;
   preset?: string;
 }
@@ -13,24 +14,26 @@ export interface ViteConfigOptions {
 export async function createViteConfig(
   options: ViteConfigOptions
 ): Promise<InlineConfig> {
-  const { root, contentDir, preset } = options;
+  const { packageRoot, projectRoot, contentDir, preset } = options;
 
   return {
-    root,
+    root: packageRoot,
     configFile: false,
     plugins: [
       nitro({
-        serverDir: path.resolve(root, 'src/server'),
-        ...(preset && { preset })
+        serverDir: path.resolve(packageRoot, 'src/server'),
+        ...(preset && { preset }),
+        noExternals: true,
       }),
       mdx({}, { index: false }),
       react()
     ],
     resolve: {
       alias: {
-        '@': path.resolve(root, 'src'),
-        '@content': contentDir
+        '@': path.resolve(packageRoot, 'src'),
+        '@content': path.resolve(packageRoot, '.content')
       },
+      conditions: ['module-sync', 'import', 'node'],
       dedupe: [
         'react',
         'react-dom',
@@ -40,12 +43,13 @@ export async function createViteConfig(
     },
     server: {
       fs: {
-        allow: [root, contentDir]
+        allow: [packageRoot, projectRoot, contentDir]
       }
     },
     define: {
       __CHRONICLE_CONTENT_DIR__: JSON.stringify(contentDir),
-      __CHRONICLE_PROJECT_ROOT__: JSON.stringify(path.resolve(contentDir, '..'))
+      __CHRONICLE_PROJECT_ROOT__: JSON.stringify(projectRoot),
+      __CHRONICLE_PACKAGE_ROOT__: JSON.stringify(packageRoot)
     },
     css: {
       modules: {
@@ -53,13 +57,13 @@ export async function createViteConfig(
       }
     },
     ssr: {
-      noExternal: ['@raystack/apsara', 'fumadocs-core']
+      noExternal: ['@raystack/apsara', 'dayjs', 'fumadocs-core']
     },
     environments: {
       client: {
         build: {
           rollupOptions: {
-            input: path.resolve(root, 'src/server/entry-client.tsx')
+            input: path.resolve(packageRoot, 'src/server/entry-client.tsx')
           }
         }
       }

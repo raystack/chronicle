@@ -1,5 +1,5 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs/promises'
+import path from 'node:path'
 import { parse as parseYaml } from 'yaml'
 import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
 import type { ApiConfig, ApiServerConfig, ApiAuthConfig } from '@/types/config'
@@ -17,14 +17,14 @@ export interface ApiSpec {
 export type { SchemaField } from './schema'
 export { flattenSchema } from './schema'
 
-export function loadApiSpecs(apiConfigs: ApiConfig[]): ApiSpec[] {
-  const contentDir = process.env.CHRONICLE_CONTENT_DIR ?? process.cwd()
-  return apiConfigs.map((config) => loadApiSpec(config, contentDir))
+export async function loadApiSpecs(apiConfigs: ApiConfig[]): Promise<ApiSpec[]> {
+  const projectRoot = typeof __CHRONICLE_PROJECT_ROOT__ !== 'undefined' ? __CHRONICLE_PROJECT_ROOT__ : process.cwd()
+  return Promise.all(apiConfigs.map((config) => loadApiSpec(config, projectRoot)))
 }
 
-export function loadApiSpec(config: ApiConfig, contentDir: string): ApiSpec {
-  const specPath = path.resolve(contentDir, config.spec)
-  const raw = fs.readFileSync(specPath, 'utf-8')
+export async function loadApiSpec(config: ApiConfig, projectRoot: string): Promise<ApiSpec> {
+  const specPath = path.resolve(projectRoot, config.spec)
+  const raw = await fs.readFile(specPath, 'utf-8')
   const isYaml = specPath.endsWith('.yaml') || specPath.endsWith('.yml')
   const doc = (isYaml ? parseYaml(raw) : JSON.parse(raw)) as OpenAPIV2.Document | OpenAPIV3.Document
 

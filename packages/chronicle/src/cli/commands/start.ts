@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import { resolveContentDir } from '@/cli/utils/config';
 import { PACKAGE_ROOT } from '@/cli/utils/resolve';
+import { linkContent } from '@/cli/utils/scaffold';
 
 export const startCommand = new Command('start')
   .description('Start production server')
@@ -10,13 +11,14 @@ export const startCommand = new Command('start')
   .action(async options => {
     const contentDir = resolveContentDir(options.content);
     const port = parseInt(options.port, 10);
+    await linkContent(contentDir);
 
     console.log(chalk.cyan('Starting production server...'));
 
     const { preview } = await import('vite');
     const { createViteConfig } = await import('@/server/vite-config');
 
-    const config = await createViteConfig({ root: PACKAGE_ROOT, contentDir });
+    const config = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot: process.cwd(), contentDir });
     const server = await preview({
       ...config,
       preview: { port }

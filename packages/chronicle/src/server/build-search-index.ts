@@ -73,12 +73,12 @@ async function scanContent(contentDir: string): Promise<SearchDocument[]> {
   return docs;
 }
 
-function buildApiDocs(): SearchDocument[] {
+async function buildApiDocs(): Promise<SearchDocument[]> {
   const config = loadConfig();
   if (!config.api?.length) return [];
 
   const docs: SearchDocument[] = [];
-  const specs = loadApiSpecs(config.api);
+  const specs = await loadApiSpecs(config.api);
 
   for (const spec of specs) {
     const specSlug = getSpecSlug(spec);
@@ -106,7 +106,7 @@ function buildApiDocs(): SearchDocument[] {
 export async function generateSearchIndex(contentDir: string, outDir: string) {
   const [contentDocs, apiDocs] = await Promise.all([
     scanContent(contentDir),
-    Promise.resolve(buildApiDocs())
+    buildApiDocs()
   ]);
 
   const documents = [...contentDocs, ...apiDocs];

@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import { Command } from 'commander';
 import { resolveContentDir } from '@/cli/utils/config';
 import { PACKAGE_ROOT } from '@/cli/utils/resolve';
+import { linkContent } from '@/cli/utils/scaffold';
 
 export const buildCommand = new Command('build')
   .description('Build for production')
@@ -12,6 +13,7 @@ export const buildCommand = new Command('build')
   )
   .action(async options => {
     const contentDir = resolveContentDir(options.content);
+    await linkContent(contentDir);
 
     console.log(chalk.cyan('Building for production...'));
 
@@ -19,7 +21,8 @@ export const buildCommand = new Command('build')
     const { createViteConfig } = await import('@/server/vite-config');
 
     const config = await createViteConfig({
-      root: PACKAGE_ROOT,
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: process.cwd(),
       contentDir,
       preset: options.preset
     });
