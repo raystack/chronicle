@@ -47,11 +47,18 @@ interface PageProviderProps {
   children: ReactNode;
 }
 
+const contentModules = import.meta.glob<{ default?: React.ComponentType<any> }>(
+  '../../.content/**/*.{mdx,md}'
+);
+
 async function loadMdxComponent(relativePath: string): Promise<ReactNode> {
   const withoutExt = relativePath.replace(/\.(mdx|md)$/, '');
-  const mod = relativePath.endsWith('.md')
-    ? await import(`../../.content/${withoutExt}.md`)
-    : await import(`../../.content/${withoutExt}.mdx`);
+  const key = relativePath.endsWith('.md')
+    ? `../../.content/${withoutExt}.md`
+    : `../../.content/${withoutExt}.mdx`;
+  const loader = contentModules[key];
+  if (!loader) return null;
+  const mod = await loader();
   return mod.default
     ? React.createElement(mod.default, { components: mdxComponents })
     : null;

@@ -60,14 +60,20 @@ async function hydrate() {
   }
 }
 
+const contentModules = import.meta.glob<{ default?: React.ComponentType<any> }>(
+  '../../.content/**/*.{mdx,md}'
+);
+
 async function loadPage(
   embedded: EmbeddedData
 ): Promise<{ slug: string[]; frontmatter: Frontmatter; content: ReactNode }> {
   const withoutExt = embedded.relativePath.replace(/\.(mdx|md)$/, '');
-  const mod = embedded.relativePath.endsWith('.md')
-    ? await import(`../../.content/${withoutExt}.md`)
-    : await import(`../../.content/${withoutExt}.mdx`);
-  const content = mod.default
+  const key = embedded.relativePath.endsWith('.md')
+    ? `../../.content/${withoutExt}.md`
+    : `../../.content/${withoutExt}.mdx`;
+  const loader = contentModules[key];
+  const mod = loader ? await loader() : null;
+  const content = mod?.default
     ? React.createElement(mod.default, { components: mdxComponents })
     : null;
   return { slug: embedded.slug, frontmatter: embedded.frontmatter, content };
