@@ -1,11 +1,13 @@
 import '@vitejs/plugin-react/preamble';
+import React from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
-import { loadMdxModule } from '@/lib/mdx-loader';
+import { mdxComponents } from '@/components/mdx';
 import { PageProvider } from '@/lib/page-context';
-import type { ChronicleConfig, Frontmatter, Root } from '@/types';
+import type { ChronicleConfig, Frontmatter, Root, TableOfContents } from '@/types';
 import type { ApiSpec } from '@/lib/openapi';
+import type { ReactNode } from 'react';
 import { App } from './App';
 
 interface EmbeddedData {
@@ -14,6 +16,24 @@ interface EmbeddedData {
   slug: string[];
   frontmatter: Frontmatter;
   relativePath: string;
+}
+
+const contentModules = import.meta.glob<{ default?: React.ComponentType<any>; toc?: TableOfContents }>(
+  '../../.content/**/*.{mdx,md}'
+);
+
+async function loadMdxModule(relativePath: string): Promise<{ content: ReactNode; toc: TableOfContents }> {
+  const withoutExt = relativePath.replace(/\.(mdx|md)$/, '');
+  const key = relativePath.endsWith('.md')
+    ? `../../.content/${withoutExt}.md`
+    : `../../.content/${withoutExt}.mdx`;
+  const loader = contentModules[key];
+  if (!loader) return { content: null, toc: [] };
+  const mod = await loader();
+  const content = mod.default
+    ? React.createElement(mod.default, { components: mdxComponents })
+    : null;
+  return { content, toc: mod.toc ?? [] };
 }
 
 async function hydrate() {
