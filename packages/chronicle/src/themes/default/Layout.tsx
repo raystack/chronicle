@@ -8,7 +8,7 @@ import {
   Sidebar
 } from '@raystack/apsara';
 import { cx } from 'class-variance-authority';
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
@@ -148,7 +148,7 @@ function SidebarNode({
   const isActive = pathname === item.url;
   const href = item.url ?? '#';
   const icon = typeof item.icon === 'string' ? iconMap[item.icon] : item.icon;
-  const link = useMemo(() => <RouterLink to={href} />, [href]);
+  const link = <RouterLink to={href} />;
 
   return (
     <Sidebar.Item
