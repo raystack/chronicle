@@ -8,6 +8,11 @@ import remarkDirective from 'remark-directive';
 import { type InlineConfig } from 'vite';
 import remarkUnusedDirectives from '../lib/remark-unused-directives';
 
+function resolveOutputDir(projectRoot: string, preset?: string): string {
+  if (preset === 'vercel' || preset === 'vercel-static') return path.resolve(projectRoot, '.vercel/output');
+  return path.resolve(projectRoot, '.output');
+}
+
 export interface ViteConfigOptions {
   packageRoot: string;
   projectRoot: string;
@@ -96,6 +101,11 @@ export async function createViteConfig(
           }
         }
       }
-    }
+    },
+    nitro: {
+      output: {
+        dir: resolveOutputDir(projectRoot, preset),
+      },
+    },
   };
 }
