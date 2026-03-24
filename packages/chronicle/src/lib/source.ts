@@ -1,63 +1,42 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
 import { loader } from 'fumadocs-core/source';
 import type { Root, Node, Folder } from 'fumadocs-core/page-tree';
-import matter from 'gray-matter';
 import type { MDXContent } from 'mdx/types';
 import type { TableOfContents } from 'fumadocs-core/toc';
 import type { Frontmatter } from '@/types';
 
-function getContentDir(): string {
-  return __CHRONICLE_CONTENT_DIR__ || path.join(process.cwd(), 'content');
-}
+const CONTENT_PREFIX = '../../.content/';
 
-async function scanFiles(contentDir: string) {
+const frontmatterGlob: Record<string, Record<string, unknown>> = import.meta.glob(
+  '../../.content/**/*.{mdx,md}',
+  { eager: true, import: 'frontmatter' }
+);
+
+const metaGlob: Record<string, Record<string, unknown>> = import.meta.glob(
+  '../../.content/**/meta.json',
+  { eager: true }
+);
+
+function buildFiles() {
   const files: {
     type: 'page' | 'meta';
     path: string;
     data: Record<string, unknown>;
   }[] = [];
 
-  async function scan(dir: string, prefix: string[] = []) {
-    try {
-      const entries = await fs.readdir(dir, { withFileTypes: true });
-      for (const entry of entries) {
-        if (entry.name.startsWith('.') || entry.name === 'node_modules')
-          continue;
-        const fullPath = path.join(dir, entry.name);
-        const relativePath = [...prefix, entry.name].join('/');
-
-        if (entry.isDirectory()) {
-          await scan(fullPath, [...prefix, entry.name]);
-          continue;
-        }
-
-        if (entry.name.endsWith('.mdx') || entry.name.endsWith('.md')) {
-          const raw = await fs.readFile(fullPath, 'utf-8');
-          const { data } = matter(raw);
-          files.push({
-            type: 'page',
-            path: relativePath,
-            data: { ...data, _relativePath: relativePath }
-          });
-        } else if (entry.name === 'meta.json' || entry.name === 'meta.yaml') {
-          try {
-            const raw = await fs.readFile(fullPath, 'utf-8');
-            const data = entry.name.endsWith('.json')
-              ? JSON.parse(raw)
-              : matter(raw).data;
-            files.push({ type: 'meta', path: relativePath, data });
-          } catch {
-            /* malformed meta file */
-          }
-        }
-      }
-    } catch {
-      /* directory not readable */
-    }
+  for (const [key, data] of Object.entries(frontmatterGlob)) {
+    const relativePath = key.slice(CONTENT_PREFIX.length);
+    files.push({
+      type: 'page',
+      path: relativePath,
+      data: { ...data, _relativePath: relativePath }
+    });
   }
 
-  await scan(contentDir);
+  for (const [key, data] of Object.entries(metaGlob)) {
+    const relativePath = key.slice(CONTENT_PREFIX.length);
+    files.push({ type: 'meta', path: relativePath, data: data ?? {} });
+  }
+
   return files;
 }
 
@@ -65,8 +44,7 @@ let cachedSource: ReturnType<typeof loader> | null = null;
 
 async function getSource() {
   if (cachedSource) return cachedSource;
-  const contentDir = getContentDir();
-  const files = await scanFiles(contentDir);
+  const files = buildFiles();
   cachedSource = loader({
     source: { files },
     baseUrl: '/'
