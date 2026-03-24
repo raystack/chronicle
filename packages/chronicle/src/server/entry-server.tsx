@@ -11,9 +11,7 @@ import { PageProvider } from '@/lib/page-context';
 import { getPageTree, getPage, loadPageModule, extractFrontmatter, getRelativePath } from '@/lib/source';
 import { App } from './App';
 
-// @ts-expect-error virtual import from Nitro
 import clientAssets from './entry-client?assets=client';
-// @ts-expect-error virtual import from Nitro
 import serverAssets from './entry-server?assets=ssr';
 
 export default {
