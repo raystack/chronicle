@@ -41,11 +41,15 @@ async function scanFiles(contentDir: string) {
             data: { ...data, _relativePath: relativePath }
           });
         } else if (entry.name === 'meta.json' || entry.name === 'meta.yaml') {
-          const raw = await fs.readFile(fullPath, 'utf-8');
-          const data = entry.name.endsWith('.json')
-            ? JSON.parse(raw)
-            : matter(raw).data;
-          files.push({ type: 'meta', path: relativePath, data });
+          try {
+            const raw = await fs.readFile(fullPath, 'utf-8');
+            const data = entry.name.endsWith('.json')
+              ? JSON.parse(raw)
+              : matter(raw).data;
+            files.push({ type: 'meta', path: relativePath, data });
+          } catch {
+            /* malformed meta file */
+          }
         }
       }
     } catch {
@@ -140,9 +144,10 @@ export function getRelativePath(page: { data: unknown }): string {
 export async function loadPageModule(
   relativePath: string
 ): Promise<{ default: MDXContent | null; toc: TableOfContents }> {
-  if (!relativePath) return { default: null, toc: [] };
+  if (!relativePath || relativePath.includes('..')) return { default: null, toc: [] };
   const contentDir = getContentDir();
-  const fullPath = path.join(contentDir, relativePath);
+  const fullPath = path.resolve(contentDir, relativePath);
+  if (!fullPath.startsWith(contentDir)) return { default: null, toc: [] };
   try {
     await fs.access(fullPath);
   } catch {

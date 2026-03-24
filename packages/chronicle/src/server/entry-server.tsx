@@ -88,7 +88,11 @@ export default {
       </html>,
     );
 
+    const isApiRoute = pathname.startsWith('/apis');
+    const status = !page && !isApiRoute && slug.length > 0 ? 404 : 200;
+
     return new Response(stream, {
+      status,
       headers: { 'Content-Type': 'text/html;charset=utf-8' },
     });
   },
