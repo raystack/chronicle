@@ -78,6 +78,7 @@ export default {
                   initialTree={tree}
                   initialPage={pageData}
                   initialApiSpecs={apiSpecs}
+                  loadMdx={async () => ({ content: null, toc: [] })}
                 >
                   <App />
                 </PageProvider>

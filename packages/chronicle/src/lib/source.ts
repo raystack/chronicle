@@ -141,21 +141,20 @@ export function getRelativePath(page: { data: unknown }): string {
   return ((page.data as Record<string, unknown>)._relativePath as string) ?? '';
 }
 
+const ssrModules = import.meta.glob<{ default?: MDXContent; toc?: TableOfContents }>(
+  '../../.content/**/*.{mdx,md}'
+);
+
 export async function loadPageModule(
   relativePath: string
 ): Promise<{ default: MDXContent | null; toc: TableOfContents }> {
   if (!relativePath || relativePath.includes('..')) return { default: null, toc: [] };
-  const contentDir = getContentDir();
-  const fullPath = path.resolve(contentDir, relativePath);
-  if (!fullPath.startsWith(contentDir)) return { default: null, toc: [] };
-  try {
-    await fs.access(fullPath);
-  } catch {
-    return { default: null, toc: [] };
-  }
   const withoutExt = relativePath.replace(/\.(mdx|md)$/, '');
-  const mod = relativePath.endsWith('.md')
-    ? await import(`../../.content/${withoutExt}.md`)
-    : await import(`../../.content/${withoutExt}.mdx`);
+  const key = relativePath.endsWith('.md')
+    ? `../../.content/${withoutExt}.md`
+    : `../../.content/${withoutExt}.mdx`;
+  const loader = ssrModules[key];
+  if (!loader) return { default: null, toc: [] };
+  const mod = await loader();
   return { default: mod.default ?? null, toc: mod.toc ?? [] };
 }

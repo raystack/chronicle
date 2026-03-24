@@ -51,6 +51,7 @@ async function hydrate() {
             initialTree={tree}
             initialPage={page}
             initialApiSpecs={apiSpecs}
+            loadMdx={loadMdxModule}
           >
             <App />
           </PageProvider>

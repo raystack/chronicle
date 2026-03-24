@@ -6,9 +6,10 @@ import {
   useState
 } from 'react';
 import { useLocation } from 'react-router';
-import { loadMdxModule } from '@/lib/mdx-loader';
 import type { ApiSpec } from '@/lib/openapi';
 import type { ChronicleConfig, Frontmatter, Root, TableOfContents } from '@/types';
+
+export type MdxLoader = (relativePath: string) => Promise<{ content: ReactNode; toc: TableOfContents }>;
 
 interface PageData {
   slug: string[];
@@ -45,6 +46,7 @@ interface PageProviderProps {
   initialTree: Root;
   initialPage: PageData | null;
   initialApiSpecs: ApiSpec[];
+  loadMdx: MdxLoader;
   children: ReactNode;
 }
 
@@ -53,6 +55,7 @@ export function PageProvider({
   initialTree,
   initialPage,
   initialApiSpecs,
+  loadMdx,
   children
 }: PageProviderProps) {
   const { pathname } = useLocation();
@@ -89,7 +92,7 @@ export function PageProvider({
       .then(res => res.json())
       .then(async (data: { frontmatter: Frontmatter; relativePath: string }) => {
         if (cancelled.current) return;
-        const { content, toc } = await loadMdxModule(data.relativePath);
+        const { content, toc } = await loadMdx(data.relativePath);
         if (cancelled.current) return;
         setPage({ slug, frontmatter: data.frontmatter, content, toc });
       })

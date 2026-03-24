@@ -8,6 +8,20 @@ import { Mermaid } from './mermaid'
 import { MdxParagraph } from './paragraph'
 import { CalloutContainer, CalloutTitle, CalloutDescription, MdxBlockquote } from '@/components/common/callout'
 import { Tabs } from '@raystack/apsara'
+import { type ComponentProps, useEffect, useState } from 'react'
+
+function ClientOnly({ children }: { children: React.ReactNode }) {
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  return mounted ? <>{children}</> : null
+}
+
+function MdxTabs(props: ComponentProps<typeof Tabs>) {
+  return <ClientOnly><Tabs {...props} /></ClientOnly>
+}
+MdxTabs.List = Tabs.List
+MdxTabs.Trigger = Tabs.Trigger
+MdxTabs.Content = Tabs.Content
 
 export const mdxComponents: MDXComponents = {
   p: MdxParagraph,
@@ -27,7 +41,7 @@ export const mdxComponents: MDXComponents = {
   Callout: CalloutContainer,
   CalloutTitle,
   CalloutDescription,
-  Tabs,
+  Tabs: MdxTabs,
   Mermaid,
 }
 
