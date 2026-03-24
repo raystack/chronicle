@@ -8,7 +8,7 @@ import { mdxComponents } from '@/components/mdx';
 import { loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
-import { getPageTree, getPage, loadPageModule } from '@/lib/source';
+import { getPageTree, getPage, loadPageModule, extractFrontmatter, getRelativePath } from '@/lib/source';
 import { App } from './App';
 
 // @ts-expect-error virtual import from Nitro
@@ -32,21 +32,13 @@ export default {
       getPage(slug),
     ]);
 
-    const data = page?.data as Record<string, unknown> | undefined;
-    const relativePath = (data?._relativePath as string) ?? null;
-
+    const relativePath = page ? getRelativePath(page) : null;
     const mdxModule = relativePath ? await loadPageModule(relativePath) : null;
 
     const pageData = page
       ? {
           slug,
-          frontmatter: {
-            title: (data?.title as string) ?? slug[slug.length - 1] ?? 'Untitled',
-            description: data?.description as string | undefined,
-            order: data?.order as number | undefined,
-            icon: data?.icon as string | undefined,
-            lastModified: data?.lastModified as string | undefined,
-          },
+          frontmatter: extractFrontmatter(page, slug[slug.length - 1]),
           content: mdxModule?.default
             ? React.createElement(mdxModule.default, { components: mdxComponents })
             : null,

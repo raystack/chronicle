@@ -1,4 +1,4 @@
-import React, {
+import {
   createContext,
   type ReactNode,
   useContext,
@@ -6,7 +6,7 @@ import React, {
   useState
 } from 'react';
 import { useLocation } from 'react-router';
-import { mdxComponents } from '@/components/mdx';
+import { loadMdxModule } from '@/lib/mdx-loader';
 import type { ApiSpec } from '@/lib/openapi';
 import type { ChronicleConfig, Frontmatter, Root, TableOfContents } from '@/types';
 
@@ -46,24 +46,6 @@ interface PageProviderProps {
   initialPage: PageData | null;
   initialApiSpecs: ApiSpec[];
   children: ReactNode;
-}
-
-const contentModules = import.meta.glob<{ default?: React.ComponentType<any>; toc?: TableOfContents }>(
-  '../../.content/**/*.{mdx,md}'
-);
-
-async function loadMdxModule(relativePath: string): Promise<{ content: ReactNode; toc: TableOfContents }> {
-  const withoutExt = relativePath.replace(/\.(mdx|md)$/, '');
-  const key = relativePath.endsWith('.md')
-    ? `../../.content/${withoutExt}.md`
-    : `../../.content/${withoutExt}.mdx`;
-  const loader = contentModules[key];
-  if (!loader) return { content: null, toc: [] };
-  const mod = await loader();
-  const content = mod.default
-    ? React.createElement(mod.default, { components: mdxComponents })
-    : null;
-  return { content, toc: mod.toc ?? [] };
 }
 
 export function PageProvider({

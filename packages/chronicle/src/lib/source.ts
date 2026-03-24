@@ -5,6 +5,7 @@ import type { Root, Node, Folder } from 'fumadocs-core/page-tree';
 import matter from 'gray-matter';
 import type { MDXContent } from 'mdx/types';
 import type { TableOfContents } from 'fumadocs-core/toc';
+import type { Frontmatter } from '@/types';
 
 function getContentDir(): string {
   return __CHRONICLE_CONTENT_DIR__ || path.join(process.cwd(), 'content');
@@ -119,6 +120,21 @@ export async function getPages() {
 export async function getPage(slugs?: string[]) {
   const s = await getSource();
   return s.getPage(slugs);
+}
+
+export function extractFrontmatter(page: { data: unknown }, fallbackTitle?: string): Frontmatter {
+  const d = page.data as Record<string, unknown>;
+  return {
+    title: (d.title as string) ?? fallbackTitle ?? 'Untitled',
+    description: d.description as string | undefined,
+    order: d.order as number | undefined,
+    icon: d.icon as string | undefined,
+    lastModified: d.lastModified as string | undefined,
+  };
+}
+
+export function getRelativePath(page: { data: unknown }): string {
+  return ((page.data as Record<string, unknown>)._relativePath as string) ?? '';
 }
 
 export async function loadPageModule(

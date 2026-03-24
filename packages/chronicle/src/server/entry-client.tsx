@@ -1,13 +1,11 @@
 import '@vitejs/plugin-react/preamble';
-import React from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
-import { mdxComponents } from '@/components/mdx';
+import { loadMdxModule } from '@/lib/mdx-loader';
 import { PageProvider } from '@/lib/page-context';
-import type { ChronicleConfig, Frontmatter, Root, TableOfContents } from '@/types';
+import type { ChronicleConfig, Frontmatter, Root } from '@/types';
 import type { ApiSpec } from '@/lib/openapi';
-import type { ReactNode } from 'react';
 import { App } from './App';
 
 interface EmbeddedData {
@@ -37,7 +35,11 @@ async function hydrate() {
       : [];
 
     const page = embedded?.relativePath
-      ? await loadPage(embedded)
+      ? {
+          slug: embedded.slug,
+          frontmatter: embedded.frontmatter,
+          ...(await loadMdxModule(embedded.relativePath)),
+        }
       : null;
 
     hydrateRoot(
@@ -58,25 +60,6 @@ async function hydrate() {
   } catch (err) {
     console.error('Hydration failed:', err);
   }
-}
-
-const contentModules = import.meta.glob<{ default?: React.ComponentType<any>; toc?: TableOfContents }>(
-  '../../.content/**/*.{mdx,md}'
-);
-
-async function loadPage(
-  embedded: EmbeddedData
-): Promise<{ slug: string[]; frontmatter: Frontmatter; content: ReactNode; toc: TableOfContents }> {
-  const withoutExt = embedded.relativePath.replace(/\.(mdx|md)$/, '');
-  const key = embedded.relativePath.endsWith('.md')
-    ? `../../.content/${withoutExt}.md`
-    : `../../.content/${withoutExt}.mdx`;
-  const loader = contentModules[key];
-  const mod = loader ? await loader() : null;
-  const content = mod?.default
-    ? React.createElement(mod.default, { components: mdxComponents })
-    : null;
-  return { slug: embedded.slug, frontmatter: embedded.frontmatter, content, toc: mod?.toc ?? [] };
 }
 
 hydrate();
