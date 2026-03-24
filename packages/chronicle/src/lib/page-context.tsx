@@ -8,12 +8,13 @@ import React, {
 import { useLocation } from 'react-router';
 import { mdxComponents } from '@/components/mdx';
 import type { ApiSpec } from '@/lib/openapi';
-import type { ChronicleConfig, Frontmatter, Root } from '@/types';
+import type { ChronicleConfig, Frontmatter, Root, TableOfContents } from '@/types';
 
 interface PageData {
   slug: string[];
   frontmatter: Frontmatter;
   content: ReactNode;
+  toc: TableOfContents;
 }
 
 interface PageContextValue {
@@ -47,21 +48,22 @@ interface PageProviderProps {
   children: ReactNode;
 }
 
-const contentModules = import.meta.glob<{ default?: React.ComponentType<any> }>(
+const contentModules = import.meta.glob<{ default?: React.ComponentType<any>; toc?: TableOfContents }>(
   '../../.content/**/*.{mdx,md}'
 );
 
-async function loadMdxComponent(relativePath: string): Promise<ReactNode> {
+async function loadMdxModule(relativePath: string): Promise<{ content: ReactNode; toc: TableOfContents }> {
   const withoutExt = relativePath.replace(/\.(mdx|md)$/, '');
   const key = relativePath.endsWith('.md')
     ? `../../.content/${withoutExt}.md`
     : `../../.content/${withoutExt}.mdx`;
   const loader = contentModules[key];
-  if (!loader) return null;
+  if (!loader) return { content: null, toc: [] };
   const mod = await loader();
-  return mod.default
+  const content = mod.default
     ? React.createElement(mod.default, { components: mdxComponents })
     : null;
+  return { content, toc: mod.toc ?? [] };
 }
 
 export function PageProvider({
@@ -105,9 +107,9 @@ export function PageProvider({
       .then(res => res.json())
       .then(async (data: { frontmatter: Frontmatter; relativePath: string }) => {
         if (cancelled.current) return;
-        const content = await loadMdxComponent(data.relativePath);
+        const { content, toc } = await loadMdxModule(data.relativePath);
         if (cancelled.current) return;
-        setPage({ slug, frontmatter: data.frontmatter, content });
+        setPage({ slug, frontmatter: data.frontmatter, content, toc });
       })
       .catch(() => {});
 

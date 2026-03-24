@@ -4,6 +4,7 @@ import { loader } from 'fumadocs-core/source';
 import type { Root, Node, Folder } from 'fumadocs-core/page-tree';
 import matter from 'gray-matter';
 import type { MDXContent } from 'mdx/types';
+import type { TableOfContents } from 'fumadocs-core/toc';
 
 function getContentDir(): string {
   return __CHRONICLE_CONTENT_DIR__ || path.join(process.cwd(), 'content');
@@ -120,20 +121,20 @@ export async function getPage(slugs?: string[]) {
   return s.getPage(slugs);
 }
 
-export async function loadPageComponent(
+export async function loadPageModule(
   relativePath: string
-): Promise<MDXContent | null> {
-  if (!relativePath) return null;
+): Promise<{ default: MDXContent | null; toc: TableOfContents }> {
+  if (!relativePath) return { default: null, toc: [] };
   const contentDir = getContentDir();
   const fullPath = path.join(contentDir, relativePath);
   try {
     await fs.access(fullPath);
   } catch {
-    return null;
+    return { default: null, toc: [] };
   }
   const withoutExt = relativePath.replace(/\.(mdx|md)$/, '');
   const mod = relativePath.endsWith('.md')
     ? await import(`../../.content/${withoutExt}.md`)
     : await import(`../../.content/${withoutExt}.mdx`);
-  return mod.default;
+  return { default: mod.default ?? null, toc: mod.toc ?? [] };
 }

@@ -5,7 +5,7 @@ import { BrowserRouter } from 'react-router';
 import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
 import { mdxComponents } from '@/components/mdx';
 import { PageProvider } from '@/lib/page-context';
-import type { ChronicleConfig, Frontmatter, Root } from '@/types';
+import type { ChronicleConfig, Frontmatter, Root, TableOfContents } from '@/types';
 import type { ApiSpec } from '@/lib/openapi';
 import type { ReactNode } from 'react';
 import { App } from './App';
@@ -60,13 +60,13 @@ async function hydrate() {
   }
 }
 
-const contentModules = import.meta.glob<{ default?: React.ComponentType<any> }>(
+const contentModules = import.meta.glob<{ default?: React.ComponentType<any>; toc?: TableOfContents }>(
   '../../.content/**/*.{mdx,md}'
 );
 
 async function loadPage(
   embedded: EmbeddedData
-): Promise<{ slug: string[]; frontmatter: Frontmatter; content: ReactNode }> {
+): Promise<{ slug: string[]; frontmatter: Frontmatter; content: ReactNode; toc: TableOfContents }> {
   const withoutExt = embedded.relativePath.replace(/\.(mdx|md)$/, '');
   const key = embedded.relativePath.endsWith('.md')
     ? `../../.content/${withoutExt}.md`
@@ -76,7 +76,7 @@ async function loadPage(
   const content = mod?.default
     ? React.createElement(mod.default, { components: mdxComponents })
     : null;
-  return { slug: embedded.slug, frontmatter: embedded.frontmatter, content };
+  return { slug: embedded.slug, frontmatter: embedded.frontmatter, content, toc: mod?.toc ?? [] };
 }
 
 hydrate();

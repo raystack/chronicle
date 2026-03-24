@@ -8,7 +8,7 @@ import { mdxComponents } from '@/components/mdx';
 import { loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
-import { getPageTree, getPage, loadPageComponent } from '@/lib/source';
+import { getPageTree, getPage, loadPageModule } from '@/lib/source';
 import { App } from './App';
 
 // @ts-expect-error virtual import from Nitro
@@ -35,6 +35,8 @@ export default {
     const data = page?.data as Record<string, unknown> | undefined;
     const relativePath = (data?._relativePath as string) ?? null;
 
+    const mdxModule = relativePath ? await loadPageModule(relativePath) : null;
+
     const pageData = page
       ? {
           slug,
@@ -45,11 +47,10 @@ export default {
             icon: data?.icon as string | undefined,
             lastModified: data?.lastModified as string | undefined,
           },
-          content: relativePath
-            ? await loadPageComponent(relativePath).then(component =>
-                component ? React.createElement(component, { components: mdxComponents }) : null
-              )
+          content: mdxModule?.default
+            ? React.createElement(mdxModule.default, { components: mdxComponents })
             : null,
+          toc: mdxModule?.toc ?? [],
         }
       : null;
 

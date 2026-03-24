@@ -33,7 +33,7 @@ export function DocsPage({ slug }: DocsPageProps) {
           slug,
           frontmatter: page.frontmatter,
           content: page.content,
-          toc: []
+          toc: page.toc
         }}
         config={config}
         tree={tree}
