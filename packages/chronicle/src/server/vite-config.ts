@@ -7,6 +7,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import remarkDirective from 'remark-directive';
 import { type InlineConfig } from 'vite';
+import remarkStripMdExtensions from '../lib/remark-strip-md-extensions';
 import remarkUnusedDirectives from '../lib/remark-unused-directives';
 
 function resolveOutputDir(projectRoot: string, preset?: string): string {
@@ -70,6 +71,7 @@ export async function createViteConfig(
                 },
               }],
               remarkUnusedDirectives,
+              remarkStripMdExtensions,
               remarkMdxMermaid,
             ],
           },
