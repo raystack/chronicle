@@ -31,4 +31,5 @@ export const buildCommand = new Command('build')
     await builder.buildApp();
 
     console.log(chalk.green('Build complete'));
+    console.log(chalk.cyan('Run `chronicle start` to start the server'));
   });

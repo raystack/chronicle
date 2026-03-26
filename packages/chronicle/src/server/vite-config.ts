@@ -120,6 +120,7 @@ export async function createViteConfig(
       }
     },
     nitro: {
+      logLevel: 2,
       output: {
         dir: resolveOutputDir(projectRoot, preset),
       },
