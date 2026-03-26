@@ -8,7 +8,7 @@ import { mdxComponents } from '@/components/mdx';
 import { loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
-import { getPageTree, getPage, loadPageModule, extractFrontmatter, getRelativePath } from '@/lib/source';
+import { getPageTree, getPage, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
 import { App } from './App';
 
 import clientAssets from './entry-client?assets=client';
@@ -31,7 +31,8 @@ export default {
     ]);
 
     const relativePath = page ? getRelativePath(page) : null;
-    const mdxModule = relativePath ? await loadPageModule(relativePath) : null;
+    const originalPath = page ? getOriginalPath(page) : null;
+    const mdxModule = (originalPath || relativePath) ? await loadPageModule(originalPath || relativePath!) : null;
 
     const pageData = page
       ? {
@@ -50,6 +51,7 @@ export default {
       slug,
       frontmatter: pageData?.frontmatter ?? null,
       relativePath,
+      originalPath,
     };
     const safeJson = JSON.stringify(embeddedData).replace(/</g, '\\u003c');
 

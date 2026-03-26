@@ -24,11 +24,12 @@ function buildFiles() {
   }[] = [];
 
   for (const [key, data] of Object.entries(frontmatterGlob)) {
-    const relativePath = key.slice(CONTENT_PREFIX.length);
+    const originalPath = key.slice(CONTENT_PREFIX.length);
+    const relativePath = originalPath.replace(/readme\.(mdx?)$/i, 'index.$1');
     files.push({
       type: 'page',
       path: relativePath,
-      data: { ...data, _relativePath: relativePath }
+      data: { ...data, _relativePath: relativePath, _originalPath: originalPath }
     });
   }
 
@@ -117,6 +118,10 @@ export function extractFrontmatter(page: { data: unknown }, fallbackTitle?: stri
 
 export function getRelativePath(page: { data: unknown }): string {
   return ((page.data as Record<string, unknown>)._relativePath as string) ?? '';
+}
+
+export function getOriginalPath(page: { data: unknown }): string {
+  return ((page.data as Record<string, unknown>)._originalPath as string) ?? '';
 }
 
 const ssrModules = import.meta.glob<{ default?: MDXContent; toc?: TableOfContents }>(

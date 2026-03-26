@@ -90,9 +90,9 @@ export function PageProvider({
 
     fetch(apiPath)
       .then(res => res.json())
-      .then(async (data: { frontmatter: Frontmatter; relativePath: string }) => {
+      .then(async (data: { frontmatter: Frontmatter; relativePath: string; originalPath?: string }) => {
         if (cancelled.current) return;
-        const { content, toc } = await loadMdx(data.relativePath);
+        const { content, toc } = await loadMdx(data.originalPath || data.relativePath);
         if (cancelled.current) return;
         setPage({ slug, frontmatter: data.frontmatter, content, toc });
       })

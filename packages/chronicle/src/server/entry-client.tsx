@@ -16,6 +16,7 @@ interface EmbeddedData {
   slug: string[];
   frontmatter: Frontmatter;
   relativePath: string;
+  originalPath?: string;
 }
 
 const contentModules = import.meta.glob<{ default?: React.ComponentType<any>; toc?: TableOfContents }>(
@@ -54,11 +55,12 @@ async function hydrate() {
           .catch(() => [])
       : [];
 
-    const page = embedded?.relativePath
+    const mdxPath = embedded?.originalPath || embedded?.relativePath;
+    const page = mdxPath
       ? {
-          slug: embedded.slug,
-          frontmatter: embedded.frontmatter,
-          ...(await loadMdxModule(embedded.relativePath)),
+          slug: embedded!.slug,
+          frontmatter: embedded!.frontmatter,
+          ...(await loadMdxModule(mdxPath)),
         }
       : null;
 
