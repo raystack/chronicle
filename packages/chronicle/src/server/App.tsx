@@ -9,6 +9,7 @@ import { ApiPage } from '@/pages/ApiPage';
 import { DocsLayout } from '@/pages/DocsLayout';
 import { DocsPage } from '@/pages/DocsPage';
 import type { ChronicleConfig } from '@/types';
+import { getThemeConfig } from '@/themes/registry';
 
 function resolveRoute(pathname: string) {
   if (pathname.startsWith('/apis')) {
@@ -28,9 +29,13 @@ export function App() {
   const { pathname } = useLocation();
   const { config } = usePageContext();
   const route = resolveRoute(pathname);
+  const themeConfig = getThemeConfig(config.theme?.name);
 
   return (
-    <ThemeProvider enableSystem>
+    <ThemeProvider
+      enableSystem={themeConfig.enableSystem}
+      forcedTheme={themeConfig.forcedTheme}
+    >
       <RootHead config={config} />
       {route.type === 'api' ? (
         <ApiLayout>
