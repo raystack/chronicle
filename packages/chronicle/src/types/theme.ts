@@ -1,18 +1,19 @@
 import type { ReactNode } from 'react'
+import type { Root } from 'fumadocs-core/page-tree'
 import type { ChronicleConfig } from './config'
-import type { Page, PageTree } from './content'
+import type { Page } from './content'
 
 export interface ThemeLayoutProps {
   children: ReactNode
   config: ChronicleConfig
-  tree: PageTree
+  tree: Root
   classNames?: { layout?: string; body?: string; sidebar?: string; content?: string }
 }
 
 export interface ThemePageProps {
   page: Page
   config: ChronicleConfig
-  tree: PageTree
+  tree: Root
 }
 
 export interface Theme {

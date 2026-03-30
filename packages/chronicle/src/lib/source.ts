@@ -1,67 +1,143 @@
-import { docs } from '@/.source/server'
-import { loader } from 'fumadocs-core/source'
-import type { PageTree, PageTreeItem, Frontmatter } from '@/types'
+import { loader } from 'fumadocs-core/source';
+import type { Root, Node, Folder } from 'fumadocs-core/page-tree';
+import type { MDXContent } from 'mdx/types';
+import type { TableOfContents } from 'fumadocs-core/toc';
+import type { Frontmatter } from '@/types';
 
-export const source = loader({
-  baseUrl: '/',
-  source: docs.toFumadocsSource(),
-})
+const CONTENT_PREFIX = '../../.content/';
 
-export function sortByOrder<T extends { frontmatter?: Frontmatter }>(
-  items: T[]
-): T[] {
-  return [...items].sort((a, b) => {
-    const orderA = a.frontmatter?.order ?? Number.MAX_SAFE_INTEGER
-    const orderB = b.frontmatter?.order ?? Number.MAX_SAFE_INTEGER
-    return orderA - orderB
-  })
+const frontmatterGlob: Record<string, Record<string, unknown>> = import.meta.glob(
+  '../../.content/**/*.{mdx,md}',
+  { eager: true, import: 'frontmatter' }
+);
+
+const metaGlob: Record<string, Record<string, unknown>> = import.meta.glob(
+  '../../.content/**/meta.json',
+  { eager: true }
+);
+
+function buildFiles() {
+  const files: {
+    type: 'page' | 'meta';
+    path: string;
+    data: Record<string, unknown>;
+  }[] = [];
+
+  for (const [key, data] of Object.entries(frontmatterGlob)) {
+    const originalPath = key.slice(CONTENT_PREFIX.length);
+    const relativePath = originalPath.replace(/readme\.(mdx?)$/i, 'index.$1');
+    files.push({
+      type: 'page',
+      path: relativePath,
+      data: { ...data, _relativePath: relativePath, _originalPath: originalPath }
+    });
+  }
+
+  for (const [key, data] of Object.entries(metaGlob)) {
+    const relativePath = key.slice(CONTENT_PREFIX.length);
+    files.push({ type: 'meta', path: relativePath, data: data ?? {} });
+  }
+
+  return files;
 }
 
-export function buildPageTree(): PageTree {
-  const pages = source.getPages()
-  const folders = new Map<string, PageTreeItem[]>()
-  const rootPages: PageTreeItem[] = []
+let cachedSource: ReturnType<typeof loader> | null = null;
 
-  pages.forEach((page) => {
-    const data = page.data as { title?: string; order?: number }
-    const isIndex = page.url === '/'
-    const item: PageTreeItem = {
-      type: 'page',
-      name: data.title ?? page.slugs.join('/') ?? 'Untitled',
-      url: page.url,
-      order: data.order ?? (isIndex ? 0 : undefined),
-    }
+async function getSource() {
+  if (cachedSource) return cachedSource;
+  const files = buildFiles();
+  cachedSource = loader({
+    source: { files },
+    baseUrl: '/'
+  });
+  return cachedSource;
+}
 
-    if (page.slugs.length > 1) {
-      const folder = page.slugs[0]
-      if (!folders.has(folder)) {
-        folders.set(folder, [])
-      }
-      folders.get(folder)?.push(item)
-    } else {
-      rootPages.push(item)
-    }
-  })
+export { getSource as source };
 
-  const sortByOrder = (items: PageTreeItem[]) =>
-    items.sort((a, b) => (a.order ?? Number.MAX_SAFE_INTEGER) - (b.order ?? Number.MAX_SAFE_INTEGER))
+export function invalidate() {
+  cachedSource = null;
+}
 
-  const children: PageTreeItem[] = sortByOrder(rootPages)
+function getOrder(node: Node, orderMap: Map<string, number>): number | undefined {
+  if (node.type === 'page') return orderMap.get(node.url);
+  if (node.type === 'folder' && node.index) return orderMap.get(node.index.url);
+  return undefined;
+}
 
-  const folderItems: PageTreeItem[] = []
-  folders.forEach((items, folder) => {
-    const sorted = sortByOrder(items)
-    const indexPage = items.find(item => item.url === `/${folder}`)
-    const folderOrder = indexPage?.order ?? sorted[0]?.order
-    folderItems.push({
-      type: 'folder',
-      name: folder.charAt(0).toUpperCase() + folder.slice(1),
-      order: folderOrder,
-      children: sorted,
-    })
-  })
+function sortNodes(nodes: Node[], orderMap: Map<string, number>): Node[] {
+  return [...nodes]
+    .map(n =>
+      n.type === 'folder'
+        ? ({ ...n, children: sortNodes(n.children, orderMap) } as Folder)
+        : n
+    )
+    .sort(
+      (a, b) =>
+        (getOrder(a, orderMap) ?? Number.MAX_SAFE_INTEGER) -
+        (getOrder(b, orderMap) ?? Number.MAX_SAFE_INTEGER)
+    );
+}
 
-  children.push(...sortByOrder(folderItems))
+function sortTreeByOrder(tree: Root, pages: { url: string; data: unknown }[]): Root {
+  const orderMap = new Map<string, number>();
+  for (const page of pages) {
+    const d = page.data as Record<string, unknown>;
+    const order = d.order as number | undefined;
+    if (order !== undefined) orderMap.set(page.url, order);
+    if (page.url === '/') orderMap.set('/', order ?? 0);
+  }
+  return { ...tree, children: sortNodes(tree.children, orderMap) };
+}
 
-  return { name: 'root', children }
+export async function getPageTree(): Promise<Root> {
+  const s = await getSource();
+  return sortTreeByOrder(s.pageTree as Root, s.getPages());
+}
+
+export async function getPages() {
+  const s = await getSource();
+  return s.getPages();
+}
+
+export async function getPage(slugs?: string[]) {
+  const s = await getSource();
+  return s.getPage(slugs);
+}
+
+export function extractFrontmatter(page: { data: unknown }, fallbackTitle?: string): Frontmatter {
+  const d = page.data as Record<string, unknown>;
+  return {
+    title: (d.title as string) ?? fallbackTitle ?? 'Untitled',
+    description: d.description as string | undefined,
+    order: d.order as number | undefined,
+    icon: d.icon as string | undefined,
+    lastModified: d.lastModified as string | undefined,
+  };
+}
+
+export function getRelativePath(page: { data: unknown }): string {
+  return ((page.data as Record<string, unknown>)._relativePath as string) ?? '';
+}
+
+export function getOriginalPath(page: { data: unknown }): string {
+  return ((page.data as Record<string, unknown>)._originalPath as string) ?? '';
+}
+
+const ssrModules = import.meta.glob<{ default?: MDXContent; toc?: TableOfContents }>(
+  '../../.content/**/*.{mdx,md}'
+);
+
+export async function loadPageModule(
+  relativePath: string
+): Promise<{ default: MDXContent | null; toc: TableOfContents }> {
+  if (!relativePath || relativePath.includes('..')) return { default: null, toc: [] };
+  const withoutExt = relativePath.replace(/\.(mdx|md)$/, '');
+  const key = relativePath.endsWith('.md')
+    ? `../../.content/${withoutExt}.md`
+    : `../../.content/${withoutExt}.mdx`;
+  const loader = ssrModules[key];
+  if (!loader) return { default: null, toc: [] };
+  const mod = await loader();
+  return { default: mod.default ?? null, toc: mod.toc ?? [] };
 }

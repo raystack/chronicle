@@ -1,13 +1,11 @@
-import { Layout } from './Layout'
-import { Page } from './Page'
-import { Toc } from './Toc'
-import { inter } from './font'
-import type { Theme } from '@/types'
+import type { Theme } from '@/types';
+import { Layout } from './Layout';
+import { Page } from './Page';
+import { Toc } from './Toc';
 
 export const defaultTheme: Theme = {
   Layout,
-  Page,
-  className: inter.className,
-}
+  Page
+};
 
-export { Layout, Page, Toc }
+export { Layout, Page, Toc };

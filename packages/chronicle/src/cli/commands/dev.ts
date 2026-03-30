@@ -1,39 +1,32 @@
-import { Command } from 'commander'
-import { spawn } from 'child_process'
-import path from 'path'
-import fs from 'fs'
-import chalk from 'chalk'
-import { attachLifecycleHandlers, resolveNextCli } from '@/cli/utils'
+import fs from 'node:fs';
+import path from 'node:path';
+import chalk from 'chalk';
+import { Command } from 'commander';
+import { resolveContentDir } from '@/cli/utils/config';
+import { PACKAGE_ROOT } from '@/cli/utils/resolve';
+import { linkContent } from '@/cli/utils/scaffold';
 
 export const devCommand = new Command('dev')
   .description('Start development server')
   .option('-p, --port <port>', 'Port number', '3000')
-  .action((options) => {
-    const scaffoldPath = path.join(process.cwd(), '.chronicle')
-    if (!fs.existsSync(scaffoldPath)) {
-      console.log(chalk.red('Error: .chronicle/ not found. Run'), chalk.cyan('chronicle init'), chalk.red('first.'))
-      process.exit(1)
-    }
+  .option('-c, --content <path>', 'Content directory')
+  .action(async options => {
+    const contentDir = resolveContentDir(options.content);
+    const port = parseInt(options.port, 10);
 
-    let nextCli: string
-    try {
-      nextCli = resolveNextCli()
-    } catch {
-      console.log(chalk.red('Error: Next.js CLI not found. Run'), chalk.cyan('chronicle init'), chalk.red('first.'))
-      process.exit(1)
-    }
+    await linkContent(contentDir);
 
-    console.log(chalk.cyan('Starting dev server...'))
+    console.log(chalk.cyan('Starting dev server...'));
 
-    const child = spawn(process.execPath, [nextCli, 'dev', '-p', options.port], {
-      stdio: 'inherit',
-      cwd: scaffoldPath,
-      env: {
-        ...process.env,
-        CHRONICLE_PROJECT_ROOT: process.cwd(),
-        CHRONICLE_CONTENT_DIR: './content',
-      },
-    })
+    const { createServer } = await import('vite');
+    const { createViteConfig } = await import('@/server/vite-config');
 
-    attachLifecycleHandlers(child)
-  })
+    const config = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot: process.cwd(), contentDir });
+    const server = await createServer({
+      ...config,
+      server: { ...config.server, port }
+    });
+
+    await server.listen();
+    server.printUrls();
+  });

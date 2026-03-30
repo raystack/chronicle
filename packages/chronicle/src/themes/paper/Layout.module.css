@@ -13,7 +13,7 @@
   padding: var(--rs-space-7) var(--rs-space-5);
   background: var(--rs-color-background-neutral-primary);
   overflow-y: auto;
-  font-family: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', monospace;
+  font-family: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
 }
 
 .title {
