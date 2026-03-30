@@ -4,5 +4,10 @@
   "workspaces": ["packages/*", "examples/*"],
   "engines": {
     "node": ">=22"
+  },
+  "scripts": {
+    "build:cli": "bun run --filter @raystack/chronicle build:cli",
+    "postbuild:cli": "cd packages/chronicle && bun link",
+    "build:docs": "chronicle build --content docs"
   }
 }
