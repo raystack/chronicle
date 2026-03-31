@@ -7,7 +7,7 @@ import { linkContent } from '@/cli/utils/scaffold';
 export const startCommand = new Command('start')
   .description('Start production server')
   .option('-p, --port <port>', 'Port number', '3000')
-  .option('-c, --content <path>', 'Content directory')
+  .option('--content <path>', 'Content directory')
   .action(async options => {
     const contentDir = resolveContentDir(options.content);
     const port = parseInt(options.port, 10);

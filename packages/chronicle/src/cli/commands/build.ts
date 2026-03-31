@@ -1,18 +1,20 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { resolveContentDir } from '@/cli/utils/config';
+import { resolveConfigPath, resolveContentDir } from '@/cli/utils/config';
 import { PACKAGE_ROOT } from '@/cli/utils/resolve';
 import { linkContent } from '@/cli/utils/scaffold';
 
 export const buildCommand = new Command('build')
   .description('Build for production')
-  .option('-c, --content <path>', 'Content directory')
+  .option('--content <path>', 'Content directory')
+  .option('--config <path>', 'Path to chronicle.yaml')
   .option(
     '--preset <preset>',
     'Deploy preset (vercel, cloudflare, node-server)'
   )
   .action(async options => {
     const contentDir = resolveContentDir(options.content);
+    const configPath = resolveConfigPath(options.config);
     await linkContent(contentDir);
 
     console.log(chalk.cyan('Building for production...'));
@@ -24,6 +26,7 @@ export const buildCommand = new Command('build')
       packageRoot: PACKAGE_ROOT,
       projectRoot: process.cwd(),
       contentDir,
+      configPath: configPath ?? undefined,
       preset: options.preset
     });
 

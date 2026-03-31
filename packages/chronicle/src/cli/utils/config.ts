@@ -15,14 +15,15 @@ export function resolveContentDir(contentFlag?: string): string {
   return path.resolve('content');
 }
 
-function resolveConfigPath(): string | null {
+export function resolveConfigPath(configFlag?: string): string | null {
+  if (configFlag) return path.resolve(configFlag);
   const cwdPath = path.join(process.cwd(), 'chronicle.yaml');
   if (fs.existsSync(cwdPath)) return cwdPath;
   return null;
 }
 
-export function loadCLIConfig(contentDir: string): CLIConfig {
-  const configPath = resolveConfigPath();
+export function loadCLIConfig(contentDir: string, configFlag?: string): CLIConfig {
+  const configPath = resolveConfigPath(configFlag);
 
   if (!configPath) {
     console.log(

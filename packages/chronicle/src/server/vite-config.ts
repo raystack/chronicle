@@ -19,26 +19,30 @@ export interface ViteConfigOptions {
   packageRoot: string;
   projectRoot: string;
   contentDir: string;
+  configPath?: string;
   preset?: string;
 }
 
-async function readChronicleConfig(projectRoot: string, contentDir: string): Promise<string | null> {
-  for (const dir of [projectRoot, contentDir]) {
-    const filePath = path.join(dir, 'chronicle.yaml');
+async function readChronicleConfig(projectRoot: string, configPath?: string): Promise<string | null> {
+  if (configPath) {
     try {
-      return await fs.readFile(filePath, 'utf-8');
+      return await fs.readFile(configPath, 'utf-8');
     } catch {
-      // not found, try next
+      return null;
     }
   }
-  return null;
+  try {
+    return await fs.readFile(path.join(projectRoot, 'chronicle.yaml'), 'utf-8');
+  } catch {
+    return null;
+  }
 }
 
 export async function createViteConfig(
   options: ViteConfigOptions
 ): Promise<InlineConfig> {
-  const { packageRoot, projectRoot, contentDir, preset } = options;
-  const rawConfig = await readChronicleConfig(projectRoot, contentDir);
+  const { packageRoot, projectRoot, contentDir, configPath, preset } = options;
+  const rawConfig = await readChronicleConfig(projectRoot, configPath);
 
   return {
     root: packageRoot,

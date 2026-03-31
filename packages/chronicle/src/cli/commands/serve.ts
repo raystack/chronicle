@@ -1,19 +1,21 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { resolveContentDir } from '@/cli/utils/config';
+import { resolveConfigPath, resolveContentDir } from '@/cli/utils/config';
 import { PACKAGE_ROOT } from '@/cli/utils/resolve';
 import { linkContent } from '@/cli/utils/scaffold';
 
 export const serveCommand = new Command('serve')
   .description('Build and start production server')
   .option('-p, --port <port>', 'Port number', '3000')
-  .option('-c, --content <path>', 'Content directory')
+  .option('--content <path>', 'Content directory')
+  .option('--config <path>', 'Path to chronicle.yaml')
   .option(
     '--preset <preset>',
     'Deploy preset (vercel, cloudflare, node-server)'
   )
   .action(async options => {
     const contentDir = resolveContentDir(options.content);
+    const configPath = resolveConfigPath(options.config);
     const port = parseInt(options.port, 10);
     await linkContent(contentDir);
 
@@ -24,6 +26,7 @@ export const serveCommand = new Command('serve')
       packageRoot: PACKAGE_ROOT,
       projectRoot: process.cwd(),
       contentDir,
+      configPath: configPath ?? undefined,
       preset: options.preset
     });
 

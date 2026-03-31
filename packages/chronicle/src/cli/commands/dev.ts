@@ -2,16 +2,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { resolveContentDir } from '@/cli/utils/config';
+import { resolveConfigPath, resolveContentDir } from '@/cli/utils/config';
 import { PACKAGE_ROOT } from '@/cli/utils/resolve';
 import { linkContent } from '@/cli/utils/scaffold';
 
 export const devCommand = new Command('dev')
   .description('Start development server')
   .option('-p, --port <port>', 'Port number', '3000')
-  .option('-c, --content <path>', 'Content directory')
+  .option('--content <path>', 'Content directory')
+  .option('--config <path>', 'Path to chronicle.yaml')
   .action(async options => {
     const contentDir = resolveContentDir(options.content);
+    const configPath = resolveConfigPath(options.config);
     const port = parseInt(options.port, 10);
 
     await linkContent(contentDir);
@@ -21,7 +23,7 @@ export const devCommand = new Command('dev')
     const { createServer } = await import('vite');
     const { createViteConfig } = await import('@/server/vite-config');
 
-    const config = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot: process.cwd(), contentDir });
+    const config = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot: process.cwd(), contentDir, configPath: configPath ?? undefined });
     const server = await createServer({
       ...config,
       server: { ...config.server, port }
