@@ -15,21 +15,19 @@ export function resolveContentDir(contentFlag?: string): string {
   return path.resolve('content');
 }
 
-function resolveConfigPath(contentDir: string): string | null {
+function resolveConfigPath(): string | null {
   const cwdPath = path.join(process.cwd(), 'chronicle.yaml');
   if (fs.existsSync(cwdPath)) return cwdPath;
-  const contentPath = path.join(contentDir, 'chronicle.yaml');
-  if (fs.existsSync(contentPath)) return contentPath;
   return null;
 }
 
 export function loadCLIConfig(contentDir: string): CLIConfig {
-  const configPath = resolveConfigPath(contentDir);
+  const configPath = resolveConfigPath();
 
   if (!configPath) {
     console.log(
       chalk.red(
-        `Error: chronicle.yaml not found in '${process.cwd()}' or '${contentDir}'`
+        `Error: chronicle.yaml not found in '${process.cwd()}'`
       )
     );
     console.log(chalk.gray("Run 'chronicle init' to create one"));
