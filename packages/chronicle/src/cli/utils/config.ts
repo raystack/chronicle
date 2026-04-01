@@ -20,19 +20,27 @@ export function resolveConfigPath(configPath?: string): string | undefined {
   return undefined;
 }
 
+async function readConfig(configPath: string): Promise<ChronicleConfig> {
+  try {
+    const raw = await fs.readFile(configPath, 'utf-8');
+    return parse(raw) as ChronicleConfig;
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code === 'ENOENT') {
+      console.log(chalk.red(`Error: chronicle.yaml not found at '${configPath}'`));
+      console.log(chalk.gray("Run 'chronicle init' to create one"));
+    } else {
+      console.log(chalk.red(`Error: Invalid YAML in '${configPath}'`));
+      console.log(chalk.gray(err.message));
+    }
+    process.exit(1);
+  }
+}
+
 export async function loadCLIConfig(contentDir: string, configPath?: string): Promise<CLIConfig> {
   const resolvedConfigPath = resolveConfigPath(configPath)
     ?? path.join(process.cwd(), 'chronicle.yaml');
 
-  try {
-    const raw = await fs.readFile(resolvedConfigPath, 'utf-8');
-    const config = parse(raw) as ChronicleConfig;
-    return { config, configPath: resolvedConfigPath, contentDir };
-  } catch {
-    console.log(
-      chalk.red(`Error: chronicle.yaml not found at '${resolvedConfigPath}'`)
-    );
-    console.log(chalk.gray("Run 'chronicle init' to create one"));
-    process.exit(1);
-  }
+  const config = await readConfig(resolvedConfigPath);
+  return { config, configPath: resolvedConfigPath, contentDir };
 }
