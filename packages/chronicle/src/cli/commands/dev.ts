@@ -1,8 +1,6 @@
-import fs from 'node:fs';
-import path from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { resolveConfigPath, resolveContentDir } from '@/cli/utils/config';
+import { loadCLIConfig } from '@/cli/utils/config';
 import { PACKAGE_ROOT } from '@/cli/utils/resolve';
 import { linkContent } from '@/cli/utils/scaffold';
 
@@ -12,8 +10,7 @@ export const devCommand = new Command('dev')
   .option('--content <path>', 'Content directory')
   .option('--config <path>', 'Path to chronicle.yaml')
   .action(async options => {
-    const contentDir = resolveContentDir(options.content);
-    const configPath = resolveConfigPath(options.config);
+    const { contentDir, configPath } = await loadCLIConfig(options.config, { content: options.content });
     const port = parseInt(options.port, 10);
 
     await linkContent(contentDir);

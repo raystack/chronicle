@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import { Command } from 'commander';
-import { resolveConfigPath, resolveContentDir } from '@/cli/utils/config';
+import { loadCLIConfig } from '@/cli/utils/config';
 import { PACKAGE_ROOT } from '@/cli/utils/resolve';
 import { linkContent } from '@/cli/utils/scaffold';
 
@@ -13,8 +13,10 @@ export const buildCommand = new Command('build')
     'Deploy preset (vercel, cloudflare, node-server)'
   )
   .action(async options => {
-    const contentDir = resolveContentDir(options.content);
-    const configPath = resolveConfigPath(options.config);
+    const { contentDir, configPath, preset } = await loadCLIConfig(options.config, {
+      content: options.content,
+      preset: options.preset,
+    });
     await linkContent(contentDir);
 
     console.log(chalk.cyan('Building for production...'));
@@ -27,7 +29,7 @@ export const buildCommand = new Command('build')
       projectRoot: process.cwd(),
       contentDir,
       configPath,
-      preset: options.preset
+      preset
     });
 
     const builder = await createBuilder({ ...config, builder: {} });
