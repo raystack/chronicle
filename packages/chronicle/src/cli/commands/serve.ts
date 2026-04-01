@@ -26,7 +26,7 @@ export const serveCommand = new Command('serve')
       packageRoot: PACKAGE_ROOT,
       projectRoot: process.cwd(),
       contentDir,
-      configPath: configPath ?? undefined,
+      configPath,
       preset: options.preset
     });
 

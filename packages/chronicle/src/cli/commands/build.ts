@@ -26,7 +26,7 @@ export const buildCommand = new Command('build')
       packageRoot: PACKAGE_ROOT,
       projectRoot: process.cwd(),
       contentDir,
-      configPath: configPath ?? undefined,
+      configPath,
       preset: options.preset
     });
 

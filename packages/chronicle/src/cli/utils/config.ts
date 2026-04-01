@@ -15,17 +15,17 @@ export function resolveContentDir(contentFlag?: string): string {
   return path.resolve('content');
 }
 
-export function resolveConfigPath(configFlag?: string): string | null {
-  if (configFlag) return path.resolve(configFlag);
+export function resolveConfigPath(configPath?: string): string | undefined {
+  if (configPath) return path.resolve(configPath);
   const cwdPath = path.join(process.cwd(), 'chronicle.yaml');
   if (fs.existsSync(cwdPath)) return cwdPath;
-  return null;
+  return undefined;
 }
 
-export function loadCLIConfig(contentDir: string, configFlag?: string): CLIConfig {
-  const configPath = resolveConfigPath(configFlag);
+export function loadCLIConfig(contentDir: string, configPath?: string): CLIConfig {
+  const resolvedConfigPath = resolveConfigPath(configPath);
 
-  if (!configPath) {
+  if (!resolvedConfigPath) {
     console.log(
       chalk.red(
         `Error: chronicle.yaml not found in '${process.cwd()}'`
@@ -35,7 +35,7 @@ export function loadCLIConfig(contentDir: string, configFlag?: string): CLIConfi
     process.exit(1);
   }
 
-  const config = parse(fs.readFileSync(configPath, 'utf-8')) as ChronicleConfig;
+  const config = parse(fs.readFileSync(resolvedConfigPath, 'utf-8')) as ChronicleConfig;
 
-  return { config, configPath, contentDir };
+  return { config, configPath: resolvedConfigPath, contentDir };
 }

@@ -23,7 +23,7 @@ export const devCommand = new Command('dev')
     const { createServer } = await import('vite');
     const { createViteConfig } = await import('@/server/vite-config');
 
-    const config = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot: process.cwd(), contentDir, configPath: configPath ?? undefined });
+    const config = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot: process.cwd(), contentDir, configPath });
     const server = await createServer({
       ...config,
       server: { ...config.server, port }
