@@ -1,4 +1,4 @@
-import fs from 'node:fs';
+import fs from 'node:fs/promises';
 import path from 'node:path';
 import chalk from 'chalk';
 import { parse } from 'yaml';
@@ -15,28 +15,32 @@ export function resolveContentDir(contentFlag?: string): string {
   return path.resolve('content');
 }
 
-function resolveConfigPath(contentDir: string): string | null {
-  const cwdPath = path.join(process.cwd(), 'chronicle.yaml');
-  if (fs.existsSync(cwdPath)) return cwdPath;
-  const contentPath = path.join(contentDir, 'chronicle.yaml');
-  if (fs.existsSync(contentPath)) return contentPath;
-  return null;
+export function resolveConfigPath(configPath?: string): string | undefined {
+  if (configPath) return path.resolve(configPath);
+  return undefined;
 }
 
-export function loadCLIConfig(contentDir: string): CLIConfig {
-  const configPath = resolveConfigPath(contentDir);
-
-  if (!configPath) {
-    console.log(
-      chalk.red(
-        `Error: chronicle.yaml not found in '${process.cwd()}' or '${contentDir}'`
-      )
-    );
-    console.log(chalk.gray("Run 'chronicle init' to create one"));
+async function readConfig(configPath: string): Promise<ChronicleConfig> {
+  try {
+    const raw = await fs.readFile(configPath, 'utf-8');
+    return parse(raw) as ChronicleConfig;
+  } catch (error) {
+    const err = error as NodeJS.ErrnoException;
+    if (err.code === 'ENOENT') {
+      console.log(chalk.red(`Error: chronicle.yaml not found at '${configPath}'`));
+      console.log(chalk.gray("Run 'chronicle init' to create one"));
+    } else {
+      console.log(chalk.red(`Error: Invalid YAML in '${configPath}'`));
+      console.log(chalk.gray(err.message));
+    }
     process.exit(1);
   }
+}
 
-  const config = parse(fs.readFileSync(configPath, 'utf-8')) as ChronicleConfig;
+export async function loadCLIConfig(contentDir: string, configPath?: string): Promise<CLIConfig> {
+  const resolvedConfigPath = resolveConfigPath(configPath)
+    ?? path.join(process.cwd(), 'chronicle.yaml');
 
-  return { config, configPath, contentDir };
+  const config = await readConfig(resolvedConfigPath);
+  return { config, configPath: resolvedConfigPath, contentDir };
 }
