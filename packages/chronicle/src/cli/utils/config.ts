@@ -2,17 +2,13 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import chalk from 'chalk';
 import { parse } from 'yaml';
-import type { ChronicleConfig } from '@/types';
+import { chronicleConfigSchema, type ChronicleConfig } from '@/types';
 
 export interface CLIConfig {
   config: ChronicleConfig;
   configPath: string;
   contentDir: string;
-}
-
-export function resolveContentDir(contentFlag?: string): string {
-  if (contentFlag) return path.resolve(contentFlag);
-  return path.resolve('content');
+  preset?: string;
 }
 
 export function resolveConfigPath(configPath?: string): string | undefined {
@@ -20,27 +16,56 @@ export function resolveConfigPath(configPath?: string): string | undefined {
   return undefined;
 }
 
-async function readConfig(configPath: string): Promise<ChronicleConfig> {
-  try {
-    const raw = await fs.readFile(configPath, 'utf-8');
-    return parse(raw) as ChronicleConfig;
-  } catch (error) {
-    const err = error as NodeJS.ErrnoException;
-    if (err.code === 'ENOENT') {
+async function readConfig(configPath: string): Promise<string> {
+  return fs.readFile(configPath, 'utf-8').catch((error: NodeJS.ErrnoException) => {
+    if (error.code === 'ENOENT') {
       console.log(chalk.red(`Error: chronicle.yaml not found at '${configPath}'`));
       console.log(chalk.gray("Run 'chronicle init' to create one"));
     } else {
-      console.log(chalk.red(`Error: Invalid YAML in '${configPath}'`));
-      console.log(chalk.gray(err.message));
+      console.log(chalk.red(`Error: Failed to read '${configPath}'`));
+      console.log(chalk.gray(error.message));
+    }
+    process.exit(1);
+  });
+}
+
+function validateConfig(raw: string, configPath: string): ChronicleConfig {
+  const parsed = parse(raw);
+  const result = chronicleConfigSchema.safeParse(parsed);
+
+  if (!result.success) {
+    console.log(chalk.red(`Error: Invalid chronicle.yaml at '${configPath}'`));
+    for (const issue of result.error.issues) {
+      const path = issue.path.join('.');
+      console.log(chalk.gray(`  ${path ? `${path}: ` : ''}${issue.message}`));
     }
     process.exit(1);
   }
+
+  return result.data;
 }
 
-export async function loadCLIConfig(contentDir: string, configPath?: string): Promise<CLIConfig> {
+export function resolveContentDir(config: ChronicleConfig, contentFlag?: string): string {
+  if (contentFlag) return path.resolve(contentFlag);
+  if (config.content) return path.resolve(config.content);
+  return path.resolve('content');
+}
+
+export function resolvePreset(config: ChronicleConfig, presetFlag?: string): string | undefined {
+  return presetFlag ?? config.preset;
+}
+
+export async function loadCLIConfig(
+  configPath?: string,
+  options?: { content?: string; preset?: string }
+): Promise<CLIConfig> {
   const resolvedConfigPath = resolveConfigPath(configPath)
     ?? path.join(process.cwd(), 'chronicle.yaml');
 
-  const config = await readConfig(resolvedConfigPath);
-  return { config, configPath: resolvedConfigPath, contentDir };
+  const raw = await readConfig(resolvedConfigPath);
+  const config = validateConfig(raw, resolvedConfigPath);
+  const contentDir = resolveContentDir(config, options?.content);
+  const preset = resolvePreset(config, options?.preset);
+
+  return { config, configPath: resolvedConfigPath, contentDir, preset };
 }

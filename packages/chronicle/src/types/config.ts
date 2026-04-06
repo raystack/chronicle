@@ -1,80 +1,99 @@
-export interface ChronicleConfig {
-  title: string
-  description?: string
-  url?: string
-  logo?: LogoConfig
-  theme?: ThemeConfig
-  navigation?: NavigationConfig
-  search?: SearchConfig
-  footer?: FooterConfig
-  api?: ApiConfig[]
-  llms?: LlmsConfig
-  analytics?: AnalyticsConfig
-}
+import { z } from 'zod'
 
-export interface LlmsConfig {
-  enabled?: boolean
-}
+const logoSchema = z.object({
+  light: z.string().optional(),
+  dark: z.string().optional(),
+})
 
-export interface AnalyticsConfig {
-  enabled?: boolean
-  googleAnalytics?: GoogleAnalyticsConfig
-}
+const themeSchema = z.object({
+  name: z.enum(['default', 'paper']),
+  colors: z.record(z.string(), z.string()).optional(),
+})
 
-export interface GoogleAnalyticsConfig {
-  measurementId: string
-}
+const navLinkSchema = z.object({
+  label: z.string(),
+  href: z.string(),
+})
 
-export interface ApiConfig {
-  name: string
-  spec: string
-  basePath: string
-  server: ApiServerConfig
-  auth?: ApiAuthConfig
-}
+const socialLinkSchema = z.object({
+  type: z.string(),
+  href: z.string(),
+})
 
-export interface ApiServerConfig {
-  url: string
-  description?: string
-}
+const navigationSchema = z.object({
+  links: z.array(navLinkSchema).optional(),
+  social: z.array(socialLinkSchema).optional(),
+})
 
-export interface ApiAuthConfig {
-  type: string
-  header: string
-  placeholder?: string
-}
+const searchSchema = z.object({
+  enabled: z.boolean().optional(),
+  placeholder: z.string().optional(),
+})
 
-export interface LogoConfig {
-  light?: string
-  dark?: string
-}
+const apiServerSchema = z.object({
+  url: z.string(),
+  description: z.string().optional(),
+})
 
-export interface ThemeConfig {
-  name: 'default' | 'paper'
-  colors?: Record<string, string>
-}
+const apiAuthSchema = z.object({
+  type: z.string(),
+  header: z.string(),
+  placeholder: z.string().optional(),
+})
 
-export interface NavigationConfig {
-  links?: NavLink[]
-  social?: SocialLink[]
-}
+const apiSchema = z.object({
+  name: z.string(),
+  spec: z.string(),
+  basePath: z.string(),
+  server: apiServerSchema,
+  auth: apiAuthSchema.optional(),
+})
 
-export interface NavLink {
-  label: string
-  href: string
-}
+const footerSchema = z.object({
+  copyright: z.string().optional(),
+  links: z.array(navLinkSchema).optional(),
+})
 
-export interface SocialLink {
-  type: 'github' | 'twitter' | 'discord' | string
-  href: string
-}
+const llmsSchema = z.object({
+  enabled: z.boolean().optional(),
+})
 
-export interface SearchConfig {
-  enabled?: boolean
-  placeholder?: string
-}
+const googleAnalyticsSchema = z.object({
+  measurementId: z.string(),
+})
 
-export interface FooterConfig {
-  copyright?: string
-  links?: NavLink[]
-}
+const analyticsSchema = z.object({
+  enabled: z.boolean().optional(),
+  googleAnalytics: googleAnalyticsSchema.optional(),
+})
+
+export const chronicleConfigSchema = z.object({
+  title: z.string(),
+  description: z.string().optional(),
+  url: z.string().optional(),
+  content: z.string().optional(),
+  preset: z.string().optional(),
+  logo: logoSchema.optional(),
+  theme: themeSchema.optional(),
+  navigation: navigationSchema.optional(),
+  search: searchSchema.optional(),
+  footer: footerSchema.optional(),
+  api: z.array(apiSchema).optional(),
+  llms: llmsSchema.optional(),
+  analytics: analyticsSchema.optional(),
+})
+
+export type ChronicleConfig = z.infer<typeof chronicleConfigSchema>
+export type LogoConfig = z.infer<typeof logoSchema>
+export type ThemeConfig = z.infer<typeof themeSchema>
+export type NavigationConfig = z.infer<typeof navigationSchema>
+export type NavLink = z.infer<typeof navLinkSchema>
+export type SocialLink = z.infer<typeof socialLinkSchema>
+export type SearchConfig = z.infer<typeof searchSchema>
+export type ApiConfig = z.infer<typeof apiSchema>
+export type ApiServerConfig = z.infer<typeof apiServerSchema>
+export type ApiAuthConfig = z.infer<typeof apiAuthSchema>
+export type FooterConfig = z.infer<typeof footerSchema>
+export type LlmsConfig = z.infer<typeof llmsSchema>
+export type AnalyticsConfig = z.infer<typeof analyticsSchema>
+export type GoogleAnalyticsConfig = z.infer<typeof googleAnalyticsSchema>
