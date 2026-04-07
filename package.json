@@ -1,8 +1,16 @@
 {
   "name": "chronicle",
   "private": true,
-  "workspaces": ["packages/*", "examples/*"],
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
   "engines": {
     "node": ">=22"
+  },
+  "scripts": {
+    "build:cli": "bun run --filter @raystack/chronicle build:cli",
+    "dev:docs": "./packages/chronicle/bin/chronicle.js dev --config docs/chronicle.yaml",
+    "build:docs": "./packages/chronicle/bin/chronicle.js build --config docs/chronicle.yaml"
   }
 }

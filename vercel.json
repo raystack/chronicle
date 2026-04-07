@@ -1,0 +1,5 @@
+{
+  "installCommand": "bun install",
+  "buildCommand": "bun run build:cli && bun run build:docs -- --preset vercel",
+  "outputDirectory": ".vercel/output"
+}

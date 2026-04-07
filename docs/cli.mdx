@@ -10,7 +10,7 @@ Chronicle provides a CLI to initialize, develop, build, and serve your documenta
 
 ## init
 
-Initialize a new Chronicle project. Must be run before other commands.
+Initialize a new Chronicle project.
 
 ```bash
 chronicle init [options]
@@ -23,15 +23,13 @@ chronicle init [options]
 This creates:
 - `chronicle.yaml` — site configuration
 - `content/` (or custom name) — content directory with a sample `index.mdx`
-- `package.json` — with `@raystack/chronicle` dependency (if not exists)
-- `.chronicle/` — scaffolded build directory
-- `.gitignore` — with `.chronicle` entry
+- `.gitignore` — with `node_modules`, `dist`, `.output` entries
 
 If the content directory already exists and has files, the sample `index.mdx` is skipped.
 
 ## dev
 
-Start the development server with hot reload. Requires `chronicle init` first.
+Start the development server with hot reload.
 
 ```bash
 chronicle dev [options]
@@ -39,15 +37,23 @@ chronicle dev [options]
 
 | Flag | Description | Default |
 |------|-------------|---------|
+| `--content <path>` | Content directory | `content` |
+| `--config <path>` | Path to `chronicle.yaml` | `./chronicle.yaml` |
 | `-p, --port <port>` | Port number | `3000` |
 
 ## build
 
-Build the site for production. Requires `chronicle init` first.
+Build the site for production.
 
 ```bash
-chronicle build
+chronicle build [options]
 ```
+
+| Flag | Description | Default |
+|------|-------------|---------|
+| `--content <path>` | Content directory | `content` |
+| `--config <path>` | Path to `chronicle.yaml` | `./chronicle.yaml` |
+| `--preset <preset>` | Deploy preset (`vercel`, `cloudflare`, `node-server`) | — |
 
 ## start
 
@@ -59,11 +65,12 @@ chronicle start [options]
 
 | Flag | Description | Default |
 |------|-------------|---------|
+| `--content <path>` | Content directory | `content` |
 | `-p, --port <port>` | Port number | `3000` |
 
 ## serve
 
-Build and start the production server in one step. Requires `chronicle init` first.
+Build and start the production server in one step.
 
 ```bash
 chronicle serve [options]
@@ -71,11 +78,17 @@ chronicle serve [options]
 
 | Flag | Description | Default |
 |------|-------------|---------|
+| `--content <path>` | Content directory | `content` |
+| `--config <path>` | Path to `chronicle.yaml` | `./chronicle.yaml` |
 | `-p, --port <port>` | Port number | `3000` |
+| `--preset <preset>` | Deploy preset (`vercel`, `cloudflare`, `node-server`) | — |
 
-## Config Resolution
+## Resolution Order
 
-`chronicle.yaml` is resolved in this order:
+CLI flags take precedence over `chronicle.yaml` values, which take precedence over defaults.
 
-1. Current working directory
-2. Content directory
+| Option | CLI flag | Config field | Default |
+|--------|----------|-------------|---------|
+| Content directory | `--content` | `content` | `content` |
+| Deploy preset | `--preset` | `preset` | — |
+| Config path | `--config` | — | `./chronicle.yaml` |

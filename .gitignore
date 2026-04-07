@@ -134,4 +134,6 @@ dist
 .pnp.*
 
 dist
+.output/
+.vercel/
 examples/frontier

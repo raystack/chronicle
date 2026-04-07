@@ -6,13 +6,16 @@ order: 3
 
 # Configuration
 
-All site configuration lives in a single `chronicle.yaml` file in your content directory.
+All site configuration lives in a single `chronicle.yaml` file in your project root. The config is validated using Zod — invalid fields will produce clear error messages at startup.
 
 ## Full Example
 
 ```yaml
 title: My Project Docs
 description: Documentation for My Project
+url: https://docs.example.com
+content: docs
+preset: vercel
 
 logo:
   light: ./logo-light.png
@@ -51,6 +54,14 @@ api:
       type: apiKey
       header: Authorization
       placeholder: "Bearer token"
+
+llms:
+  enabled: true
+
+analytics:
+  enabled: true
+  googleAnalytics:
+    measurementId: G-XXXXXXXXXX
 ```
 
 ## Reference
@@ -61,6 +72,30 @@ api:
 
 ```yaml
 title: My Documentation
+```
+
+### url
+
+Optional site URL. Used for SEO metadata, sitemap, and canonical URLs.
+
+```yaml
+url: https://docs.example.com
+```
+
+### content
+
+Optional content directory path. Can be overridden by the `--content` CLI flag.
+
+```yaml
+content: docs
+```
+
+### preset
+
+Optional deploy preset. Can be overridden by the `--preset` CLI flag.
+
+```yaml
+preset: vercel # vercel, cloudflare, or node-server
 ```
 
 ### description
@@ -202,6 +237,35 @@ Each entry in the `api` array creates a section of API documentation.
 | `auth.placeholder` | `string` | Placeholder text in auth input |
 
 API pages include a "Try it out" panel that uses the configured server URL and auth settings.
+
+### llms
+
+Configuration for LLM-friendly content generation. When enabled, Chronicle generates `/llms.txt` and `/llms-full.txt` endpoints.
+
+```yaml
+llms:
+  enabled: true
+```
+
+| Field | Type | Description | Default |
+|-------|------|-------------|---------|
+| `enabled` | `boolean` | Enable/disable LLM content endpoints | `false` |
+
+### analytics
+
+Analytics integration for tracking page views.
+
+```yaml
+analytics:
+  enabled: true
+  googleAnalytics:
+    measurementId: G-XXXXXXXXXX
+```
+
+| Field | Type | Description | Default |
+|-------|------|-------------|---------|
+| `enabled` | `boolean` | Enable/disable analytics | `false` |
+| `googleAnalytics.measurementId` | `string` | Google Analytics measurement ID | — |
 
 ## Defaults
 
