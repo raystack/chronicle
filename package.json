@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build:cli": "bun run --filter @raystack/chronicle build:cli",
-    "build:docs": "./packages/chronicle/bin/chronicle.js build --content docs"
+    "dev:docs": "./packages/chronicle/bin/chronicle.js dev --config docs/chronicle.yaml",
+    "build:docs": "./packages/chronicle/bin/chronicle.js build --config docs/chronicle.yaml"
   }
 }

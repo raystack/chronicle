@@ -1,5 +1,6 @@
 title: Chronicle
 description: Config-driven documentation framework
+content: .
 
 theme:
   name: paper

@@ -45,9 +45,9 @@ function validateConfig(raw: string, configPath: string): ChronicleConfig {
   return result.data;
 }
 
-export function resolveContentDir(config: ChronicleConfig, contentFlag?: string): string {
+export function resolveContentDir(config: ChronicleConfig, configPath: string, contentFlag?: string): string {
   if (contentFlag) return path.resolve(contentFlag);
-  if (config.content) return path.resolve(config.content);
+  if (config.content) return path.resolve(path.dirname(configPath), config.content);
   return path.resolve('content');
 }
 
@@ -64,7 +64,7 @@ export async function loadCLIConfig(
 
   const raw = await readConfig(resolvedConfigPath);
   const config = validateConfig(raw, resolvedConfigPath);
-  const contentDir = resolveContentDir(config, options?.content);
+  const contentDir = resolveContentDir(config, resolvedConfigPath, options?.content);
   const preset = resolvePreset(config, options?.preset);
 
   return { config, configPath: resolvedConfigPath, contentDir, preset };
