@@ -1,6 +1,6 @@
 # Chronicle
 
-Config-driven documentation framework built on Next.js, Fumadocs, and Apsara UI.
+Config-driven documentation framework built on Vite, Nitro, and Apsara UI.
 
 ## Features
 
@@ -75,7 +75,7 @@ bun install
 3. Run the dev server
 
 ```bash
-cd docs && bun ../packages/chronicle/bin/chronicle.js dev
+bun run dev:docs
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the docs site.
