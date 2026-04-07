@@ -6,7 +6,7 @@ order: 3
 
 # Configuration
 
-All site configuration lives in a single `chronicle.yaml` file in your content directory.
+All site configuration lives in a single `chronicle.yaml` file in your project root. The config is validated using Zod — invalid fields will produce clear error messages at startup.
 
 ## Full Example
 
@@ -14,6 +14,8 @@ All site configuration lives in a single `chronicle.yaml` file in your content d
 title: My Project Docs
 description: Documentation for My Project
 url: https://docs.example.com
+content: docs
+preset: vercel
 
 logo:
   light: ./logo-light.png
@@ -78,6 +80,22 @@ Optional site URL. Used for SEO metadata, sitemap, and canonical URLs.
 
 ```yaml
 url: https://docs.example.com
+```
+
+### content
+
+Optional content directory path. Can be overridden by the `--content` CLI flag.
+
+```yaml
+content: docs
+```
+
+### preset
+
+Optional deploy preset. Can be overridden by the `--preset` CLI flag.
+
+```yaml
+preset: vercel # vercel, cloudflare, or node-server
 ```
 
 ### description

@@ -10,7 +10,7 @@ Chronicle provides a CLI to initialize, develop, build, and serve your documenta
 
 ## init
 
-Initialize a new Chronicle project. Must be run before other commands.
+Initialize a new Chronicle project.
 
 ```bash
 chronicle init [options]
@@ -37,7 +37,8 @@ chronicle dev [options]
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `-c, --content <path>` | Content directory | `content` |
+| `--content <path>` | Content directory | `content` |
+| `--config <path>` | Path to `chronicle.yaml` | `./chronicle.yaml` |
 | `-p, --port <port>` | Port number | `3000` |
 
 ## build
@@ -50,7 +51,8 @@ chronicle build [options]
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `-c, --content <path>` | Content directory | `content` |
+| `--content <path>` | Content directory | `content` |
+| `--config <path>` | Path to `chronicle.yaml` | `./chronicle.yaml` |
 | `--preset <preset>` | Deploy preset (`vercel`, `cloudflare`, `node-server`) | — |
 
 ## start
@@ -63,7 +65,7 @@ chronicle start [options]
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `-c, --content <path>` | Content directory | `content` |
+| `--content <path>` | Content directory | `content` |
 | `-p, --port <port>` | Port number | `3000` |
 
 ## serve
@@ -76,13 +78,17 @@ chronicle serve [options]
 
 | Flag | Description | Default |
 |------|-------------|---------|
-| `-c, --content <path>` | Content directory | `content` |
+| `--content <path>` | Content directory | `content` |
+| `--config <path>` | Path to `chronicle.yaml` | `./chronicle.yaml` |
 | `-p, --port <port>` | Port number | `3000` |
 | `--preset <preset>` | Deploy preset (`vercel`, `cloudflare`, `node-server`) | — |
 
-## Config Resolution
+## Resolution Order
 
-`chronicle.yaml` is resolved in this order:
+CLI flags take precedence over `chronicle.yaml` values, which take precedence over defaults.
 
-1. Current working directory
-2. Content directory
+| Option | CLI flag | Config field | Default |
+|--------|----------|-------------|---------|
+| Content directory | `--content` | `content` | `content` |
+| Deploy preset | `--preset` | `preset` | — |
+| Config path | `--config` | — | `./chronicle.yaml` |
