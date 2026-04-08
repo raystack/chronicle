@@ -17,21 +17,26 @@ RUN chmod +x bin/chronicle.js
 RUN ln -s /app/packages/chronicle/bin/chronicle.js /usr/local/bin/chronicle
 
 # --- init project ---
-WORKDIR /docs
+WORKDIR /content
 RUN bun add /app/packages/chronicle
 RUN chronicle init
 
 # --- runner ---
 FROM base AS runner
-WORKDIR /docs
+WORKDIR /content
 
-COPY --from=builder /docs /docs
+COPY --from=builder /content /content
 COPY --from=builder /app/packages/chronicle /app/packages/chronicle
+COPY --from=deps /app/package.json /app/bun.lock /app/
+COPY --from=deps /app/packages/chronicle/package.json /app/packages/chronicle/
+WORKDIR /app
+RUN bun install --production --frozen-lockfile
+WORKDIR /content
 RUN ln -s /app/packages/chronicle/bin/chronicle.js /usr/local/bin/chronicle
 
-VOLUME /docs/content
+VOLUME /content
 
 EXPOSE 3000
 
 ENTRYPOINT ["chronicle"]
-CMD ["serve", "--port", "3000"]
+CMD ["serve", "--port", "3000", "--host", "0.0.0.0"]
