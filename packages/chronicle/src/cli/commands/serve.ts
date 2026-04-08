@@ -9,6 +9,7 @@ export const serveCommand = new Command('serve')
   .option('-p, --port <port>', 'Port number', '3000')
   .option('--content <path>', 'Content directory')
   .option('--config <path>', 'Path to chronicle.yaml')
+  .option('--host <host>', 'Host address', 'localhost')
   .option(
     '--preset <preset>',
     'Deploy preset (vercel, cloudflare, node-server)'
@@ -38,7 +39,7 @@ export const serveCommand = new Command('serve')
     console.log(chalk.cyan('Starting production server...'));
     const server = await preview({
       ...config,
-      preview: { port }
+      preview: { port, host: options.host }
     });
 
     server.printUrls();

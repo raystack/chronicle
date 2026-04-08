@@ -8,6 +8,7 @@ export const startCommand = new Command('start')
   .description('Start production server')
   .option('-p, --port <port>', 'Port number', '3000')
   .option('--content <path>', 'Content directory')
+  .option('--host <host>', 'Host address', 'localhost')
   .action(async options => {
     const { contentDir, configPath } = await loadCLIConfig(undefined, { content: options.content });
     const port = parseInt(options.port, 10);
@@ -21,7 +22,7 @@ export const startCommand = new Command('start')
     const config = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot: process.cwd(), contentDir, configPath });
     const server = await preview({
       ...config,
-      preview: { port }
+      preview: { port, host: options.host }
     });
 
     server.printUrls();
