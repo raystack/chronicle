@@ -27,7 +27,11 @@ WORKDIR /content
 
 COPY --from=builder /content /content
 COPY --from=builder /app/packages/chronicle /app/packages/chronicle
-COPY --from=builder /app/node_modules /app/node_modules
+COPY --from=deps /app/package.json /app/bun.lock /app/
+COPY --from=deps /app/packages/chronicle/package.json /app/packages/chronicle/
+WORKDIR /app
+RUN bun install --production --frozen-lockfile
+WORKDIR /content
 RUN ln -s /app/packages/chronicle/bin/chronicle.js /usr/local/bin/chronicle
 
 VOLUME /content
