@@ -16,13 +16,7 @@ Config-driven documentation framework built on Vite, Nitro, and Apsara UI.
 ### Install
 
 ```bash
-bun add @raystack/chronicle
-```
-
-Or run directly without installing:
-
-```bash
-bunx @raystack/chronicle init
+npm install -g @raystack/chronicle
 ```
 
 ### Initialize
@@ -72,13 +66,25 @@ cd chronicle
 bun install
 ```
 
-3. Run the dev server
+3. Build the CLI
+
+```bash
+bun run build:cli
+```
+
+4. Run the docs site locally
 
 ```bash
 bun run dev:docs
 ```
 
 Open [http://localhost:3000](http://localhost:3000) to see the docs site.
+
+You can also run the CLI directly:
+
+```bash
+./packages/chronicle/bin/chronicle.js dev --config docs/chronicle.yaml
+```
 
 ### Making Changes
 
