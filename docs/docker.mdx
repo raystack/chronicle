@@ -19,23 +19,23 @@ docker pull raystack/chronicle
 The default command builds and starts a production server on port 3000.
 
 ```bash
-docker run -p 3000:3000 -v ./content:/docs/content raystack/chronicle
+docker run -p 3000:3000 -v ./content:/content raystack/chronicle
 ```
 
-Mount your content directory (containing MDX files) to `/docs/content`. Place `chronicle.yaml` in the content directory or it will use defaults.
+Mount your content directory (containing MDX files) to `/content`. Place `chronicle.yaml` in the content directory or it will use defaults.
 
 ## Development Server
 
 Override the default command with `dev` for hot reload:
 
 ```bash
-docker run -p 3000:3000 -v ./content:/docs/content raystack/chronicle dev --port 3000
+docker run -p 3000:3000 -v ./content:/content raystack/chronicle dev --port 3000
 ```
 
 ## Custom Port
 
 ```bash
-docker run -p 8080:8080 -v ./content:/docs/content raystack/chronicle serve --port 8080
+docker run -p 8080:8080 -v ./content:/content raystack/chronicle serve --port 8080
 ```
 
 ## Docker Compose
@@ -47,7 +47,7 @@ services:
     ports:
       - "3000:3000"
     volumes:
-      - ./content:/docs/content
+      - ./content:/content
 ```
 
 ## Available Commands
@@ -56,11 +56,11 @@ The entrypoint is `chronicle`, so any CLI command can be passed:
 
 ```bash
 # Build only
-docker run -v ./content:/docs/content raystack/chronicle build
+docker run -v ./content:/content raystack/chronicle build
 
 # Start pre-built server
-docker run -p 3000:3000 -v ./content:/docs/content raystack/chronicle start --port 3000
+docker run -p 3000:3000 -v ./content:/content raystack/chronicle start --port 3000
 
 # Build and start (default)
-docker run -p 3000:3000 -v ./content:/docs/content raystack/chronicle serve --port 3000
+docker run -p 3000:3000 -v ./content:/content raystack/chronicle serve --port 3000
 ```
