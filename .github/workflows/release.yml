@@ -32,6 +32,9 @@ jobs:
         env:
           GIT_REFNAME: ${{ github.ref_name }}
 
+      - name: Copy README
+        run: cp ../../README.md .
+
       - name: Publish
         run: bun publish --access public
         env:
