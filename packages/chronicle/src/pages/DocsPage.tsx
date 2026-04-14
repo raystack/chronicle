@@ -11,6 +11,7 @@ export function DocsPage({ slug }: DocsPageProps) {
   const { config, tree, page, errorStatus } = usePageContext();
 
   if (errorStatus === 404) return <NotFound />;
+  if (errorStatus) return <NotFound />;
   if (!page) return null;
 
   const { Page } = getTheme(config.theme?.name);

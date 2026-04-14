@@ -52,9 +52,13 @@ interface PageProviderProps {
   children: ReactNode;
 }
 
+function isApisRoute(pathname: string): boolean {
+  return pathname === '/apis' || pathname.startsWith('/apis/');
+}
+
 function getInitialErrorStatus(page: PageData | null, pathname: string): number | null {
   if (page) return null;
-  if (pathname === '/' || pathname.startsWith('/apis')) return null;
+  if (pathname === '/' || isApisRoute(pathname)) return null;
   return 404;
 }
 
@@ -79,7 +83,7 @@ export function PageProvider({
 
     const cancelled = { current: false };
 
-    if (pathname.startsWith('/apis')) {
+    if (isApisRoute(pathname)) {
       if (apiSpecs.length === 0) {
         fetch('/api/specs')
           .then(res => res.json())

@@ -70,7 +70,7 @@ const analyticsSchema = z.object({
 const telemetrySchema = z.object({
   enabled: z.boolean().optional(),
   serviceName: z.string().optional(),
-  port: z.number().optional().default(9090),
+  port: z.number().int().min(1).max(65535).default(9090),
 })
 
 export const chronicleConfigSchema = z.object({
