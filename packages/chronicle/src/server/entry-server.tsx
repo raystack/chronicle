@@ -10,6 +10,7 @@ import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { getPageTree, getPage, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
 import { App } from './App';
+import { recordSSRRender } from './telemetry';
 
 import clientAssets from './entry-client?assets=client';
 import serverAssets from './entry-server?assets=ssr';
@@ -57,6 +58,7 @@ export default {
 
     const assets = clientAssets.merge(serverAssets);
 
+    const renderStart = performance.now();
     const stream = await renderToReadableStream(
       <html lang="en">
         <head>
@@ -91,8 +93,12 @@ export default {
       </html>,
     );
 
+    const renderDuration = performance.now() - renderStart;
+
     const isApiRoute = pathname.startsWith('/apis');
     const status = !page && !isApiRoute && slug.length > 0 ? 404 : 200;
+
+    recordSSRRender(pathname, status, renderDuration);
 
     return new Response(stream, {
       status,
