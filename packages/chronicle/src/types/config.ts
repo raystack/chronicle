@@ -67,6 +67,11 @@ const analyticsSchema = z.object({
   googleAnalytics: googleAnalyticsSchema.optional(),
 })
 
+const telemetrySchema = z.object({
+  enabled: z.boolean().optional(),
+  serviceName: z.string().optional(),
+})
+
 export const chronicleConfigSchema = z.object({
   title: z.string(),
   description: z.string().optional(),
@@ -81,6 +86,7 @@ export const chronicleConfigSchema = z.object({
   api: z.array(apiSchema).optional(),
   llms: llmsSchema.optional(),
   analytics: analyticsSchema.optional(),
+  telemetry: telemetrySchema.optional(),
 })
 
 export type ChronicleConfig = z.infer<typeof chronicleConfigSchema>
@@ -97,3 +103,4 @@ export type FooterConfig = z.infer<typeof footerSchema>
 export type LlmsConfig = z.infer<typeof llmsSchema>
 export type AnalyticsConfig = z.infer<typeof analyticsSchema>
 export type GoogleAnalyticsConfig = z.infer<typeof googleAnalyticsSchema>
+export type TelemetryConfig = z.infer<typeof telemetrySchema>
