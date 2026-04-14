@@ -30,7 +30,7 @@ export function DocsPage({ slug }: DocsPageProps) {
       />
       <Page
         page={{
-          slug,
+          slug: page.slug,
           frontmatter: page.frontmatter,
           content: page.content,
           toc: page.toc
