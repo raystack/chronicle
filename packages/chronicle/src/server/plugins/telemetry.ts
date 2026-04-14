@@ -9,7 +9,6 @@ export default definePlugin((nitroApp) => {
   initTelemetry(config)
 
   nitroApp.hooks.hook('request', (event) => {
-    if (event.path === '/api/metrics') return
     event.context._requestStart = performance.now()
   })
 

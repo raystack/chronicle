@@ -20,7 +20,8 @@ export function initTelemetry(config: ChronicleConfig) {
     [ATTR_SERVICE_NAME]: config.telemetry?.serviceName ?? 'chronicle',
   })
 
-  exporter = new PrometheusExporter({ preventServerStart: true })
+  const port = config.telemetry?.port ?? 9090
+  exporter = new PrometheusExporter({ port })
   const provider = new MeterProvider({ resource, readers: [exporter] })
   const meter = provider.getMeter('chronicle')
 
@@ -33,10 +34,6 @@ export function initTelemetry(config: ChronicleConfig) {
   ssrRenderDuration = meter.createHistogram('http_server_ssr_render_duration_ms', {
     description: 'SSR render duration in ms',
   })
-}
-
-export function getExporter() {
-  return exporter
 }
 
 export function recordRequest(method: string, route: string, status: number, durationMs: number) {
