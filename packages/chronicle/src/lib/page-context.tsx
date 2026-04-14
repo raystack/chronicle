@@ -52,6 +52,12 @@ interface PageProviderProps {
   children: ReactNode;
 }
 
+function getInitialErrorStatus(page: PageData | null, pathname: string): number | null {
+  if (page) return null;
+  if (pathname === '/' || pathname.startsWith('/apis')) return null;
+  return 404;
+}
+
 export function PageProvider({
   initialConfig,
   initialTree,
@@ -63,7 +69,7 @@ export function PageProvider({
   const { pathname } = useLocation();
   const [tree] = useState<Root>(initialTree);
   const [page, setPage] = useState<PageData | null>(initialPage);
-  const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const [errorStatus, setErrorStatus] = useState<number | null>(getInitialErrorStatus(initialPage, pathname));
   const [apiSpecs, setApiSpecs] = useState<ApiSpec[]>(initialApiSpecs);
   const [currentPath, setCurrentPath] = useState(pathname);
 
