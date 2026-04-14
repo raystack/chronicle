@@ -1,5 +1,6 @@
 import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
+import { NotFound } from '@/pages/NotFound';
 import { getTheme } from '@/themes/registry';
 
 interface DocsPageProps {
@@ -7,8 +8,9 @@ interface DocsPageProps {
 }
 
 export function DocsPage({ slug }: DocsPageProps) {
-  const { config, tree, page } = usePageContext();
+  const { config, tree, page, errorStatus } = usePageContext();
 
+  if (errorStatus === 404) return <NotFound />;
   if (!page) return null;
 
   const { Page } = getTheme(config.theme?.name);
