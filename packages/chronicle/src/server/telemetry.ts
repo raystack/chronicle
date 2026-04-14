@@ -1,14 +1,9 @@
 import type { Counter, Histogram } from '@opentelemetry/api'
-import sdkMetrics from '@opentelemetry/sdk-metrics'
-import prometheusExporter from '@opentelemetry/exporter-prometheus'
-import resources from '@opentelemetry/resources'
-import semconv from '@opentelemetry/semantic-conventions'
+import { MeterProvider } from '@opentelemetry/sdk-metrics'
+import { PrometheusExporter } from '@opentelemetry/exporter-prometheus'
+import { resourceFromAttributes } from '@opentelemetry/resources'
+import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions'
 import type { ChronicleConfig } from '@/types/config'
-
-const { MeterProvider } = sdkMetrics
-const { PrometheusExporter } = prometheusExporter
-const { resourceFromAttributes } = resources
-const { ATTR_SERVICE_NAME } = semconv
 
 let exporter: PrometheusExporter
 let requestCounter: Counter
