@@ -12,7 +12,8 @@ export default defineHandler(async event => {
   const pages = await getPages();
   const index = pages.map(p => {
     const fm = extractFrontmatter(p);
-    return `- [${fm.title}](${p.url})`;
+    const mdUrl = p.url === '/' ? '/index.md' : `${p.url}.md`;
+    return `- [${fm.title}](${mdUrl})`;
   }).join('\n');
   const body = `# ${config.title}\n\n${config.description ?? ''}\n\n${index}`;
 
