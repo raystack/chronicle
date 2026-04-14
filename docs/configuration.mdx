@@ -62,6 +62,11 @@ analytics:
   enabled: true
   googleAnalytics:
     measurementId: G-XXXXXXXXXX
+
+telemetry:
+  enabled: true
+  serviceName: my-docs
+  port: 9090
 ```
 
 ## Reference
@@ -266,6 +271,25 @@ analytics:
 |-------|------|-------------|---------|
 | `enabled` | `boolean` | Enable/disable analytics | `false` |
 | `googleAnalytics.measurementId` | `string` | Google Analytics measurement ID | — |
+
+### telemetry
+
+Prometheus metrics export via OpenTelemetry. When enabled, metrics are served on a separate port.
+
+```yaml
+telemetry:
+  enabled: true
+  serviceName: my-docs
+  port: 9090
+```
+
+| Field | Type | Description | Default |
+|-------|------|-------------|---------|
+| `enabled` | `boolean` | Enable/disable telemetry | `false` |
+| `serviceName` | `string` | OpenTelemetry service name | `chronicle` |
+| `port` | `number` | Port for Prometheus metrics endpoint | `9090` |
+
+Metrics are available at `http://localhost:<port>/metrics` in Prometheus exposition format.
 
 ## Defaults
 
