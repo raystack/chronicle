@@ -1,24 +1,18 @@
 import { Link as ApsaraLink } from '@raystack/apsara';
-import type { ComponentProps } from 'react';
-import { Link as RouterLink } from 'react-router';
+import type { ComponentProps, MouseEvent } from 'react';
+import { useNavigate } from 'react-router';
 
 type LinkProps = ComponentProps<'a'>;
 
 export function Link({ href, children, ...props }: LinkProps) {
+  const navigate = useNavigate();
+
   if (!href) {
     return <span {...props}>{children}</span>;
   }
 
   const isExternal = href.startsWith('http://') || href.startsWith('https://');
   const isAnchor = href.startsWith('#');
-
-  if (isAnchor) {
-    return (
-      <ApsaraLink href={href} {...props}>
-        {children}
-      </ApsaraLink>
-    );
-  }
 
   if (isExternal) {
     return (
@@ -33,9 +27,22 @@ export function Link({ href, children, ...props }: LinkProps) {
     );
   }
 
+  if (isAnchor) {
+    return (
+      <ApsaraLink href={href} {...props}>
+        {children}
+      </ApsaraLink>
+    );
+  }
+
+  const onClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    e.preventDefault();
+    navigate(href);
+  };
+
   return (
-    <RouterLink to={href} className={props.className}>
+    <ApsaraLink href={href} onClick={onClick} {...props}>
       {children}
-    </RouterLink>
+    </ApsaraLink>
   );
 }
