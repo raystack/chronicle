@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router';
 
 type LinkProps = ComponentProps<'a'>;
 
-export function Link({ href, children, ...props }: LinkProps) {
+export function Link({ href, children, onClick: onClickProp, ...props }: LinkProps) {
   const navigate = useNavigate();
 
   if (!href) {
@@ -36,12 +36,26 @@ export function Link({ href, children, ...props }: LinkProps) {
   }
 
   const onClick = (e: MouseEvent<HTMLAnchorElement>) => {
+    if (
+      e.defaultPrevented ||
+      e.button !== 0 ||
+      e.metaKey ||
+      e.ctrlKey ||
+      e.shiftKey ||
+      e.altKey
+    ) {
+      return;
+    }
+
+    onClickProp?.(e);
+    if (e.defaultPrevented) return;
+
     e.preventDefault();
     navigate(href);
   };
 
   return (
-    <ApsaraLink href={href} onClick={onClick} {...props}>
+    <ApsaraLink href={href} {...props} onClick={onClick}>
       {children}
     </ApsaraLink>
   );
