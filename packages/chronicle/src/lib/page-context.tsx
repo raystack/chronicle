@@ -86,7 +86,7 @@ export function PageProvider({
       ? []
       : pathname.slice(1).split('/').filter(Boolean);
 
-    const apiPath = slug.length === 0 ? '/api/page/' : `/api/page/${slug.join('/')}`;
+    const apiPath = slug.length === 0 ? '/api/page' : `/api/page?slug=${slug.join(',')}`;
 
     fetch(apiPath)
       .then(res => res.json())
