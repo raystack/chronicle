@@ -9,8 +9,8 @@ import { loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { getPageTree, getPage, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
+import { useNitroApp } from 'nitro/app';
 import { App } from './App';
-import { recordSSRRender } from './telemetry';
 
 import clientAssets from './entry-client?assets=client';
 import serverAssets from './entry-server?assets=ssr';
@@ -98,7 +98,7 @@ export default {
     const isApiRoute = pathname.startsWith('/apis');
     const status = !page && !isApiRoute && slug.length > 0 ? 404 : 200;
 
-    recordSSRRender(pathname, status, renderDuration);
+    useNitroApp().hooks.callHook('chronicle:ssr-rendered', pathname, status, renderDuration);
 
     return new Response(stream, {
       status,

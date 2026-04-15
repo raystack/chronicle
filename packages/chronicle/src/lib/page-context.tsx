@@ -22,6 +22,7 @@ interface PageContextValue {
   config: ChronicleConfig;
   tree: Root;
   page: PageData | null;
+  errorStatus: number | null;
   apiSpecs: ApiSpec[];
 }
 
@@ -35,6 +36,7 @@ export function usePageContext(): PageContextValue {
       config: { title: 'Documentation' },
       tree: { name: 'root', children: [] } as Root,
       page: null,
+      errorStatus: null,
       apiSpecs: []
     };
   }
@@ -50,6 +52,16 @@ interface PageProviderProps {
   children: ReactNode;
 }
 
+function isApisRoute(pathname: string): boolean {
+  return pathname === '/apis' || pathname.startsWith('/apis/');
+}
+
+function getInitialErrorStatus(page: PageData | null, pathname: string): number | null {
+  if (page) return null;
+  if (pathname === '/' || isApisRoute(pathname)) return null;
+  return 404;
+}
+
 export function PageProvider({
   initialConfig,
   initialTree,
@@ -61,6 +73,7 @@ export function PageProvider({
   const { pathname } = useLocation();
   const [tree] = useState<Root>(initialTree);
   const [page, setPage] = useState<PageData | null>(initialPage);
+  const [errorStatus, setErrorStatus] = useState<number | null>(getInitialErrorStatus(initialPage, pathname));
   const [apiSpecs, setApiSpecs] = useState<ApiSpec[]>(initialApiSpecs);
   const [currentPath, setCurrentPath] = useState(pathname);
 
@@ -70,7 +83,7 @@ export function PageProvider({
 
     const cancelled = { current: false };
 
-    if (pathname.startsWith('/apis')) {
+    if (isApisRoute(pathname)) {
       if (apiSpecs.length === 0) {
         fetch('/api/specs')
           .then(res => res.json())
@@ -89,21 +102,36 @@ export function PageProvider({
     const apiPath = slug.length === 0 ? '/api/page' : `/api/page?slug=${slug.join(',')}`;
 
     fetch(apiPath)
-      .then(res => res.json())
-      .then(async (data: { frontmatter: Frontmatter; relativePath: string; originalPath?: string }) => {
-        if (cancelled.current) return;
+      .then(res => {
+        if (!res.ok) {
+          if (!cancelled.current) {
+            setPage(null);
+            setErrorStatus(res.status);
+          }
+          return;
+        }
+        return res.json();
+      })
+      .then(async (data: { frontmatter: Frontmatter; relativePath: string; originalPath?: string } | undefined) => {
+        if (cancelled.current || !data) return;
         const { content, toc } = await loadMdx(data.originalPath || data.relativePath);
         if (cancelled.current) return;
+        setErrorStatus(null);
         setPage({ slug, frontmatter: data.frontmatter, content, toc });
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled.current) {
+          setPage(null);
+          setErrorStatus(500);
+        }
+      });
 
     return () => { cancelled.current = true; };
   }, [pathname]);
 
   return (
     <PageContext.Provider
-      value={{ config: initialConfig, tree, page, apiSpecs }}
+      value={{ config: initialConfig, tree, page, errorStatus, apiSpecs }}
     >
       {children}
     </PageContext.Provider>

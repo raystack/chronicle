@@ -17,6 +17,9 @@ search:
 llms:
   enabled: true
 
+telemetry:
+  enabled: true
+
 footer:
   copyright: "© 2026 Raystack. All rights reserved."
   links:
