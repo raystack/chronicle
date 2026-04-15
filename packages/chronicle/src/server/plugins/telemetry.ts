@@ -3,6 +3,7 @@ import { MeterProvider } from '@opentelemetry/sdk-metrics'
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus'
 import { resourceFromAttributes } from '@opentelemetry/resources'
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions'
+import type { H3Event } from 'h3'
 import { definePlugin } from 'nitro'
 import { loadConfig } from '@/lib/config'
 
@@ -45,13 +46,16 @@ export default definePlugin((nitroApp) => {
   })
 
   nitroApp.hooks.hook('request', (event) => {
-    event.context._requestStart = performance.now()
+    (event as H3Event).context._requestStart = performance.now()
   })
 
   nitroApp.hooks.hook('response', (res, event) => {
-    if (!event.context._requestStart) return
-    const duration = performance.now() - event.context._requestStart
-    requestCounter.add(1, { method: event.method, route: event.path, status: res.status })
-    requestDuration.record(duration, { method: event.method, route: event.path, status: res.status })
+    const start = (event as H3Event).context._requestStart as number | undefined
+    if (start === undefined) return
+    const duration = performance.now() - start
+    const method = event.req.method
+    const route = new URL(event.req.url).pathname
+    requestCounter.add(1, { method, route, status: res.status })
+    requestDuration.record(duration, { method, route, status: res.status })
   })
 })
