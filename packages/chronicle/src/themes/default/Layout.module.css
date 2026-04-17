@@ -120,9 +120,7 @@
   flex-direction: column;
   border: 0.5px solid var(--rs-color-border-base-primary);
   border-radius: var(--rs-radius-4);
-  box-shadow:
-    0 1px 2px 0 rgba(0, 0, 0, 0.04),
-    0 2px 4px 0 rgba(0, 0, 0, 0.04);
+  box-shadow: var(--rs-shadow-soft);
   overflow: clip;
 }
 
