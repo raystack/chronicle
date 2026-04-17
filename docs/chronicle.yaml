@@ -7,7 +7,7 @@ content:
     label: Docs
 
 theme:
-  name: paper
+  name: default
 
 navigation:
   links:
