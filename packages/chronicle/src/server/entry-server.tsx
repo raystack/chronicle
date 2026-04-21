@@ -5,7 +5,7 @@ import { renderToReadableStream } from 'react-dom/server.edge';
 import { StaticRouter } from 'react-router';
 import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
 import { mdxComponents } from '@/components/mdx';
-import { loadConfig } from '@/lib/config';
+import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
@@ -34,8 +34,11 @@ export default {
     const isApiRoute = route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage;
     const pageSlug = route.type === RouteType.DocsPage ? route.slug : [];
 
-    const apiSpecs = isApiRoute && config.api?.length
-      ? await loadApiSpecs(config.api).catch(() => [])
+    const apiConfigs = isApiRoute
+      ? getApiConfigsForVersion(config, route.version.dir)
+      : [];
+    const apiSpecs = apiConfigs.length
+      ? await loadApiSpecs(apiConfigs).catch(() => [])
       : [];
 
     const [tree, page] = await Promise.all([

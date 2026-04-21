@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { chronicleConfigSchema } from '@/types'
 import {
   getAllVersions,
+  getApiConfigsForVersion,
   getLandingEntries,
   getLatestContentRoots,
   getVersionContentRoots,
@@ -318,6 +319,51 @@ describe('getLandingEntries', () => {
       content: [{ dir: 'docs', label: 'Docs' }],
     })
     expect(getLandingEntries(cfg, 'v9')).toEqual([])
+  })
+})
+
+describe('getApiConfigsForVersion', () => {
+  const apiFixture = {
+    name: 'Petstore',
+    spec: './petstore.json',
+    basePath: '/apis',
+    server: { url: 'https://petstore.example.com' },
+  }
+
+  test('returns config.api for latest (null)', () => {
+    const cfg = chronicleConfigSchema.parse({
+      site: { title: 'x' },
+      content: [{ dir: 'docs', label: 'Docs' }],
+      api: [apiFixture],
+    })
+    expect(getApiConfigsForVersion(cfg, null)).toEqual([apiFixture])
+  })
+
+  test('returns versions[].api for a matching version', () => {
+    const versionedApi = { ...apiFixture, spec: './v1-petstore.json' }
+    const cfg = chronicleConfigSchema.parse({
+      site: { title: 'x' },
+      content: [{ dir: 'docs', label: 'Docs' }],
+      latest: { label: '3.0' },
+      versions: [
+        {
+          dir: 'v1',
+          label: '1.0',
+          content: [{ dir: 'docs', label: 'Docs' }],
+          api: [versionedApi],
+        },
+      ],
+    })
+    expect(getApiConfigsForVersion(cfg, 'v1')).toEqual([versionedApi])
+  })
+
+  test('returns [] for unknown version or missing api', () => {
+    const cfg = chronicleConfigSchema.parse({
+      site: { title: 'x' },
+      content: [{ dir: 'docs', label: 'Docs' }],
+    })
+    expect(getApiConfigsForVersion(cfg, 'v9')).toEqual([])
+    expect(getApiConfigsForVersion(cfg, null)).toEqual([])
   })
 })
 

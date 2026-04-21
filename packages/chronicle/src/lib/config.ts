@@ -1,6 +1,7 @@
 import path from 'node:path'
 import { parse } from 'yaml'
 import {
+  type ApiConfig,
   type BadgeConfig,
   type ChronicleConfig,
   chronicleConfigSchema,
@@ -88,6 +89,16 @@ export function getLandingEntries(
     href: r.urlPrefix,
     contentDir: r.contentDir,
   }))
+}
+
+export function getApiConfigsForVersion(
+  config: ChronicleConfig,
+  versionDir: string | null,
+): ApiConfig[] {
+  if (versionDir === null) return config.api ?? []
+  return (
+    config.versions?.find((v) => v.dir === versionDir)?.api ?? []
+  )
 }
 
 export function getAllVersions(config: ChronicleConfig): VersionDescriptor[] {

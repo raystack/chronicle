@@ -4,6 +4,7 @@ import { hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
 import { mdxComponents } from '@/components/mdx';
+import { getApiConfigsForVersion } from '@/lib/config';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import { LATEST_CONTEXT, type VersionContext } from '@/lib/version-source';
@@ -56,11 +57,16 @@ async function hydrate() {
     const version: VersionContext = embedded?.version ?? LATEST_CONTEXT;
 
     const route = resolveRoute(window.location.pathname, config);
-    const isApiPage =
-      (route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage) &&
-      !!config.api?.length;
-    const apiSpecs: ApiSpec[] = isApiPage
-      ? await fetch('/api/specs')
+    const isApiRoute =
+      route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage;
+    const apiConfigs = isApiRoute
+      ? getApiConfigsForVersion(config, version.dir)
+      : [];
+    const specsUrl = version.dir
+      ? `/api/specs?version=${encodeURIComponent(version.dir)}`
+      : '/api/specs';
+    const apiSpecs: ApiSpec[] = apiConfigs.length
+      ? await fetch(specsUrl)
           .then(r => r.json())
           .catch(() => [])
       : [];

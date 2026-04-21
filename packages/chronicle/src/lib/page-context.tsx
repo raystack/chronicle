@@ -100,16 +100,17 @@ export function PageProvider({
     const cancelled = { current: false };
 
     if (route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage) {
-      if (apiSpecs.length === 0) {
-        fetch('/api/specs')
-          .then(res => res.json())
-          .then(specs => {
-            if (!cancelled.current) setApiSpecs(specs);
-          })
-          .catch(() => {
-            // swallow — api specs are best-effort on client nav
-          });
-      }
+      const specsUrl = route.version.dir
+        ? `/api/specs?version=${encodeURIComponent(route.version.dir)}`
+        : '/api/specs';
+      fetch(specsUrl)
+        .then(res => res.json())
+        .then(specs => {
+          if (!cancelled.current) setApiSpecs(specs);
+        })
+        .catch(() => {
+          // swallow — api specs are best-effort on client nav
+        });
       return () => { cancelled.current = true; };
     }
 
