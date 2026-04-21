@@ -4,12 +4,11 @@ import type { ChronicleConfig } from '@/types';
 import { getLatestContentRoots, getVersionContentRoots } from '@/lib/config';
 import { PACKAGE_ROOT } from './resolve';
 
-export async function linkContent(
+export async function buildContentMirror(
+  mirrorRoot: string,
   projectRoot: string,
   config: ChronicleConfig,
 ): Promise<void> {
-  const mirrorRoot = path.join(PACKAGE_ROOT, '.content');
-
   await removeMirror(mirrorRoot);
   await fs.mkdir(mirrorRoot, { recursive: true });
 
@@ -29,6 +28,17 @@ export async function linkContent(
       await fs.symlink(target, linkPath);
     }
   }
+}
+
+export function linkContent(
+  projectRoot: string,
+  config: ChronicleConfig,
+): Promise<void> {
+  return buildContentMirror(
+    path.join(PACKAGE_ROOT, '.content'),
+    projectRoot,
+    config,
+  );
 }
 
 async function removeMirror(mirrorRoot: string): Promise<void> {
