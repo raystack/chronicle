@@ -83,3 +83,19 @@ export function filterPageTreeByVersion(
     children: tree.children.filter((n) => nodeMatchesVersion(n, ctx, config)),
   }
 }
+
+export function filterPageTreeByContentDir(
+  tree: Root,
+  ctx: VersionContext,
+  contentDir: string | null,
+): Root {
+  if (contentDir === null) return tree
+  const expectedPrefix = `${ctx.urlPrefix}/${contentDir}`
+  const match = tree.children.find(
+    (n): n is Folder =>
+      n.type === 'folder' &&
+      nodeUrls(n).every((u) => isUnderPrefix(u, expectedPrefix)),
+  )
+  if (!match) return { ...tree, children: [] }
+  return { ...tree, children: match.children }
+}

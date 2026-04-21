@@ -3,6 +3,7 @@ import type { Folder, Item, Root } from 'fumadocs-core/page-tree'
 import { type ChronicleConfig, chronicleConfigSchema } from '@/types'
 import {
   filterPagesByVersion,
+  filterPageTreeByContentDir,
   filterPageTreeByVersion,
   LATEST_CONTEXT,
   resolveVersionFromUrl,
@@ -124,5 +125,39 @@ describe('filterPageTreeByVersion', () => {
       config,
     )
     expect(filtered.children).toEqual([])
+  })
+})
+
+describe('filterPageTreeByContentDir', () => {
+  const latestDocs = folder('docs', [page('/docs/a'), page('/docs/b')])
+  const latestDev = folder('dev', [page('/dev/x')])
+  const latestTree: Root = {
+    name: 'root',
+    children: [latestDocs, latestDev],
+  }
+
+  test('null contentDir returns tree unchanged', () => {
+    const out = filterPageTreeByContentDir(latestTree, LATEST_CONTEXT, null)
+    expect(out).toBe(latestTree)
+  })
+
+  test('returns just the matching content folder children (latest)', () => {
+    const out = filterPageTreeByContentDir(latestTree, LATEST_CONTEXT, 'docs')
+    expect(out.children).toEqual(latestDocs.children)
+  })
+
+  test('returns empty children when content dir is absent', () => {
+    const out = filterPageTreeByContentDir(latestTree, LATEST_CONTEXT, 'missing')
+    expect(out.children).toEqual([])
+  })
+
+  test('uses version urlPrefix to disambiguate within a version', () => {
+    const v1Docs = folder('docs', [page('/v1/docs/a')])
+    const v1Dev = folder('dev', [page('/v1/dev/x')])
+    const ctx = { dir: 'v1', urlPrefix: '/v1' }
+    const tree: Root = { name: 'root', children: [v1Docs, v1Dev] }
+    expect(
+      filterPageTreeByContentDir(tree, ctx, 'dev').children,
+    ).toEqual(v1Dev.children)
   })
 })
