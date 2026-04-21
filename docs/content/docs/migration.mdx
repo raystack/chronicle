@@ -1,0 +1,170 @@
+---
+title: Migration Guide
+description: Upgrade an existing Chronicle project to the multi-content + versioning layout.
+order: 8
+---
+
+# Migration Guide
+
+This guide walks through upgrading a pre-versioning Chronicle project to the new `{site, content[]}` schema and nested content layout.
+
+Chronicle does not ship a `chronicle migrate` command — migration is a small set of manual edits.
+
+## Before & after
+
+### Old
+
+```yaml
+# chronicle.yaml (legacy)
+title: My Docs
+description: Documentation powered by Chronicle
+content: .
+
+theme:
+  name: default
+```
+
+Filesystem:
+
+```
+my-docs/
+├── chronicle.yaml
+├── index.mdx
+├── guide.mdx
+└── api/
+    └── overview.mdx
+```
+
+### New
+
+```yaml
+# chronicle.yaml
+site:
+  title: My Docs
+  description: Documentation powered by Chronicle
+
+content:
+  - dir: docs
+    label: Docs
+
+theme:
+  name: default
+```
+
+Filesystem:
+
+```
+my-docs/
+├── chronicle.yaml
+└── content/
+    └── docs/
+        ├── index.mdx
+        ├── guide.mdx
+        └── api/
+            └── overview.mdx
+```
+
+## Step-by-step
+
+### 1. Move content under `content/<dir>/`
+
+Pick a content dir name (typically `docs`) and move every `.mdx` / `.md` file under `content/<dir>/`. Subfolders are preserved.
+
+```
+git mv index.mdx content/docs/index.mdx
+git mv guide.mdx content/docs/guide.mdx
+git mv api content/docs/api
+```
+
+If cross-links use unprefixed URLs like `/guide`, update them to `/docs/guide` (matching the new content dir).
+
+### 2. Rewrite `chronicle.yaml`
+
+- Move `title` and `description` under `site:`.
+- Replace `content: <string>` with `content:` as a list of `{dir, label}`.
+- Drop the `--content` CLI flag — content location is config-driven now.
+
+```yaml
+site:
+  title: My Docs
+  description: Documentation powered by Chronicle
+
+content:
+  - dir: docs
+    label: Docs
+```
+
+### 3. (Optional) Add more content dirs
+
+Multiple dirs at the top level are supported. Each one becomes its own URL prefix.
+
+```yaml
+content:
+  - dir: docs
+    label: Docs
+  - dir: dev
+    label: Dev Docs
+```
+
+Move files into `content/dev/` alongside `content/docs/`.
+
+### 4. (Optional) Opt into a landing page
+
+By default, `/` 302s to the first content dir's index. Set `latest.landing: true` to show a chromeless landing page listing each content dir.
+
+```yaml
+latest:
+  label: "3.0"
+  landing: true
+```
+
+### 5. (Optional) Add a version
+
+Create `versions/<dir>/<content-dir>/` on disk and declare it in config:
+
+```yaml
+latest:
+  label: "2.0"
+
+versions:
+  - dir: v1
+    label: "1.0"
+    badge:
+      label: deprecated
+      variant: warning
+    content:
+      - dir: docs
+        label: Docs
+```
+
+Filesystem:
+
+```
+my-docs/
+├── content/
+│   └── docs/
+└── versions/
+    └── v1/
+        └── docs/
+```
+
+Old-version URLs are prefixed (`/v1/docs/...`); latest stays unprefixed.
+
+### 6. Run `chronicle dev`
+
+The CLI rebuilds the internal `.content/` mirror automatically on start. No source-tree changes or codegen are needed.
+
+## Reference
+
+- [Configuration](/docs/configuration) — full schema reference.
+- [CLI](/docs/cli) — command list; note that the `--content` flag has been removed.
+
+## Breaking changes summary
+
+| Change | Before | After |
+|--------|--------|-------|
+| Site title | `title:` at root | `site.title` |
+| Site description | `description:` at root | `site.description` |
+| Content location | `content: <string>` (any path) | `content: [{dir, label}]` rooted at `content/` |
+| CLI flag | `--content <path>` | removed (config-driven) |
+| Default landing | Implicit from content count | Explicit `landing: true` on `latest` / `versions[]` |
