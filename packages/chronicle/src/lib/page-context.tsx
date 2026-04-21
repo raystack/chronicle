@@ -67,7 +67,7 @@ function getInitialErrorStatus(
   const route = resolveRoute(pathname, config);
   if (route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage) return null;
   if (route.type === RouteType.Redirect) return null;
-  if (route.type === RouteType.DocsIndex) return 404;
+  if (route.type === RouteType.DocsIndex) return null;
   return 404;
 }
 
@@ -115,7 +115,7 @@ export function PageProvider({
 
     if (route.type !== RouteType.DocsPage) {
       setPage(null);
-      setErrorStatus(route.type === RouteType.DocsIndex ? 404 : null);
+      setErrorStatus(null);
       return () => { cancelled.current = true; };
     }
 

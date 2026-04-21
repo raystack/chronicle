@@ -9,6 +9,7 @@ import { ApiLayout } from '@/pages/ApiLayout';
 import { ApiPage } from '@/pages/ApiPage';
 import { DocsLayout } from '@/pages/DocsLayout';
 import { DocsPage } from '@/pages/DocsPage';
+import { LandingPage } from '@/pages/LandingPage';
 import type { ChronicleConfig } from '@/types';
 import { getThemeConfig } from '@/themes/registry';
 
@@ -22,6 +23,7 @@ export function App() {
     route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage;
   const apiSlug = route.type === RouteType.ApiPage ? route.slug : [];
   const docsSlug = route.type === RouteType.DocsPage ? route.slug : [];
+  const isLanding = route.type === RouteType.DocsIndex;
 
   return (
     <ThemeProvider
@@ -35,7 +37,7 @@ export function App() {
         </ApiLayout>
       ) : (
         <DocsLayout>
-          <DocsPage slug={docsSlug} />
+          {isLanding ? <LandingPage /> : <DocsPage slug={docsSlug} />}
         </DocsLayout>
       )}
     </ThemeProvider>

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { chronicleConfigSchema } from '@/types'
 import {
   getAllVersions,
+  getLandingEntries,
   getLatestContentRoots,
   getVersionContentRoots,
   loadConfig,
@@ -271,6 +272,52 @@ describe('getAllVersions', () => {
   test('returns empty when no latest and no versions', () => {
     const cfg = chronicleConfigSchema.parse(minimal)
     expect(getAllVersions(cfg)).toEqual([])
+  })
+})
+
+describe('getLandingEntries', () => {
+  test('returns labels + unprefixed hrefs for latest', () => {
+    const cfg = chronicleConfigSchema.parse({
+      site: { title: 'x' },
+      content: [
+        { dir: 'docs', label: 'Docs' },
+        { dir: 'dev', label: 'Dev' },
+      ],
+    })
+    expect(getLandingEntries(cfg, null)).toEqual([
+      { label: 'Docs', href: '/docs', contentDir: 'docs' },
+      { label: 'Dev', href: '/dev', contentDir: 'dev' },
+    ])
+  })
+
+  test('returns versioned hrefs for a version', () => {
+    const cfg = chronicleConfigSchema.parse({
+      site: { title: 'x' },
+      content: [{ dir: 'docs', label: 'Docs' }],
+      latest: { label: '3.0' },
+      versions: [
+        {
+          dir: 'v1',
+          label: '1.0',
+          content: [
+            { dir: 'dev', label: 'Developer Guide' },
+            { dir: 'docs', label: 'Docs' },
+          ],
+        },
+      ],
+    })
+    expect(getLandingEntries(cfg, 'v1')).toEqual([
+      { label: 'Developer Guide', href: '/v1/dev', contentDir: 'dev' },
+      { label: 'Docs', href: '/v1/docs', contentDir: 'docs' },
+    ])
+  })
+
+  test('returns empty array for unknown version', () => {
+    const cfg = chronicleConfigSchema.parse({
+      site: { title: 'x' },
+      content: [{ dir: 'docs', label: 'Docs' }],
+    })
+    expect(getLandingEntries(cfg, 'v9')).toEqual([])
   })
 })
 

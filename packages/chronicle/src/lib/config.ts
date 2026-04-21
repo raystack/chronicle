@@ -68,6 +68,28 @@ export interface VersionDescriptor {
   isLatest: boolean
 }
 
+export interface LandingEntry {
+  label: string
+  href: string
+  contentDir: string
+}
+
+export function getLandingEntries(
+  config: ChronicleConfig,
+  versionDir: string | null,
+): LandingEntry[] {
+  const roots =
+    versionDir === null
+      ? getLatestContentRoots(config)
+      : getVersionContentRoots(config, versionDir)
+
+  return roots.map((r) => ({
+    label: r.contentLabel,
+    href: r.urlPrefix,
+    contentDir: r.contentDir,
+  }))
+}
+
 export function getAllVersions(config: ChronicleConfig): VersionDescriptor[] {
   const result: VersionDescriptor[] = []
 
