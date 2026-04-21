@@ -91,6 +91,34 @@ describe('chronicleConfigSchema', () => {
     ).toThrow()
   })
 
+  test('rejects "." or ".." or path-shaped content dir names', () => {
+    for (const dir of ['.', '..', 'foo/bar', 'foo\\bar']) {
+      expect(() =>
+        chronicleConfigSchema.parse({
+          site: { title: 'x' },
+          content: [{ dir, label: 'Docs' }],
+        }),
+      ).toThrow(/simple folder name/)
+    }
+  })
+
+  test('rejects "." or ".." version dir', () => {
+    expect(() =>
+      chronicleConfigSchema.parse({
+        site: { title: 'x' },
+        content: [{ dir: 'docs', label: 'Docs' }],
+        latest: { label: '2.0' },
+        versions: [
+          {
+            dir: '.',
+            label: '1.0',
+            content: [{ dir: 'docs', label: 'Docs' }],
+          },
+        ],
+      }),
+    ).toThrow(/simple folder name/)
+  })
+
   test('rejects versions without latest', () => {
     expect(() =>
       chronicleConfigSchema.parse({

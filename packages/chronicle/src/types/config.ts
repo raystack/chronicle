@@ -79,8 +79,15 @@ const siteSchema = z.object({
   description: z.string().optional(),
 })
 
+const dirNameSchema = z
+  .string()
+  .min(1)
+  .refine((s) => s !== '.' && s !== '..' && !s.includes('/') && !s.includes('\\'), {
+    message: 'dir must be a simple folder name (not ".", "..", or a path)',
+  })
+
 const contentEntrySchema = z.object({
-  dir: z.string().min(1),
+  dir: dirNameSchema,
   label: z.string().min(1),
 })
 
@@ -106,7 +113,7 @@ const latestSchema = z.object({
 })
 
 const versionSchema = z.object({
-  dir: z.string().min(1),
+  dir: dirNameSchema,
   label: z.string().min(1),
   badge: badgeSchema.optional(),
   landing: z.boolean().optional(),
