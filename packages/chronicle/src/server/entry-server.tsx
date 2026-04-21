@@ -8,7 +8,8 @@ import { mdxComponents } from '@/components/mdx';
 import { loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
-import { getPageTree, getPage, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
+import { resolveRoute, RouteType } from '@/lib/route-resolver';
+import { getPage, getPageTreeForVersion, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
 import { useNitroApp } from 'nitro/app';
 import { App } from './App';
 
@@ -19,16 +20,27 @@ export default {
   async fetch(req: Request) {
     const url = new URL(req.url);
     const pathname = url.pathname;
-    const slug = pathname === '/' ? [] : pathname.slice(1).split('/').filter(Boolean);
 
     const config = loadConfig();
-    const apiSpecs = config.api?.length
+    const route = resolveRoute(pathname, config);
+
+    if (route.type === RouteType.Redirect) {
+      return new Response(null, {
+        status: route.status,
+        headers: { Location: route.to },
+      });
+    }
+
+    const isApiRoute = route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage;
+    const pageSlug = route.type === RouteType.DocsPage ? route.slug : [];
+
+    const apiSpecs = isApiRoute && config.api?.length
       ? await loadApiSpecs(config.api).catch(() => [])
       : [];
 
     const [tree, page] = await Promise.all([
-      getPageTree(),
-      getPage(slug),
+      getPageTreeForVersion(route.version),
+      route.type === RouteType.DocsPage ? getPage(route.slug) : Promise.resolve(null),
     ]);
 
     const relativePath = page ? getRelativePath(page) : null;
@@ -37,8 +49,8 @@ export default {
 
     const pageData = page
       ? {
-          slug,
-          frontmatter: extractFrontmatter(page, slug[slug.length - 1]),
+          slug: pageSlug,
+          frontmatter: extractFrontmatter(page, pageSlug[pageSlug.length - 1]),
           content: mdxModule?.default
             ? React.createElement(mdxModule.default, { components: mdxComponents })
             : null,
@@ -49,7 +61,8 @@ export default {
     const embeddedData = {
       config,
       tree,
-      slug,
+      slug: pageSlug,
+      version: route.version,
       frontmatter: pageData?.frontmatter ?? null,
       relativePath,
       originalPath,
@@ -82,6 +95,7 @@ export default {
                   initialTree={tree}
                   initialPage={pageData}
                   initialApiSpecs={apiSpecs}
+                  initialVersion={route.version}
                   loadMdx={async () => ({ content: null, toc: [] })}
                 >
                   <App />
@@ -95,8 +109,9 @@ export default {
 
     const renderDuration = performance.now() - renderStart;
 
-    const isApiRoute = pathname.startsWith('/apis');
-    const status = !page && !isApiRoute && slug.length > 0 ? 404 : 200;
+    const status = route.type === RouteType.DocsPage && !page ? 404
+      : route.type === RouteType.DocsIndex ? 404
+      : 200;
 
     useNitroApp().hooks.callHook('chronicle:ssr-rendered', pathname, status, renderDuration);
 

@@ -7,6 +7,9 @@ import {
 } from 'react';
 import { useLocation } from 'react-router';
 import type { ApiSpec } from '@/lib/openapi';
+import { resolveRoute, RouteType } from '@/lib/route-resolver';
+import type { VersionContext } from '@/lib/version-source';
+import { LATEST_CONTEXT } from '@/lib/version-source';
 import type { ChronicleConfig, Frontmatter, Root, TableOfContents } from '@/types';
 
 export type MdxLoader = (relativePath: string) => Promise<{ content: ReactNode; toc: TableOfContents }>;
@@ -24,6 +27,7 @@ interface PageContextValue {
   page: PageData | null;
   errorStatus: number | null;
   apiSpecs: ApiSpec[];
+  version: VersionContext;
 }
 
 const PageContext = createContext<PageContextValue | null>(null);
@@ -33,11 +37,12 @@ export function usePageContext(): PageContextValue {
   if (!ctx) {
     console.error('usePageContext: no context found!');
     return {
-      config: { title: 'Documentation' },
+      config: { site: { title: 'Documentation' }, content: [{ dir: 'docs', label: 'Docs' }] },
       tree: { name: 'root', children: [] } as Root,
       page: null,
       errorStatus: null,
-      apiSpecs: []
+      apiSpecs: [],
+      version: LATEST_CONTEXT,
     };
   }
   return ctx;
@@ -48,17 +53,21 @@ interface PageProviderProps {
   initialTree: Root;
   initialPage: PageData | null;
   initialApiSpecs: ApiSpec[];
+  initialVersion: VersionContext;
   loadMdx: MdxLoader;
   children: ReactNode;
 }
 
-function isApisRoute(pathname: string): boolean {
-  return pathname === '/apis' || pathname.startsWith('/apis/');
-}
-
-function getInitialErrorStatus(page: PageData | null, pathname: string): number | null {
+function getInitialErrorStatus(
+  page: PageData | null,
+  config: ChronicleConfig,
+  pathname: string,
+): number | null {
   if (page) return null;
-  if (pathname === '/' || isApisRoute(pathname)) return null;
+  const route = resolveRoute(pathname, config);
+  if (route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage) return null;
+  if (route.type === RouteType.Redirect) return null;
+  if (route.type === RouteType.DocsIndex) return 404;
   return 404;
 }
 
@@ -67,39 +76,52 @@ export function PageProvider({
   initialTree,
   initialPage,
   initialApiSpecs,
+  initialVersion,
   loadMdx,
   children
 }: PageProviderProps) {
   const { pathname } = useLocation();
   const [tree] = useState<Root>(initialTree);
   const [page, setPage] = useState<PageData | null>(initialPage);
-  const [errorStatus, setErrorStatus] = useState<number | null>(getInitialErrorStatus(initialPage, pathname));
+  const [errorStatus, setErrorStatus] = useState<number | null>(
+    getInitialErrorStatus(initialPage, initialConfig, pathname),
+  );
   const [apiSpecs, setApiSpecs] = useState<ApiSpec[]>(initialApiSpecs);
+  const [version, setVersion] = useState<VersionContext>(initialVersion);
   const [currentPath, setCurrentPath] = useState(pathname);
 
   useEffect(() => {
     if (pathname === currentPath) return;
     setCurrentPath(pathname);
 
+    const route = resolveRoute(pathname, initialConfig);
+    setVersion(route.version);
+
     const cancelled = { current: false };
 
-    if (isApisRoute(pathname)) {
+    if (route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage) {
       if (apiSpecs.length === 0) {
         fetch('/api/specs')
           .then(res => res.json())
           .then(specs => {
             if (!cancelled.current) setApiSpecs(specs);
           })
-          .catch(() => {});
+          .catch(() => {
+            // swallow — api specs are best-effort on client nav
+          });
       }
       return () => { cancelled.current = true; };
     }
 
-    const slug = pathname === '/'
-      ? []
-      : pathname.slice(1).split('/').filter(Boolean);
+    if (route.type !== RouteType.DocsPage) {
+      setPage(null);
+      setErrorStatus(route.type === RouteType.DocsIndex ? 404 : null);
+      return () => { cancelled.current = true; };
+    }
 
-    const apiPath = slug.length === 0 ? '/api/page' : `/api/page?slug=${slug.join(',')}`;
+    const apiPath = route.slug.length === 0
+      ? '/api/page'
+      : `/api/page?slug=${route.slug.join(',')}`;
 
     fetch(apiPath)
       .then(res => {
@@ -117,7 +139,7 @@ export function PageProvider({
         const { content, toc } = await loadMdx(data.originalPath || data.relativePath);
         if (cancelled.current) return;
         setErrorStatus(null);
-        setPage({ slug, frontmatter: data.frontmatter, content, toc });
+        setPage({ slug: route.slug, frontmatter: data.frontmatter, content, toc });
       })
       .catch(() => {
         if (!cancelled.current) {
@@ -131,7 +153,7 @@ export function PageProvider({
 
   return (
     <PageContext.Provider
-      value={{ config: initialConfig, tree, page, errorStatus, apiSpecs }}
+      value={{ config: initialConfig, tree, page, errorStatus, apiSpecs, version }}
     >
       {children}
     </PageContext.Provider>
