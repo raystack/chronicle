@@ -45,8 +45,9 @@ async function mirrorTree(source: string, dest: string): Promise<void> {
   let entries: import('node:fs').Dirent[];
   try {
     entries = await fs.readdir(source, { withFileTypes: true });
-  } catch {
-    return;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+    throw error;
   }
   await fs.mkdir(dest, { recursive: true });
   for (const entry of entries) {
@@ -68,7 +69,8 @@ async function removeMirror(mirrorRoot: string): Promise<void> {
     } else if (stat.isDirectory()) {
       await fs.rm(mirrorRoot, { recursive: true, force: true });
     }
-  } catch {
-    // mirror doesn't exist
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+    throw error;
   }
 }

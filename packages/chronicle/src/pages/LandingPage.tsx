@@ -1,3 +1,4 @@
+import { Link as RouterLink } from 'react-router';
 import { getLandingEntries } from '@/lib/config';
 import { usePageContext } from '@/lib/page-context';
 import styles from './LandingPage.module.css';
@@ -18,10 +19,10 @@ export function LandingPage() {
       ) : null}
       <div className={styles.grid}>
         {entries.map((entry) => (
-          <a key={entry.href} href={entry.href} className={styles.card}>
+          <RouterLink key={entry.href} to={entry.href} className={styles.card}>
             <span className={styles.cardLabel}>{entry.label}</span>
             <span className={styles.cardHref}>{entry.href}</span>
-          </a>
+          </RouterLink>
         ))}
       </div>
     </div>

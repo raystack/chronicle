@@ -1,4 +1,5 @@
 import type { ChronicleConfig } from '@/types'
+import { getLatestContentRoots, getVersionContentRoots } from './config'
 import { type VersionContext, resolveVersionFromUrl } from './version-source'
 
 export const RouteType = {
@@ -22,9 +23,12 @@ function contentDirsFor(
   config: ChronicleConfig,
   version: VersionContext,
 ): string[] {
-  if (version.dir === null) return config.content.map((c) => c.dir)
-  const v = config.versions?.find((x) => x.dir === version.dir)
-  return v?.content.map((c) => c.dir) ?? []
+  if (version.dir === null) {
+    return getLatestContentRoots(config).map((root) => root.contentDir)
+  }
+  return getVersionContentRoots(config, version.dir).map(
+    (root) => root.contentDir,
+  )
 }
 
 function isLandingEnabled(

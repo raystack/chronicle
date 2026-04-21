@@ -103,6 +103,8 @@ export function PageProvider({
     const cancelled = { current: false };
 
     if (route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage) {
+      setPage(null);
+      setErrorStatus(null);
       const specsUrl = route.version.dir
         ? `/api/specs?version=${encodeURIComponent(route.version.dir)}`
         : '/api/specs';

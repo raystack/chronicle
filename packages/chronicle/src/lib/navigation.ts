@@ -1,5 +1,9 @@
 import type { ChronicleConfig } from '@/types'
-import { getLandingEntries } from './config'
+import {
+  getLandingEntries,
+  getLatestContentRoots,
+  getVersionContentRoots,
+} from './config'
 import { resolveVersionFromUrl } from './version-source'
 
 export function getActiveContentDir(
@@ -16,10 +20,10 @@ export function getActiveContentDir(
 
   const dirs =
     version.dir === null
-      ? config.content.map((c) => c.dir)
-      : config.versions?.find((v) => v.dir === version.dir)?.content.map(
-          (c) => c.dir,
-        ) ?? []
+      ? getLatestContentRoots(config).map((root) => root.contentDir)
+      : getVersionContentRoots(config, version.dir).map(
+          (root) => root.contentDir,
+        )
 
   return dirs.includes(remainder[0]) ? remainder[0] : null
 }
