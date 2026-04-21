@@ -3,6 +3,13 @@ import type { Root, Node, Folder } from 'fumadocs-core/page-tree';
 import type { MDXContent } from 'mdx/types';
 import type { TableOfContents } from 'fumadocs-core/toc';
 import type { Frontmatter } from '@/types';
+import { loadConfig } from './config';
+import {
+  filterPagesByVersion,
+  filterPageTreeByVersion,
+  resolveVersionFromUrl,
+  type VersionContext,
+} from './version-source';
 
 const CONTENT_PREFIX = '../../.content/';
 
@@ -104,6 +111,22 @@ export async function getPage(slugs?: string[]) {
   const s = await getSource();
   return s.getPage(slugs);
 }
+
+export async function getPageTreeForVersion(ctx: VersionContext): Promise<Root> {
+  const tree = await getPageTree();
+  return filterPageTreeByVersion(tree, ctx, loadConfig());
+}
+
+export async function getPagesForVersion(ctx: VersionContext) {
+  const pages = await getPages();
+  return filterPagesByVersion(pages, ctx, loadConfig());
+}
+
+export function getVersionContextForUrl(url: string): VersionContext {
+  return resolveVersionFromUrl(url, loadConfig());
+}
+
+export type { VersionContext } from './version-source';
 
 export function extractFrontmatter(page: { data: unknown }, fallbackTitle?: string): Frontmatter {
   const d = page.data as Record<string, unknown>;
