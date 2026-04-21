@@ -1,0 +1,42 @@
+site:
+  title: Versioned Example
+  description: Multi-content + multi-version sample
+
+theme:
+  name: default
+
+content:
+  - dir: docs
+    label: Docs
+  - dir: dev
+    label: Dev Docs
+
+latest:
+  label: "3.0"
+  landing: true
+
+versions:
+  - dir: v2
+    label: "2.0"
+    content:
+      - dir: docs
+        label: Docs
+
+  - dir: v1
+    label: "1.0"
+    landing: true
+    badge:
+      label: deprecated
+      variant: warning
+    content:
+      - dir: dev
+        label: Developer Guide
+      - dir: docs
+        label: Docs
+
+search:
+  enabled: true
+  placeholder: Search...
+
+llms:
+  enabled: true
