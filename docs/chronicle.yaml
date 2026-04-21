@@ -24,6 +24,8 @@ llms:
 telemetry:
   enabled: true
 
+preset: "vercel"
+
 footer:
   copyright: "© 2026 Raystack. All rights reserved."
   links:
