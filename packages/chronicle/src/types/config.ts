@@ -79,11 +79,14 @@ const siteSchema = z.object({
   description: z.string().optional(),
 })
 
+const DIR_NAME_PATTERN = /^[a-zA-Z0-9][a-zA-Z0-9._-]*$/
+
 const dirNameSchema = z
   .string()
   .min(1)
-  .refine((s) => s !== '.' && s !== '..' && !s.includes('/') && !s.includes('\\'), {
-    message: 'dir must be a simple folder name (not ".", "..", or a path)',
+  .refine((s) => DIR_NAME_PATTERN.test(s) && s !== '.' && s !== '..', {
+    message:
+      'dir must start with a letter or digit and contain only letters, digits, ".", "_", or "-"',
   })
 
 const contentEntrySchema = z.object({

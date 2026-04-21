@@ -1,5 +1,5 @@
 import MiniSearch from 'minisearch';
-import { defineHandler } from 'nitro';
+import { defineHandler, HTTPError } from 'nitro';
 import type { OpenAPIV3 } from 'openapi-types';
 import { getSpecSlug } from '@/lib/api-routes';
 import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
@@ -108,7 +108,12 @@ function resolveCtx(tag: string | null): VersionContext {
   if (!tag) return LATEST_CONTEXT;
   const config = loadConfig();
   const version = config.versions?.find(v => v.dir === tag);
-  if (!version) return LATEST_CONTEXT;
+  if (!version) {
+    throw new HTTPError({
+      status: 400,
+      message: `Unknown version tag: ${tag}`,
+    });
+  }
   return { dir: version.dir, urlPrefix: `/${version.dir}` };
 }
 

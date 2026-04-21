@@ -45,9 +45,14 @@ describe('runInit', () => {
 
   test('does not overwrite an index.mdx already present in content/docs', () => {
     fs.mkdirSync(path.join(tmp, 'content/docs'), { recursive: true })
-    fs.writeFileSync(path.join(tmp, 'content/docs/existing.mdx'), '# Keep')
+    const existing = '---\ntitle: Keep\n---\n# Keep\n'
+    fs.writeFileSync(path.join(tmp, 'content/docs/index.mdx'), existing)
     runInit(tmp)
-    expect(fs.existsSync(path.join(tmp, 'content/docs/index.mdx'))).toBe(false)
+    const contents = fs.readFileSync(
+      path.join(tmp, 'content/docs/index.mdx'),
+      'utf-8',
+    )
+    expect(contents).toBe(existing)
   })
 
   test('appends missing entries to an existing .gitignore', () => {

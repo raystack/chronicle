@@ -25,6 +25,8 @@ export default {
     const route = resolveRoute(pathname, config);
 
     if (route.type === RouteType.Redirect) {
+      // biome-ignore lint/correctness/useHookAtTopLevel: useNitroApp is a Nitro DI accessor, not a React hook
+      useNitroApp().hooks.callHook('chronicle:ssr-rendered', pathname, route.status, 0);
       return new Response(null, {
         status: route.status,
         headers: { Location: route.to },

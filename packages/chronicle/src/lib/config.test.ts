@@ -91,14 +91,26 @@ describe('chronicleConfigSchema', () => {
     ).toThrow()
   })
 
-  test('rejects "." or ".." or path-shaped content dir names', () => {
-    for (const dir of ['.', '..', 'foo/bar', 'foo\\bar']) {
+  test('rejects invalid dir names (hidden, path-shaped, whitespace)', () => {
+    const bad = ['.', '..', 'foo/bar', 'foo\\bar', '.hidden', ' docs', 'docs ', 'do cs', '']
+    for (const dir of bad) {
       expect(() =>
         chronicleConfigSchema.parse({
           site: { title: 'x' },
           content: [{ dir, label: 'Docs' }],
         }),
-      ).toThrow(/simple folder name/)
+      ).toThrow()
+    }
+  })
+
+  test('accepts standard dir names (letters, digits, dash, underscore)', () => {
+    for (const dir of ['docs', 'dev-docs', 'v1', 'v1_beta', 'api2']) {
+      expect(() =>
+        chronicleConfigSchema.parse({
+          site: { title: 'x' },
+          content: [{ dir, label: 'x' }],
+        }),
+      ).not.toThrow()
     }
   })
 
@@ -157,7 +169,7 @@ describe('chronicleConfigSchema', () => {
           },
         ],
       }),
-    ).toThrow(/simple folder name/)
+    ).toThrow()
   })
 
   test('rejects versions without latest', () => {
