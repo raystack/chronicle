@@ -1,4 +1,4 @@
-import uniqBy from 'lodash/uniqBy'
+import uniqBy from 'lodash/uniqBy.js'
 import { z } from 'zod'
 
 const logoSchema = z.object({
@@ -76,6 +76,7 @@ const telemetrySchema = z.object({
 
 const siteSchema = z.object({
   title: z.string(),
+  description: z.string().optional(),
 })
 
 const contentEntrySchema = z.object({
@@ -117,7 +118,6 @@ const allUnique = <T>(items: T[], key: (item: T) => string): boolean =>
 export const chronicleConfigSchema = z
   .object({
     site: siteSchema,
-    description: z.string().optional(),
     url: z.string().optional(),
     content: z.array(contentEntrySchema).min(1),
     latest: latestSchema.optional(),

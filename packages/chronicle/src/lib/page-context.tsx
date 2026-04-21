@@ -37,7 +37,10 @@ export function usePageContext(): PageContextValue {
   if (!ctx) {
     console.error('usePageContext: no context found!');
     return {
-      config: { site: { title: 'Documentation' }, content: [{ dir: 'docs', label: 'Docs' }] },
+      config: {
+        site: { title: 'Documentation' },
+        content: [{ dir: 'docs', label: 'Docs' }],
+      },
       tree: { name: 'root', children: [] } as Root,
       page: null,
       errorStatus: null,

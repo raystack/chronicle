@@ -48,7 +48,7 @@ function RootHead({ config }: { config: ChronicleConfig }) {
   return (
     <Head
       title={config.site.title}
-      description={config.description}
+      description={config.site.description}
       config={config}
       jsonLd={
         config.url
@@ -56,7 +56,7 @@ function RootHead({ config }: { config: ChronicleConfig }) {
               '@context': 'https://schema.org',
               '@type': 'WebSite',
               name: config.site.title,
-              description: config.description,
+              description: config.site.description,
               url: config.url
             }
           : undefined

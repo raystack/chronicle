@@ -6,8 +6,10 @@ import { stringify } from 'yaml';
 import type { ChronicleConfig } from '@/types';
 
 const defaultConfig: ChronicleConfig = {
-  site: { title: 'My Documentation' },
-  description: 'Documentation powered by Chronicle',
+  site: {
+    title: 'My Documentation',
+    description: 'Documentation powered by Chronicle',
+  },
   content: [{ dir: 'docs', label: 'Docs' }],
   theme: { name: 'default' },
   search: { enabled: true, placeholder: 'Search documentation...' }

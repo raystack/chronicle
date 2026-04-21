@@ -13,8 +13,8 @@ export function LandingPage() {
   return (
     <div className={styles.root}>
       <h1 className={styles.title}>{heading}</h1>
-      {config.description ? (
-        <p className={styles.description}>{config.description}</p>
+      {config.site.description ? (
+        <p className={styles.description}>{config.site.description}</p>
       ) : null}
       <div className={styles.grid}>
         {entries.map((entry) => (

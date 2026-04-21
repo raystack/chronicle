@@ -16,7 +16,7 @@ export function buildLlmsTxt(
     ? `# ${config.site.title} — ${versionLabel}`
     : `# ${config.site.title}`
 
-  const description = config.description ?? ''
+  const description = config.site.description ?? ''
 
   const index = pages
     .map((p) => {
