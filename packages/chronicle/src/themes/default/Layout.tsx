@@ -35,6 +35,7 @@ export function Layout({
   children,
   config,
   tree,
+  hideSidebar,
   classNames
 }: ThemeLayoutProps) {
   const { pathname } = useLocation();
@@ -95,21 +96,23 @@ export function Layout({
         </Navbar.End>
       </Navbar>
       <Flex className={cx(styles.body, classNames?.body)}>
-        <Sidebar
-          defaultOpen
-          collapsible={false}
-          className={cx(styles.sidebar, classNames?.sidebar)}
-        >
-          <Sidebar.Main ref={scrollRef}>
-            {tree.children.map((item, i) => (
-              <SidebarNode
-                key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
-                item={item}
-                pathname={pathname}
-              />
-            ))}
-          </Sidebar.Main>
-        </Sidebar>
+        {hideSidebar ? null : (
+          <Sidebar
+            defaultOpen
+            collapsible={false}
+            className={cx(styles.sidebar, classNames?.sidebar)}
+          >
+            <Sidebar.Main ref={scrollRef}>
+              {tree.children.map((item, i) => (
+                <SidebarNode
+                  key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
+                  item={item}
+                  pathname={pathname}
+                />
+              ))}
+            </Sidebar.Main>
+          </Sidebar>
+        )}
         <main className={cx(styles.content, classNames?.content)}>
           {children}
         </main>

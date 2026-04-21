@@ -7,6 +7,7 @@ export interface ThemeLayoutProps {
   children: ReactNode
   config: ChronicleConfig
   tree: Root
+  hideSidebar?: boolean
   classNames?: { layout?: string; body?: string; sidebar?: string; content?: string }
 }
 
