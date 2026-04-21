@@ -5,7 +5,9 @@ import { cx } from 'class-variance-authority';
 import { Footer } from '@/components/ui/footer';
 import type { ThemeLayoutProps } from '@/types';
 import { ChapterNav } from './ChapterNav';
+import { ContentDirDropdown } from './ContentDirDropdown';
 import styles from './Layout.module.css';
+import { VersionSwitcher } from './VersionSwitcher';
 
 export function Layout({
   children,
@@ -25,6 +27,10 @@ export function Layout({
           >
             {config.site.title}
           </Headline>
+          <div className={styles.nav}>
+            <VersionSwitcher />
+            <ContentDirDropdown />
+          </div>
           <ChapterNav tree={tree} />
         </aside>
         <div className={cx(styles.content, classNames?.content)}>
