@@ -6,6 +6,7 @@ import { useDocsSearch } from 'fumadocs-core/search/client';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
+import { usePageContext } from '@/lib/page-context';
 import styles from './search.module.css';
 
 function SearchShortcutKey({ className }: { className?: string }) {
@@ -30,10 +31,12 @@ interface SearchProps {
 export function Search({ className }: SearchProps) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
+  const { version } = usePageContext();
 
   const { search, setSearch, query } = useDocsSearch({
     type: 'fetch',
     api: '/api/search',
+    tag: version.dir ?? undefined,
     delayMs: 100,
     allowEmpty: true
   });

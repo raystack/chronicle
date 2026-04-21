@@ -2,9 +2,10 @@ import MiniSearch from 'minisearch';
 import { defineHandler } from 'nitro';
 import type { OpenAPIV3 } from 'openapi-types';
 import { getSpecSlug } from '@/lib/api-routes';
-import { loadConfig } from '@/lib/config';
+import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
-import { getPages, extractFrontmatter } from '@/lib/source';
+import { extractFrontmatter, getPagesForVersion } from '@/lib/source';
+import { LATEST_CONTEXT, type VersionContext } from '@/lib/version-source';
 
 interface SearchDocument {
   id: string;
@@ -14,8 +15,12 @@ interface SearchDocument {
   type: 'page' | 'api';
 }
 
-let searchIndex: MiniSearch<SearchDocument> | null = null;
-let cachedDocs: SearchDocument[] | null = null;
+const indexCache = new Map<string, MiniSearch<SearchDocument>>();
+const docsCache = new Map<string, SearchDocument[]>();
+
+function keyFor(ctx: VersionContext): string {
+  return ctx.dir ?? '__latest__';
+}
 
 function createIndex(docs: SearchDocument[]): MiniSearch<SearchDocument> {
   const index = new MiniSearch<SearchDocument>({
@@ -31,8 +36,8 @@ function createIndex(docs: SearchDocument[]): MiniSearch<SearchDocument> {
   return index;
 }
 
-async function scanContent(): Promise<SearchDocument[]> {
-  const pages = await getPages();
+async function scanContent(ctx: VersionContext): Promise<SearchDocument[]> {
+  const pages = await getPagesForVersion(ctx);
   return pages.map(p => {
     const fm = extractFrontmatter(p);
     return {
@@ -45,12 +50,13 @@ async function scanContent(): Promise<SearchDocument[]> {
   });
 }
 
-async function buildApiDocs(): Promise<SearchDocument[]> {
+async function buildApiDocs(ctx: VersionContext): Promise<SearchDocument[]> {
   const config = loadConfig();
-  if (!config.api?.length) return [];
+  const apiConfigs = getApiConfigsForVersion(config, ctx.dir);
+  if (!apiConfigs.length) return [];
 
   const docs: SearchDocument[] = [];
-  const specs = await loadApiSpecs(config.api);
+  const specs = await loadApiSpecs(apiConfigs);
 
   for (const spec of specs) {
     const specSlug = getSpecSlug(spec);
@@ -60,7 +66,7 @@ async function buildApiDocs(): Promise<SearchDocument[]> {
       for (const method of ['get', 'post', 'put', 'delete', 'patch'] as const) {
         const op = pathItem[method] as OpenAPIV3.OperationObject | undefined;
         if (!op?.operationId) continue;
-        const url = `/apis/${specSlug}/${encodeURIComponent(op.operationId)}`;
+        const url = `${ctx.urlPrefix}/apis/${specSlug}/${encodeURIComponent(op.operationId)}`;
         docs.push({
           id: url,
           url,
@@ -75,29 +81,45 @@ async function buildApiDocs(): Promise<SearchDocument[]> {
   return docs;
 }
 
-async function getDocs(): Promise<SearchDocument[]> {
-  if (cachedDocs) return cachedDocs;
+async function getDocs(ctx: VersionContext): Promise<SearchDocument[]> {
+  const key = keyFor(ctx);
+  const cached = docsCache.get(key);
+  if (cached) return cached;
   const [contentDocs, apiDocs] = await Promise.all([
-    scanContent(),
-    buildApiDocs()
+    scanContent(ctx),
+    buildApiDocs(ctx)
   ]);
-  cachedDocs = [...contentDocs, ...apiDocs];
-  return cachedDocs;
+  const docs = [...contentDocs, ...apiDocs];
+  docsCache.set(key, docs);
+  return docs;
 }
 
-async function getIndex(): Promise<MiniSearch<SearchDocument>> {
-  if (searchIndex) return searchIndex;
-  const docs = await getDocs();
-  searchIndex = createIndex(docs);
-  return searchIndex;
+async function getIndex(ctx: VersionContext): Promise<MiniSearch<SearchDocument>> {
+  const key = keyFor(ctx);
+  const cached = indexCache.get(key);
+  if (cached) return cached;
+  const docs = await getDocs(ctx);
+  const index = createIndex(docs);
+  indexCache.set(key, index);
+  return index;
+}
+
+function resolveCtx(tag: string | null): VersionContext {
+  if (!tag) return LATEST_CONTEXT;
+  const config = loadConfig();
+  const version = config.versions?.find(v => v.dir === tag);
+  if (!version) return LATEST_CONTEXT;
+  return { dir: version.dir, urlPrefix: `/${version.dir}` };
 }
 
 export default defineHandler(async event => {
   const query = event.url.searchParams.get('query') ?? '';
-  const index = await getIndex();
+  const tag = event.url.searchParams.get('tag');
+  const ctx = resolveCtx(tag);
+  const index = await getIndex(ctx);
 
   if (!query) {
-    const docs = await getDocs();
+    const docs = await getDocs(ctx);
     return docs
       .filter(d => d.type === 'page')
       .slice(0, 8)
