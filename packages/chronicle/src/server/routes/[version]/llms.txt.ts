@@ -2,7 +2,6 @@ import { defineHandler, HTTPError } from 'nitro';
 import { loadConfig } from '@/lib/config';
 import { buildLlmsTxt } from '@/lib/llms';
 import { extractFrontmatter, getPagesForVersion } from '@/lib/source';
-import { LATEST_CONTEXT } from '@/lib/version-source';
 
 export default defineHandler(async event => {
   const config = loadConfig();
@@ -11,11 +10,18 @@ export default defineHandler(async event => {
     throw new HTTPError({ status: 404, message: 'Not Found' });
   }
 
-  const pages = await getPagesForVersion(LATEST_CONTEXT);
+  const versionDir = event.params?.version;
+  const version = config.versions?.find(v => v.dir === versionDir);
+  if (!version) {
+    throw new HTTPError({ status: 404, message: 'Not Found' });
+  }
+
+  const ctx = { dir: version.dir, urlPrefix: `/${version.dir}` };
+  const pages = await getPagesForVersion(ctx);
   const body = buildLlmsTxt(
     config,
     pages.map(p => ({ url: p.url, title: extractFrontmatter(p).title })),
-    LATEST_CONTEXT,
+    ctx,
   );
 
   event.res.headers.set('Content-Type', 'text/plain');

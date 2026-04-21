@@ -22,9 +22,9 @@ async function loadFont(): Promise<ArrayBuffer> {
 
 export default defineHandler(async event => {
   const config = loadConfig();
-  const title = event.url.searchParams.get('title') ?? config.title;
+  const title = event.url.searchParams.get('title') ?? config.site.title;
   const description = event.url.searchParams.get('description') ?? '';
-  const siteName = config.title;
+  const siteName = config.site.title;
 
   const font = await loadFont();
 
