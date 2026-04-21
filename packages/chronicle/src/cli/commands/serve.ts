@@ -1,4 +1,3 @@
-import path from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { loadCLIConfig } from '@/cli/utils/config';
@@ -15,16 +14,16 @@ export const serveCommand = new Command('serve')
     'Deploy preset (vercel, cloudflare, node-server)'
   )
   .action(async options => {
-    const { projectRoot, configPath, preset } = await loadCLIConfig(options.config, {
+    const { config, projectRoot, configPath, preset } = await loadCLIConfig(options.config, {
       preset: options.preset,
     });
     const port = parseInt(options.port, 10);
-    await linkContent(path.join(projectRoot, 'content'));
+    await linkContent(projectRoot, config);
 
     const { build, preview } = await import('vite');
     const { createViteConfig } = await import('@/server/vite-config');
 
-    const config = await createViteConfig({
+    const viteConfig = await createViteConfig({
       packageRoot: PACKAGE_ROOT,
       projectRoot,
       configPath,
@@ -32,11 +31,11 @@ export const serveCommand = new Command('serve')
     });
 
     console.log(chalk.cyan('Building for production...'));
-    await build(config);
+    await build(viteConfig);
 
     console.log(chalk.cyan('Starting production server...'));
     const server = await preview({
-      ...config,
+      ...viteConfig,
       preview: { port, host: options.host }
     });
 
