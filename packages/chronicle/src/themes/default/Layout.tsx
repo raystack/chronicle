@@ -16,7 +16,9 @@ import { Footer } from '@/components/ui/footer';
 import { Search } from '@/components/ui/search';
 import type { Node } from 'fumadocs-core/page-tree';
 import type { ThemeLayoutProps } from '@/types';
+import { ContentDirButtons } from './ContentDirButtons';
 import styles from './Layout.module.css';
+import { VersionSwitcher } from './VersionSwitcher';
 
 const iconMap: Record<string, React.ReactNode> = {
   'rectangle-stack': <RectangleStackIcon width={16} height={16} />,
@@ -71,6 +73,8 @@ export function Layout({
         </Navbar.Start>
         <Navbar.End>
           <Flex gap='medium' align='center' className={styles.navActions}>
+            <ContentDirButtons />
+            <VersionSwitcher />
             {config.api?.map(api => (
               <RouterLink
                 key={api.basePath}
