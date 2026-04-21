@@ -73,24 +73,102 @@ const telemetrySchema = z.object({
   port: z.number().int().min(1).max(65535).default(9090),
 })
 
-export const chronicleConfigSchema = z.object({
+const siteSchema = z.object({
   title: z.string(),
-  description: z.string().optional(),
-  url: z.string().optional(),
-  content: z.string().optional(),
-  preset: z.string().optional(),
-  logo: logoSchema.optional(),
-  theme: themeSchema.optional(),
-  navigation: navigationSchema.optional(),
-  search: searchSchema.optional(),
-  footer: footerSchema.optional(),
-  api: z.array(apiSchema).optional(),
-  llms: llmsSchema.optional(),
-  analytics: analyticsSchema.optional(),
-  telemetry: telemetrySchema.optional(),
 })
 
+const contentEntrySchema = z.object({
+  dir: z.string().min(1),
+  label: z.string().min(1),
+})
+
+// Variants map to Apsara Badge color prop.
+// https://apsara.raystack.org/docs/components/badge
+const badgeVariantSchema = z.enum([
+  'accent',
+  'warning',
+  'danger',
+  'success',
+  'neutral',
+  'gradient',
+])
+
+const badgeSchema = z.object({
+  label: z.string().min(1),
+  variant: badgeVariantSchema.default('accent'),
+})
+
+const latestSchema = z.object({
+  label: z.string().min(1),
+})
+
+const versionSchema = z.object({
+  dir: z.string().min(1),
+  label: z.string().min(1),
+  badge: badgeSchema.optional(),
+  content: z.array(contentEntrySchema).min(1),
+  api: z.array(apiSchema).optional(),
+})
+
+const uniqueBy = <T>(items: T[], key: (item: T) => string): boolean => {
+  const seen = new Set<string>()
+  for (const item of items) {
+    const k = key(item)
+    if (seen.has(k)) return false
+    seen.add(k)
+  }
+  return true
+}
+
+export const chronicleConfigSchema = z
+  .object({
+    site: siteSchema,
+    description: z.string().optional(),
+    url: z.string().optional(),
+    content: z.array(contentEntrySchema).min(1),
+    latest: latestSchema.optional(),
+    versions: z.array(versionSchema).optional(),
+    preset: z.string().optional(),
+    logo: logoSchema.optional(),
+    theme: themeSchema.optional(),
+    navigation: navigationSchema.optional(),
+    search: searchSchema.optional(),
+    footer: footerSchema.optional(),
+    api: z.array(apiSchema).optional(),
+    llms: llmsSchema.optional(),
+    analytics: analyticsSchema.optional(),
+    telemetry: telemetrySchema.optional(),
+  })
+  .strict()
+  .refine((cfg) => uniqueBy(cfg.content, (c) => c.dir), {
+    message: 'content[].dir must be unique',
+    path: ['content'],
+  })
+  .refine((cfg) => !cfg.versions || uniqueBy(cfg.versions, (v) => v.dir), {
+    message: 'versions[].dir must be unique',
+    path: ['versions'],
+  })
+  .refine(
+    (cfg) =>
+      !cfg.versions ||
+      cfg.versions.every((v) => uniqueBy(v.content, (c) => c.dir)),
+    {
+      message: 'versions[].content[].dir must be unique within each version',
+      path: ['versions'],
+    },
+  )
+  .refine((cfg) => !cfg.versions || cfg.versions.length === 0 || !!cfg.latest, {
+    message: 'latest is required when versions are declared',
+    path: ['latest'],
+  })
+
 export type ChronicleConfig = z.infer<typeof chronicleConfigSchema>
+export type SiteConfig = z.infer<typeof siteSchema>
+export type ContentEntry = z.infer<typeof contentEntrySchema>
+export type BadgeConfig = z.infer<typeof badgeSchema>
+export type BadgeVariant = z.infer<typeof badgeVariantSchema>
+export type LatestConfig = z.infer<typeof latestSchema>
+export type VersionConfig = z.infer<typeof versionSchema>
 export type LogoConfig = z.infer<typeof logoSchema>
 export type ThemeConfig = z.infer<typeof themeSchema>
 export type NavigationConfig = z.infer<typeof navigationSchema>
