@@ -1,3 +1,4 @@
+import uniqBy from 'lodash/uniqBy'
 import { z } from 'zod'
 
 const logoSchema = z.object({
@@ -110,15 +111,8 @@ const versionSchema = z.object({
   api: z.array(apiSchema).optional(),
 })
 
-const uniqueBy = <T>(items: T[], key: (item: T) => string): boolean => {
-  const seen = new Set<string>()
-  for (const item of items) {
-    const k = key(item)
-    if (seen.has(k)) return false
-    seen.add(k)
-  }
-  return true
-}
+const allUnique = <T>(items: T[], key: (item: T) => string): boolean =>
+  uniqBy(items, key).length === items.length
 
 export const chronicleConfigSchema = z
   .object({
@@ -140,18 +134,18 @@ export const chronicleConfigSchema = z
     telemetry: telemetrySchema.optional(),
   })
   .strict()
-  .refine((cfg) => uniqueBy(cfg.content, (c) => c.dir), {
+  .refine((cfg) => allUnique(cfg.content, (c) => c.dir), {
     message: 'content[].dir must be unique',
     path: ['content'],
   })
-  .refine((cfg) => !cfg.versions || uniqueBy(cfg.versions, (v) => v.dir), {
+  .refine((cfg) => !cfg.versions || allUnique(cfg.versions, (v) => v.dir), {
     message: 'versions[].dir must be unique',
     path: ['versions'],
   })
   .refine(
     (cfg) =>
       !cfg.versions ||
-      cfg.versions.every((v) => uniqueBy(v.content, (c) => c.dir)),
+      cfg.versions.every((v) => allUnique(v.content, (c) => c.dir)),
     {
       message: 'versions[].content[].dir must be unique within each version',
       path: ['versions'],
