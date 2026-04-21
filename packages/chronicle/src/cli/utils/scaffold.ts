@@ -13,9 +13,9 @@ export async function buildContentMirror(
   await fs.mkdir(mirrorRoot, { recursive: true });
 
   for (const root of getLatestContentRoots(config)) {
-    const target = path.resolve(projectRoot, root.fsPath);
-    const linkPath = path.join(mirrorRoot, root.contentDir);
-    await fs.symlink(target, linkPath);
+    const source = path.resolve(projectRoot, root.fsPath);
+    const dest = path.join(mirrorRoot, root.contentDir);
+    await mirrorTree(source, dest);
   }
 
   for (const version of config.versions ?? []) {
@@ -23,9 +23,9 @@ export async function buildContentMirror(
     await fs.mkdir(versionMirror, { recursive: true });
 
     for (const root of getVersionContentRoots(config, version.dir)) {
-      const target = path.resolve(projectRoot, root.fsPath);
-      const linkPath = path.join(versionMirror, root.contentDir);
-      await fs.symlink(target, linkPath);
+      const source = path.resolve(projectRoot, root.fsPath);
+      const dest = path.join(versionMirror, root.contentDir);
+      await mirrorTree(source, dest);
     }
   }
 }
@@ -39,6 +39,25 @@ export function linkContent(
     projectRoot,
     config,
   );
+}
+
+async function mirrorTree(source: string, dest: string): Promise<void> {
+  let entries: import('node:fs').Dirent[];
+  try {
+    entries = await fs.readdir(source, { withFileTypes: true });
+  } catch {
+    return;
+  }
+  await fs.mkdir(dest, { recursive: true });
+  for (const entry of entries) {
+    const sourcePath = path.join(source, entry.name);
+    const destPath = path.join(dest, entry.name);
+    if (entry.isDirectory()) {
+      await mirrorTree(sourcePath, destPath);
+    } else if (entry.isFile() || entry.isSymbolicLink()) {
+      await fs.symlink(sourcePath, destPath);
+    }
+  }
 }
 
 async function removeMirror(mirrorRoot: string): Promise<void> {
