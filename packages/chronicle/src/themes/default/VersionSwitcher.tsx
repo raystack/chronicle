@@ -1,5 +1,5 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { Badge, Button, Flex, Menu } from '@raystack/apsara';
+import { Badge, Button, DropdownMenu, Flex } from '@raystack/apsara';
 import { useNavigate } from 'react-router';
 import { getAllVersions } from '@/lib/config';
 import { getVersionHomeHref } from '@/lib/navigation';
@@ -17,29 +17,27 @@ export function VersionSwitcher() {
   );
 
   return (
-    <Menu>
-      <Menu.Trigger
-        render={
-          <Button
-            size='small'
-            variant='outline'
-            color='neutral'
-            trailingIcon={<ChevronDownIcon width={14} height={14} />}
-          />
-        }
-      >
-        <Flex gap='small' align='center'>
-          {active?.label ?? 'Version'}
-          {active?.badge ? (
-            <Badge variant={active.badge.variant} size='micro'>
-              {active.badge.label}
-            </Badge>
-          ) : null}
-        </Flex>
-      </Menu.Trigger>
-      <Menu.Content>
+    <DropdownMenu>
+      <DropdownMenu.Trigger asChild>
+        <Button
+          size='small'
+          variant='outline'
+          color='neutral'
+          trailingIcon={<ChevronDownIcon width={14} height={14} />}
+        >
+          <Flex gap='small' align='center'>
+            {active?.label ?? 'Version'}
+            {active?.badge ? (
+              <Badge variant={active.badge.variant} size='micro'>
+                {active.badge.label}
+              </Badge>
+            ) : null}
+          </Flex>
+        </Button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content>
         {versions.map(v => (
-          <Menu.Item
+          <DropdownMenu.Item
             key={v.dir ?? '_latest'}
             onClick={() => navigate(getVersionHomeHref(config, v.dir))}
           >
@@ -51,9 +49,9 @@ export function VersionSwitcher() {
                 </Badge>
               ) : null}
             </Flex>
-          </Menu.Item>
+          </DropdownMenu.Item>
         ))}
-      </Menu.Content>
-    </Menu>
+      </DropdownMenu.Content>
+    </DropdownMenu>
   );
 }

@@ -1,5 +1,5 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { Button, Flex, Menu } from '@raystack/apsara';
+import { Button, DropdownMenu, Flex } from '@raystack/apsara';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
 import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir, splitContentButtons } from '@/lib/navigation';
@@ -36,30 +36,28 @@ export function ContentDirButtons() {
         </RouterLink>
       ))}
       {overflow.length > 0 ? (
-        <Menu>
-          <Menu.Trigger
-            render={
-              <Button
-                size='small'
-                variant='outline'
-                color='neutral'
-                trailingIcon={<ChevronDownIcon width={14} height={14} />}
-              />
-            }
-          >
-            More
-          </Menu.Trigger>
-          <Menu.Content>
+        <DropdownMenu>
+          <DropdownMenu.Trigger asChild>
+            <Button
+              size='small'
+              variant='outline'
+              color='neutral'
+              trailingIcon={<ChevronDownIcon width={14} height={14} />}
+            >
+              More
+            </Button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content>
             {overflow.map(entry => (
-              <Menu.Item
+              <DropdownMenu.Item
                 key={entry.href}
                 onClick={() => navigate(entry.href)}
               >
                 {entry.label}
-              </Menu.Item>
+              </DropdownMenu.Item>
             ))}
-          </Menu.Content>
-        </Menu>
+          </DropdownMenu.Content>
+        </DropdownMenu>
       ) : null}
     </Flex>
   );
