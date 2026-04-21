@@ -6,8 +6,9 @@ import { stringify } from 'yaml';
 import type { ChronicleConfig } from '@/types';
 
 const defaultConfig: ChronicleConfig = {
-  title: 'My Documentation',
+  site: { title: 'My Documentation' },
   description: 'Documentation powered by Chronicle',
+  content: [{ dir: 'docs', label: 'Docs' }],
   theme: { name: 'default' },
   search: { enabled: true, placeholder: 'Search documentation...' }
 };
@@ -25,10 +26,10 @@ This is your documentation home page.
 
 export const initCommand = new Command('init')
   .description('Initialize a new Chronicle project')
-  .option('-c, --content <path>', 'Content directory name', 'content')
-  .action(options => {
+  .action(() => {
     const projectDir = process.cwd();
-    const contentDir = path.join(projectDir, options.content);
+    const defaultDir = defaultConfig.content[0].dir;
+    const contentDir = path.join(projectDir, 'content', defaultDir);
 
     if (!fs.existsSync(contentDir)) {
       fs.mkdirSync(contentDir, { recursive: true });

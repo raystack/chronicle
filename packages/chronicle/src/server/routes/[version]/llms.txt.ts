@@ -1,3 +1,4 @@
+import { getRouterParam } from 'h3';
 import { defineHandler, HTTPError } from 'nitro';
 import { loadConfig } from '@/lib/config';
 import { buildLlmsTxt } from '@/lib/llms';
@@ -10,7 +11,7 @@ export default defineHandler(async event => {
     throw new HTTPError({ status: 404, message: 'Not Found' });
   }
 
-  const versionDir = event.params?.version;
+  const versionDir = getRouterParam(event, 'version');
   const version = config.versions?.find(v => v.dir === versionDir);
   if (!version) {
     throw new HTTPError({ status: 404, message: 'Not Found' });

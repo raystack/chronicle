@@ -23,7 +23,7 @@ export function Layout({
             as='h1'
             className={styles.title}
           >
-            {config.title}
+            {config.site.title}
           </Headline>
           <ChapterNav tree={tree} />
         </aside>

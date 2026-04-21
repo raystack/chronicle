@@ -65,7 +65,7 @@ export function Layout({
             style={{ textDecoration: 'none', color: 'inherit' }}
           >
             <Headline size='small' weight='medium' as='h1'>
-              {config.title}
+              {config.site.title}
             </Headline>
           </RouterLink>
         </Navbar.Start>

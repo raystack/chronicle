@@ -8,7 +8,7 @@ export interface HeadProps {
 }
 
 export function Head({ title, description, config, jsonLd }: HeadProps) {
-  const fullTitle = `${title} | ${config.title}`;
+  const fullTitle = `${title} | ${config.site.title}`;
   const ogParams = new URLSearchParams({ title });
   if (description) ogParams.set('description', description);
 
@@ -23,7 +23,7 @@ export function Head({ title, description, config, jsonLd }: HeadProps) {
           {description && (
             <meta property='og:description' content={description} />
           )}
-          <meta property='og:site_name' content={config.title} />
+          <meta property='og:site_name' content={config.site.title} />
           <meta property='og:type' content='website' />
           <meta property='og:image' content={`/og?${ogParams.toString()}`} />
           <meta property='og:image:width' content='1200' />
