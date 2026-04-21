@@ -102,6 +102,47 @@ describe('chronicleConfigSchema', () => {
     }
   })
 
+  test('rejects version dir overlapping a top-level content dir', () => {
+    expect(() =>
+      chronicleConfigSchema.parse({
+        site: { title: 'x' },
+        content: [{ dir: 'v1', label: 'V1 docs' }],
+        latest: { label: '2.0' },
+        versions: [
+          {
+            dir: 'v1',
+            label: '1.0',
+            content: [{ dir: 'docs', label: 'Docs' }],
+          },
+        ],
+      }),
+    ).toThrow(/must not overlap/)
+  })
+
+  test('rejects reserved route segments as dir names', () => {
+    expect(() =>
+      chronicleConfigSchema.parse({
+        site: { title: 'x' },
+        content: [{ dir: 'apis', label: 'API' }],
+      }),
+    ).toThrow(/reserved route segment/)
+
+    expect(() =>
+      chronicleConfigSchema.parse({
+        site: { title: 'x' },
+        content: [{ dir: 'docs', label: 'Docs' }],
+        latest: { label: '2.0' },
+        versions: [
+          {
+            dir: 'apis',
+            label: '1.0',
+            content: [{ dir: 'docs', label: 'Docs' }],
+          },
+        ],
+      }),
+    ).toThrow(/reserved route segment/)
+  })
+
   test('rejects "." or ".." version dir', () => {
     expect(() =>
       chronicleConfigSchema.parse({

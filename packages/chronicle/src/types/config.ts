@@ -124,6 +124,8 @@ const versionSchema = z.object({
 const allUnique = <T>(items: T[], key: (item: T) => string): boolean =>
   uniqBy(items, key).length === items.length
 
+const RESERVED_ROUTE_SEGMENTS = ['apis'] as const
+
 export const chronicleConfigSchema = z
   .object({
     site: siteSchema,
@@ -164,6 +166,34 @@ export const chronicleConfigSchema = z
     message: 'latest is required when versions are declared',
     path: ['latest'],
   })
+  .refine(
+    (cfg) => {
+      if (!cfg.versions) return true
+      const contentDirs = new Set(cfg.content.map((c) => c.dir))
+      return !cfg.versions.some((v) => contentDirs.has(v.dir))
+    },
+    {
+      message:
+        'versions[].dir must not overlap with content[].dir — the URL segment would be shadowed',
+      path: ['versions'],
+    },
+  )
+  .refine(
+    (cfg) => {
+      const reserved = new Set<string>(RESERVED_ROUTE_SEGMENTS)
+      const topLevel = cfg.content.map((c) => c.dir)
+      const versionDirs = cfg.versions?.map((v) => v.dir) ?? []
+      const versionContent =
+        cfg.versions?.flatMap((v) => v.content.map((c) => c.dir)) ?? []
+      return ![...topLevel, ...versionDirs, ...versionContent].some((d) =>
+        reserved.has(d),
+      )
+    },
+    {
+      message: `dir must not be a reserved route segment: ${RESERVED_ROUTE_SEGMENTS.join(', ')}`,
+      path: ['content'],
+    },
+  )
 
 export type ChronicleConfig = z.infer<typeof chronicleConfigSchema>
 export type SiteConfig = z.infer<typeof siteSchema>
