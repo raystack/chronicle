@@ -1,4 +1,3 @@
-import path from 'node:path'
 import { parse } from 'yaml'
 import {
   type ApiConfig,
@@ -40,7 +39,7 @@ export function getLatestContentRoots(config: ChronicleConfig): ContentRoot[] {
     versionLabel: config.latest?.label ?? null,
     contentDir: c.dir,
     contentLabel: c.label,
-    fsPath: path.join('content', c.dir),
+    fsPath: `content/${c.dir}`,
     urlPrefix: `/${c.dir}`,
   }))
 }
@@ -57,7 +56,7 @@ export function getVersionContentRoots(
     versionLabel: version.label,
     contentDir: c.dir,
     contentLabel: c.label,
-    fsPath: path.join('versions', version.dir, c.dir),
+    fsPath: `versions/${version.dir}/${c.dir}`,
     urlPrefix: `/${version.dir}/${c.dir}`,
   }))
 }
