@@ -42,6 +42,33 @@ describe('buildLlmsTxt', () => {
     expect(out.startsWith('# My Docs\n')).toBe(true)
   })
 
+  test('falls back to page url when title is missing or empty', () => {
+    const config = chronicleConfigSchema.parse({
+      site: { title: 'Docs' },
+      content: [{ dir: 'docs', label: 'Docs' }],
+    })
+    const out = buildLlmsTxt(
+      config,
+      [
+        { url: '/docs/untitled' },
+        { url: '/docs/blank', title: '   ' },
+      ],
+      LATEST_CONTEXT,
+    )
+    expect(out).toContain('- [/docs/untitled](/docs/untitled.md)')
+    expect(out).toContain('- [/docs/blank](/docs/blank.md)')
+  })
+
+  test('omits the description line when description is empty', () => {
+    const config = chronicleConfigSchema.parse({
+      site: { title: 'Docs' },
+      content: [{ dir: 'docs', label: 'Docs' }],
+    })
+    const out = buildLlmsTxt(config, [{ url: '/a', title: 'A' }], LATEST_CONTEXT)
+    // heading immediately followed by a single blank line then the index
+    expect(out).toBe('# Docs\n\n- [A](/a.md)')
+  })
+
   test('uses the version label for a versioned ctx', () => {
     const config = chronicleConfigSchema.parse({
       site: { title: 'My Docs' },

@@ -3,7 +3,7 @@ import type { VersionContext } from './version-source'
 
 export interface LlmsPage {
   url: string
-  title: string
+  title?: string
 }
 
 export function buildLlmsTxt(
@@ -21,11 +21,15 @@ export function buildLlmsTxt(
   const index = pages
     .map((p) => {
       const mdUrl = p.url === '/' ? '/index.md' : `${p.url}.md`
-      return `- [${p.title}](${mdUrl})`
+      const title = p.title?.trim() || p.url
+      return `- [${title}](${mdUrl})`
     })
     .join('\n')
 
-  return `${heading}\n\n${description}\n\n${index}`
+  const parts = [heading]
+  if (description) parts.push(description)
+  parts.push(index)
+  return parts.join('\n\n')
 }
 
 function getVersionLabel(
