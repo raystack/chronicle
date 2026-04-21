@@ -27,6 +27,16 @@ function contentDirsFor(
   return v?.content.map((c) => c.dir) ?? []
 }
 
+function isLandingEnabled(
+  config: ChronicleConfig,
+  version: VersionContext,
+): boolean {
+  if (version.dir === null) return config.latest?.landing === true
+  return (
+    config.versions?.find((v) => v.dir === version.dir)?.landing === true
+  )
+}
+
 export function resolveRoute(
   pathname: string,
   config: ChronicleConfig,
@@ -43,15 +53,16 @@ export function resolveRoute(
   }
 
   if (remainder.length === 0) {
-    const dirs = contentDirsFor(config, version)
-    if (dirs.length === 1) {
-      return {
-        type: RouteType.Redirect,
-        to: `${version.urlPrefix}/${dirs[0]}`,
-        status: 302,
-      }
+    if (isLandingEnabled(config, version)) {
+      return { type: RouteType.DocsIndex, version }
     }
-    return { type: RouteType.DocsIndex, version }
+    const dirs = contentDirsFor(config, version)
+    if (dirs.length === 0) return { type: RouteType.DocsIndex, version }
+    return {
+      type: RouteType.Redirect,
+      to: `${version.urlPrefix}/${dirs[0]}`,
+      status: 302,
+    }
   }
 
   return { type: RouteType.DocsPage, version, slug: parts }

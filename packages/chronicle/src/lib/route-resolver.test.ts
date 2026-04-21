@@ -17,6 +17,17 @@ function multiContent(): ChronicleConfig {
       { dir: 'docs', label: 'Docs' },
       { dir: 'dev', label: 'Dev' },
     ],
+    latest: { label: '3.0', landing: true },
+  })
+}
+
+function multiContentNoLanding(): ChronicleConfig {
+  return chronicleConfigSchema.parse({
+    site: { title: 'x' },
+    content: [
+      { dir: 'docs', label: 'Docs' },
+      { dir: 'dev', label: 'Dev' },
+    ],
   })
 }
 
@@ -34,6 +45,7 @@ function versioned(): ChronicleConfig {
       {
         dir: 'v1',
         label: '1.0',
+        landing: true,
         content: [
           { dir: 'docs', label: 'Docs' },
           { dir: 'dev', label: 'Dev' },
@@ -52,10 +64,18 @@ describe('resolveRoute — root', () => {
     })
   })
 
-  test('docs-index for multi-content latest root', () => {
+  test('docs-index for latest root when latest.landing = true', () => {
     expect(resolveRoute('/', multiContent())).toEqual({
       type: RouteType.DocsIndex,
       version: LATEST_CONTEXT,
+    })
+  })
+
+  test('redirect for multi-content latest root when landing is not set', () => {
+    expect(resolveRoute('/', multiContentNoLanding())).toEqual({
+      type: RouteType.Redirect,
+      to: '/docs',
+      status: 302,
     })
   })
 
@@ -67,7 +87,7 @@ describe('resolveRoute — root', () => {
     })
   })
 
-  test('docs-index for multi-content version root', () => {
+  test('docs-index for version root when versions[].landing = true', () => {
     expect(resolveRoute('/v1', versioned())).toEqual({
       type: RouteType.DocsIndex,
       version: { dir: 'v1', urlPrefix: '/v1' },

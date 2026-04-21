@@ -102,12 +102,14 @@ const badgeSchema = z.object({
 
 const latestSchema = z.object({
   label: z.string().min(1),
+  landing: z.boolean().optional(),
 })
 
 const versionSchema = z.object({
   dir: z.string().min(1),
   label: z.string().min(1),
   badge: badgeSchema.optional(),
+  landing: z.boolean().optional(),
   content: z.array(contentEntrySchema).min(1),
   api: z.array(apiSchema).optional(),
 })
