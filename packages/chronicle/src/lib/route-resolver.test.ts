@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { type ChronicleConfig, chronicleConfigSchema } from '@/types'
-import { resolveRoute } from './route-resolver'
+import { resolveRoute, RouteType } from './route-resolver'
 import { LATEST_CONTEXT } from './version-source'
 
 function singleContent(): ChronicleConfig {
@@ -46,7 +46,7 @@ function versioned(): ChronicleConfig {
 describe('resolveRoute — root', () => {
   test('redirects single-content latest root to /<dir>', () => {
     expect(resolveRoute('/', singleContent())).toEqual({
-      type: 'redirect',
+      type: RouteType.Redirect,
       to: '/docs',
       status: 302,
     })
@@ -54,14 +54,14 @@ describe('resolveRoute — root', () => {
 
   test('docs-index for multi-content latest root', () => {
     expect(resolveRoute('/', multiContent())).toEqual({
-      type: 'docs-index',
+      type: RouteType.DocsIndex,
       version: LATEST_CONTEXT,
     })
   })
 
   test('redirects single-content version root to /<v>/<dir>', () => {
     expect(resolveRoute('/v2', versioned())).toEqual({
-      type: 'redirect',
+      type: RouteType.Redirect,
       to: '/v2/docs',
       status: 302,
     })
@@ -69,7 +69,7 @@ describe('resolveRoute — root', () => {
 
   test('docs-index for multi-content version root', () => {
     expect(resolveRoute('/v1', versioned())).toEqual({
-      type: 'docs-index',
+      type: RouteType.DocsIndex,
       version: { dir: 'v1', urlPrefix: '/v1' },
     })
   })
@@ -78,7 +78,7 @@ describe('resolveRoute — root', () => {
 describe('resolveRoute — docs pages', () => {
   test('latest docs page returns full slug and latest context', () => {
     expect(resolveRoute('/docs/getting-started', singleContent())).toEqual({
-      type: 'docs-page',
+      type: RouteType.DocsPage,
       version: LATEST_CONTEXT,
       slug: ['docs', 'getting-started'],
     })
@@ -86,7 +86,7 @@ describe('resolveRoute — docs pages', () => {
 
   test('versioned docs page returns full slug and version context', () => {
     expect(resolveRoute('/v1/dev/intro', versioned())).toEqual({
-      type: 'docs-page',
+      type: RouteType.DocsPage,
       version: { dir: 'v1', urlPrefix: '/v1' },
       slug: ['v1', 'dev', 'intro'],
     })
@@ -94,7 +94,7 @@ describe('resolveRoute — docs pages', () => {
 
   test('unrecognized first segment stays latest (page lookup handles 404)', () => {
     expect(resolveRoute('/foo/bar', singleContent())).toEqual({
-      type: 'docs-page',
+      type: RouteType.DocsPage,
       version: LATEST_CONTEXT,
       slug: ['foo', 'bar'],
     })
@@ -104,14 +104,14 @@ describe('resolveRoute — docs pages', () => {
 describe('resolveRoute — APIs', () => {
   test('latest api index', () => {
     expect(resolveRoute('/apis', singleContent())).toEqual({
-      type: 'api-index',
+      type: RouteType.ApiIndex,
       version: LATEST_CONTEXT,
     })
   })
 
   test('latest api page', () => {
     expect(resolveRoute('/apis/petstore/getPetById', singleContent())).toEqual({
-      type: 'api-page',
+      type: RouteType.ApiPage,
       version: LATEST_CONTEXT,
       slug: ['petstore', 'getPetById'],
     })
@@ -119,7 +119,7 @@ describe('resolveRoute — APIs', () => {
 
   test('versioned api index', () => {
     expect(resolveRoute('/v1/apis', versioned())).toEqual({
-      type: 'api-index',
+      type: RouteType.ApiIndex,
       version: { dir: 'v1', urlPrefix: '/v1' },
     })
   })
@@ -128,7 +128,7 @@ describe('resolveRoute — APIs', () => {
     expect(
       resolveRoute('/v1/apis/petstore/getPetById', versioned()),
     ).toEqual({
-      type: 'api-page',
+      type: RouteType.ApiPage,
       version: { dir: 'v1', urlPrefix: '/v1' },
       slug: ['petstore', 'getPetById'],
     })
@@ -138,14 +138,14 @@ describe('resolveRoute — APIs', () => {
 describe('resolveRoute — edge cases', () => {
   test('trailing slash is normalized', () => {
     expect(resolveRoute('/v1/', versioned())).toEqual({
-      type: 'docs-index',
+      type: RouteType.DocsIndex,
       version: { dir: 'v1', urlPrefix: '/v1' },
     })
   })
 
   test('version-shaped path without a matching version stays latest', () => {
     expect(resolveRoute('/v9/docs', versioned())).toEqual({
-      type: 'docs-page',
+      type: RouteType.DocsPage,
       version: LATEST_CONTEXT,
       slug: ['v9', 'docs'],
     })

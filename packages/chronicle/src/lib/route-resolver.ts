@@ -1,12 +1,22 @@
 import type { ChronicleConfig } from '@/types'
 import { type VersionContext, resolveVersionFromUrl } from './version-source'
 
+export const RouteType = {
+  Redirect: 'redirect',
+  DocsIndex: 'docs-index',
+  DocsPage: 'docs-page',
+  ApiIndex: 'api-index',
+  ApiPage: 'api-page',
+} as const
+
+export type RouteType = (typeof RouteType)[keyof typeof RouteType]
+
 export type Route =
-  | { type: 'redirect'; to: string; status: 302 }
-  | { type: 'docs-index'; version: VersionContext }
-  | { type: 'docs-page'; version: VersionContext; slug: string[] }
-  | { type: 'api-index'; version: VersionContext }
-  | { type: 'api-page'; version: VersionContext; slug: string[] }
+  | { type: typeof RouteType.Redirect; to: string; status: 302 }
+  | { type: typeof RouteType.DocsIndex; version: VersionContext }
+  | { type: typeof RouteType.DocsPage; version: VersionContext; slug: string[] }
+  | { type: typeof RouteType.ApiIndex; version: VersionContext }
+  | { type: typeof RouteType.ApiPage; version: VersionContext; slug: string[] }
 
 function contentDirsFor(
   config: ChronicleConfig,
@@ -28,21 +38,21 @@ export function resolveRoute(
 
   if (remainder[0] === 'apis') {
     const slug = remainder.slice(1)
-    if (slug.length === 0) return { type: 'api-index', version }
-    return { type: 'api-page', version, slug }
+    if (slug.length === 0) return { type: RouteType.ApiIndex, version }
+    return { type: RouteType.ApiPage, version, slug }
   }
 
   if (remainder.length === 0) {
     const dirs = contentDirsFor(config, version)
     if (dirs.length === 1) {
       return {
-        type: 'redirect',
+        type: RouteType.Redirect,
         to: `${version.urlPrefix}/${dirs[0]}`,
         status: 302,
       }
     }
-    return { type: 'docs-index', version }
+    return { type: RouteType.DocsIndex, version }
   }
 
-  return { type: 'docs-page', version, slug: parts }
+  return { type: RouteType.DocsPage, version, slug: parts }
 }
