@@ -12,6 +12,10 @@
     "build:cli": "bun run --filter @raystack/chronicle build:cli",
     "dev:docs": "./packages/chronicle/bin/chronicle.js dev --config docs/chronicle.yaml",
     "start:docs": "./packages/chronicle/bin/chronicle.js start --config docs/chronicle.yaml",
-    "build:docs": "./packages/chronicle/bin/chronicle.js build --config docs/chronicle.yaml"
+    "build:docs": "./packages/chronicle/bin/chronicle.js build --config docs/chronicle.yaml",
+    "dev:examples:basic": "./packages/chronicle/bin/chronicle.js dev --config examples/basic/chronicle.yaml",
+    "build:examples:basic": "./packages/chronicle/bin/chronicle.js build --config examples/basic/chronicle.yaml",
+    "dev:examples:versioned": "./packages/chronicle/bin/chronicle.js dev --config examples/versioned/chronicle.yaml",
+    "build:examples:versioned": "./packages/chronicle/bin/chronicle.js build --config examples/versioned/chronicle.yaml"
   }
 }
