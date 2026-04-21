@@ -1,12 +1,20 @@
-title: My Documentation
-description: Documentation powered by Chronicle
+site:
+  title: My Documentation
+  description: Documentation powered by Chronicle
+
 url: https://docs.example.com
-content: .
+
+content:
+  - dir: docs
+    label: Docs
+
 theme:
   name: default
+
 search:
   enabled: true
   placeholder: Search documentation...
+
 api:
   - name: Petstore
     spec: ./petstore.json
@@ -24,10 +32,12 @@ api:
     server:
       url: https://frontier.raystack.org
       description: Frontier Server
+
 analytics:
   enabled: false
   googleAnalytics:
     measurementId: G-XXXXXXXXXX
+
 footer:
   copyright: "© 2024 Chronicle. All rights reserved."
   links:
