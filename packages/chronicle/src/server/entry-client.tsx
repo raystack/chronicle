@@ -5,6 +5,8 @@ import { BrowserRouter } from 'react-router';
 import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
 import { mdxComponents } from '@/components/mdx';
 import { PageProvider } from '@/lib/page-context';
+import { resolveRoute, RouteType } from '@/lib/route-resolver';
+import { LATEST_CONTEXT, type VersionContext } from '@/lib/version-source';
 import type { ChronicleConfig, Frontmatter, Root, TableOfContents } from '@/types';
 import type { ApiSpec } from '@/lib/openapi';
 import type { ReactNode } from 'react';
@@ -14,10 +16,16 @@ interface EmbeddedData {
   config: ChronicleConfig;
   tree: Root;
   slug: string[];
+  version: VersionContext;
   frontmatter: Frontmatter;
   relativePath: string;
   originalPath?: string;
 }
+
+const defaultConfig: ChronicleConfig = {
+  site: { title: 'Documentation' },
+  content: [{ dir: 'docs', label: 'Docs' }],
+};
 
 const contentModules = import.meta.glob<{ default?: React.ComponentType<any>; toc?: TableOfContents }>(
   '../../.content/**/*.{mdx,md}'
@@ -43,12 +51,14 @@ async function hydrate() {
       window as unknown as { __PAGE_DATA__?: EmbeddedData }
     ).__PAGE_DATA__;
 
-    const config: ChronicleConfig = embedded?.config ?? {
-      title: 'Documentation'
-    };
+    const config: ChronicleConfig = embedded?.config ?? defaultConfig;
     const tree: Root = embedded?.tree ?? { name: 'root', children: [] };
+    const version: VersionContext = embedded?.version ?? LATEST_CONTEXT;
+
+    const route = resolveRoute(window.location.pathname, config);
     const isApiPage =
-      window.location.pathname.startsWith('/apis') && !!config.api?.length;
+      (route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage) &&
+      !!config.api?.length;
     const apiSpecs: ApiSpec[] = isApiPage
       ? await fetch('/api/specs')
           .then(r => r.json())
@@ -73,6 +83,7 @@ async function hydrate() {
             initialTree={tree}
             initialPage={page}
             initialApiSpecs={apiSpecs}
+            initialVersion={version}
             loadMdx={loadMdxModule}
           >
             <App />

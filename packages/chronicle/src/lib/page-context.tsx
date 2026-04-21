@@ -95,7 +95,7 @@ export function PageProvider({
     setCurrentPath(pathname);
 
     const route = resolveRoute(pathname, initialConfig);
-    setVersion(route.version);
+    if (route.type !== RouteType.Redirect) setVersion(route.version);
 
     const cancelled = { current: false };
 
