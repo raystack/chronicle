@@ -1,3 +1,4 @@
+import path from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { loadCLIConfig } from '@/cli/utils/config';
@@ -7,7 +8,6 @@ import { linkContent } from '@/cli/utils/scaffold';
 export const serveCommand = new Command('serve')
   .description('Build and start production server')
   .option('-p, --port <port>', 'Port number', '3000')
-  .option('--content <path>', 'Content directory')
   .option('--config <path>', 'Path to chronicle.yaml')
   .option('--host <host>', 'Host address', 'localhost')
   .option(
@@ -15,20 +15,18 @@ export const serveCommand = new Command('serve')
     'Deploy preset (vercel, cloudflare, node-server)'
   )
   .action(async options => {
-    const { contentDir, configPath, preset } = await loadCLIConfig(options.config, {
-      content: options.content,
+    const { projectRoot, configPath, preset } = await loadCLIConfig(options.config, {
       preset: options.preset,
     });
     const port = parseInt(options.port, 10);
-    await linkContent(contentDir);
+    await linkContent(path.join(projectRoot, 'content'));
 
     const { build, preview } = await import('vite');
     const { createViteConfig } = await import('@/server/vite-config');
 
     const config = await createViteConfig({
       packageRoot: PACKAGE_ROOT,
-      projectRoot: process.cwd(),
-      contentDir,
+      projectRoot,
       configPath,
       preset
     });

@@ -18,7 +18,6 @@ function resolveOutputDir(projectRoot: string, preset?: string): string {
 export interface ViteConfigOptions {
   packageRoot: string;
   projectRoot: string;
-  contentDir: string;
   configPath?: string;
   preset?: string;
 }
@@ -41,8 +40,9 @@ async function readChronicleConfig(projectRoot: string, configPath?: string): Pr
 export async function createViteConfig(
   options: ViteConfigOptions
 ): Promise<InlineConfig> {
-  const { packageRoot, projectRoot, contentDir, configPath, preset } = options;
+  const { packageRoot, projectRoot, configPath, preset } = options;
   const rawConfig = await readChronicleConfig(projectRoot, configPath);
+  const contentMirror = path.resolve(packageRoot, '.content');
 
   return {
     root: packageRoot,
@@ -98,11 +98,11 @@ export async function createViteConfig(
     },
     server: {
       fs: {
-        allow: [packageRoot, projectRoot, contentDir]
+        allow: [packageRoot, projectRoot, contentMirror]
       }
     },
     define: {
-      __CHRONICLE_CONTENT_DIR__: JSON.stringify(contentDir),
+      __CHRONICLE_CONTENT_DIR__: JSON.stringify(contentMirror),
       __CHRONICLE_PROJECT_ROOT__: JSON.stringify(projectRoot),
       __CHRONICLE_CONFIG_RAW__: JSON.stringify(rawConfig),
     },

@@ -7,7 +7,7 @@ import { chronicleConfigSchema, type ChronicleConfig } from '@/types';
 export interface CLIConfig {
   config: ChronicleConfig;
   configPath: string;
-  contentDir: string;
+  projectRoot: string;
   preset?: string;
 }
 
@@ -36,19 +36,13 @@ function validateConfig(raw: string, configPath: string): ChronicleConfig {
   if (!result.success) {
     console.log(chalk.red(`Error: Invalid chronicle.yaml at '${configPath}'`));
     for (const issue of result.error.issues) {
-      const path = issue.path.join('.');
-      console.log(chalk.gray(`  ${path ? `${path}: ` : ''}${issue.message}`));
+      const issuePath = issue.path.join('.');
+      console.log(chalk.gray(`  ${issuePath ? `${issuePath}: ` : ''}${issue.message}`));
     }
     process.exit(1);
   }
 
   return result.data;
-}
-
-export function resolveContentDir(config: ChronicleConfig, configPath: string, contentFlag?: string): string {
-  if (contentFlag) return path.resolve(contentFlag);
-  if (config.content) return path.resolve(path.dirname(configPath), config.content);
-  return path.resolve('content');
 }
 
 export function resolvePreset(config: ChronicleConfig, presetFlag?: string): string | undefined {
@@ -57,15 +51,15 @@ export function resolvePreset(config: ChronicleConfig, presetFlag?: string): str
 
 export async function loadCLIConfig(
   configPath?: string,
-  options?: { content?: string; preset?: string }
+  options?: { preset?: string }
 ): Promise<CLIConfig> {
   const resolvedConfigPath = resolveConfigPath(configPath)
     ?? path.join(process.cwd(), 'chronicle.yaml');
 
   const raw = await readConfig(resolvedConfigPath);
   const config = validateConfig(raw, resolvedConfigPath);
-  const contentDir = resolveContentDir(config, resolvedConfigPath, options?.content);
+  const projectRoot = path.dirname(resolvedConfigPath);
   const preset = resolvePreset(config, options?.preset);
 
-  return { config, configPath: resolvedConfigPath, contentDir, preset };
+  return { config, configPath: resolvedConfigPath, projectRoot, preset };
 }

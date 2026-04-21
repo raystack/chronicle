@@ -1,3 +1,4 @@
+import path from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { loadCLIConfig } from '@/cli/utils/config';
@@ -7,21 +8,20 @@ import { linkContent } from '@/cli/utils/scaffold';
 export const devCommand = new Command('dev')
   .description('Start development server')
   .option('-p, --port <port>', 'Port number', '3000')
-  .option('--content <path>', 'Content directory')
   .option('--config <path>', 'Path to chronicle.yaml')
   .option('--host <host>', 'Host address', 'localhost')
   .action(async options => {
-    const { contentDir, configPath } = await loadCLIConfig(options.config, { content: options.content });
+    const { projectRoot, configPath } = await loadCLIConfig(options.config);
     const port = parseInt(options.port, 10);
 
-    await linkContent(contentDir);
+    await linkContent(path.join(projectRoot, 'content'));
 
     console.log(chalk.cyan('Starting dev server...'));
 
     const { createServer } = await import('vite');
     const { createViteConfig } = await import('@/server/vite-config');
 
-    const config = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot: process.cwd(), contentDir, configPath });
+    const config = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot, configPath });
     const server = await createServer({
       ...config,
       server: { ...config.server, port, host: options.host }

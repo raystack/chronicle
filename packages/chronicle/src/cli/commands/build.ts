@@ -1,3 +1,4 @@
+import path from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { loadCLIConfig } from '@/cli/utils/config';
@@ -6,18 +7,16 @@ import { linkContent } from '@/cli/utils/scaffold';
 
 export const buildCommand = new Command('build')
   .description('Build for production')
-  .option('--content <path>', 'Content directory')
   .option('--config <path>', 'Path to chronicle.yaml')
   .option(
     '--preset <preset>',
     'Deploy preset (vercel, cloudflare, node-server)'
   )
   .action(async options => {
-    const { contentDir, configPath, preset } = await loadCLIConfig(options.config, {
-      content: options.content,
+    const { projectRoot, configPath, preset } = await loadCLIConfig(options.config, {
       preset: options.preset,
     });
-    await linkContent(contentDir);
+    await linkContent(path.join(projectRoot, 'content'));
 
     console.log(chalk.cyan('Building for production...'));
 
@@ -26,8 +25,7 @@ export const buildCommand = new Command('build')
 
     const config = await createViteConfig({
       packageRoot: PACKAGE_ROOT,
-      projectRoot: process.cwd(),
-      contentDir,
+      projectRoot,
       configPath,
       preset
     });
