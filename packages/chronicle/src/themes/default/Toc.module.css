@@ -15,7 +15,8 @@
   transition: opacity 150ms ease;
 }
 
-.toc:hover .markers {
+.toc:hover .markers,
+.toc:focus-within .markers {
   opacity: 0;
   pointer-events: none;
 }
@@ -60,7 +61,8 @@
     transform 150ms ease;
 }
 
-.toc:hover .panel {
+.toc:hover .panel,
+.toc:focus-within .panel {
   opacity: 1;
   pointer-events: auto;
   transform: translateY(-50%) translateX(0);

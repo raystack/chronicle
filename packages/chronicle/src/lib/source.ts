@@ -169,6 +169,16 @@ export function getVersionContextForUrl(url: string): VersionContext {
 
 export type { VersionContext } from './version-source';
 
+function titleFromUrl(url: string): string {
+  if (url === '/') return 'Home';
+  const last = url.split('/').filter(Boolean).pop();
+  if (!last) return 'Home';
+  return last
+    .split('-')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
 export async function getPageNav(slug: string[]): Promise<PageNav> {
   const tree = await getPageTree();
   const pages = flattenTree(tree.children);
@@ -177,7 +187,10 @@ export async function getPageNav(slug: string[]): Promise<PageNav> {
   if (i < 0) return { prev: null, next: null };
   const toLink = (p: (typeof pages)[number]): PageNavLink => ({
     url: p.url,
-    title: typeof p.name === 'string' ? p.name : ''
+    title:
+      typeof p.name === 'string' && p.name.length > 0
+        ? p.name
+        : titleFromUrl(p.url)
   });
   return {
     prev: i > 0 ? toLink(pages[i - 1]) : null,
