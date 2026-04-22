@@ -41,11 +41,11 @@ export default {
       : [];
     const apiSpecs = apiConfigs.length ? await loadApiSpecs(apiConfigs) : [];
 
-    const [tree, page, nav] = await Promise.all([
+    const [tree, page] = await Promise.all([
       getPageTree(),
       route.type === RouteType.DocsPage ? getPage(route.slug) : Promise.resolve(null),
-      getPageNav(pageSlug),
     ]);
+    const nav = page ? await getPageNav(pageSlug, tree) : { prev: null, next: null };
 
     const relativePath = page ? getRelativePath(page) : null;
     const originalPath = page ? getOriginalPath(page) : null;

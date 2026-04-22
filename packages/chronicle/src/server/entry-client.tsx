@@ -18,9 +18,9 @@ interface EmbeddedData {
   tree: Root;
   slug: string[];
   version: VersionContext;
-  frontmatter: Frontmatter;
-  relativePath: string;
-  originalPath?: string;
+  frontmatter: Frontmatter | null;
+  relativePath: string | null;
+  originalPath: string | null;
   prev: PageNavLink | null;
   next: PageNavLink | null;
 }
@@ -81,12 +81,12 @@ async function hydrate() {
       : [];
 
     const mdxPath = embedded?.originalPath || embedded?.relativePath;
-    const page = mdxPath
+    const page = embedded && mdxPath && embedded.frontmatter
       ? {
-          slug: embedded!.slug,
-          frontmatter: embedded!.frontmatter,
-          prev: embedded!.prev,
-          next: embedded!.next,
+          slug: embedded.slug,
+          frontmatter: embedded.frontmatter,
+          prev: embedded.prev,
+          next: embedded.next,
           ...(await loadMdxModule(mdxPath)),
         }
       : null;

@@ -179,9 +179,9 @@ function titleFromUrl(url: string): string {
     .join(' ');
 }
 
-export async function getPageNav(slug: string[]): Promise<PageNav> {
-  const tree = await getPageTree();
-  const pages = flattenTree(tree.children);
+export async function getPageNav(slug: string[], tree?: Root): Promise<PageNav> {
+  const resolvedTree = tree ?? (await getPageTree());
+  const pages = flattenTree(resolvedTree.children);
   const url = slug.length === 0 ? '/' : `/${slug.join('/')}`;
   const i = pages.findIndex(p => p.url === url);
   if (i < 0) return { prev: null, next: null };
