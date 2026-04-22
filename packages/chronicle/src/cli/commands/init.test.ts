@@ -64,4 +64,14 @@ describe('runInit', () => {
     expect(contents).toContain('dist')
     expect(contents).toContain('.output')
   })
+
+  test('matches .gitignore entries by line, not substring', () => {
+    fs.writeFileSync(path.join(tmp, '.gitignore'), 'distribution\n')
+    runInit(tmp)
+    const contents = fs.readFileSync(path.join(tmp, '.gitignore'), 'utf-8')
+    // `distribution` must not satisfy the `dist` requirement
+    const lines = contents.split(/\r?\n/).map(l => l.trim()).filter(Boolean)
+    expect(lines).toContain('distribution')
+    expect(lines).toContain('dist')
+  })
 })

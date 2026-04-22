@@ -62,7 +62,10 @@ export function runInit(projectDir: string): InitEvent[] {
   const gitignorePath = path.join(projectDir, '.gitignore');
   if (fs.existsSync(gitignorePath)) {
     const existing = fs.readFileSync(gitignorePath, 'utf-8');
-    const missing = GITIGNORE_ENTRIES.filter(e => !existing.includes(e));
+    const existingLines = new Set(
+      existing.split(/\r?\n/).map(l => l.trim()).filter(Boolean),
+    );
+    const missing = GITIGNORE_ENTRIES.filter(e => !existingLines.has(e));
     if (missing.length > 0) {
       fs.appendFileSync(gitignorePath, `\n${missing.join('\n')}\n`);
       events.push({ type: 'updated', path: gitignorePath, detail: missing.join(', ') });
