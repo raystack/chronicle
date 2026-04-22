@@ -17,5 +17,8 @@
     "build:examples:basic": "./packages/chronicle/bin/chronicle.js build --config examples/basic/chronicle.yaml",
     "dev:examples:versioned": "./packages/chronicle/bin/chronicle.js dev --config examples/versioned/chronicle.yaml",
     "build:examples:versioned": "./packages/chronicle/bin/chronicle.js build --config examples/versioned/chronicle.yaml"
+  },
+  "dependencies": {
+    "std-env": "^4.0.0"
   }
 }
