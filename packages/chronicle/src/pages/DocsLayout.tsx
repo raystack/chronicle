@@ -2,7 +2,10 @@ import type { ReactNode } from 'react';
 import { useLocation } from 'react-router';
 import { usePageContext } from '@/lib/page-context';
 import { getActiveContentDir } from '@/lib/navigation';
-import { filterPageTreeByContentDir } from '@/lib/version-source';
+import {
+  filterPageTreeByContentDir,
+  filterPageTreeByVersion,
+} from '@/lib/version-source';
 import { getTheme } from '@/themes/registry';
 
 interface DocsLayoutProps {
@@ -16,7 +19,12 @@ export function DocsLayout({ children, hideSidebar }: DocsLayoutProps) {
   const { Layout, className } = getTheme(config.theme?.name);
 
   const activeContentDir = getActiveContentDir(pathname, config);
-  const scopedTree = filterPageTreeByContentDir(tree, version, activeContentDir);
+  const versionScoped = filterPageTreeByVersion(tree, version, config);
+  const scopedTree = filterPageTreeByContentDir(
+    versionScoped,
+    version,
+    activeContentDir,
+  );
 
   return (
     <Layout

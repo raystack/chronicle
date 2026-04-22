@@ -7,7 +7,7 @@ import { mdxComponents } from '@/components/mdx';
 import { getApiConfigsForVersion } from '@/lib/config';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
-import { LATEST_CONTEXT, type VersionContext } from '@/lib/version-source';
+import { resolveVersionFromUrl, type VersionContext } from '@/lib/version-source';
 import type { ChronicleConfig, Frontmatter, Root, TableOfContents } from '@/types';
 import type { ApiSpec } from '@/lib/openapi';
 import type { ReactNode } from 'react';
@@ -56,8 +56,12 @@ async function hydrate() {
     const tree: Root = embedded?.tree ?? { name: 'root', children: [] };
 
     const route = resolveRoute(window.location.pathname, config);
-    const routeVersion: VersionContext =
-      route.type === RouteType.Redirect ? LATEST_CONTEXT : route.version;
+    // resolveVersionFromUrl always returns a valid context — even for redirect
+    // targets (e.g. /v1 -> /v1/docs) where route.version isn't on the union.
+    const routeVersion: VersionContext = resolveVersionFromUrl(
+      window.location.pathname,
+      config,
+    );
     const version: VersionContext = embedded?.version ?? routeVersion;
 
     const isApiRoute =

@@ -9,7 +9,7 @@ import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
-import { getPage, getPageTreeForVersion, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
+import { getPage, getPageTree, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
 import { useNitroApp } from 'nitro/app';
 import { App } from './App';
 
@@ -39,12 +39,10 @@ export default {
     const apiConfigs = isApiRoute
       ? getApiConfigsForVersion(config, route.version.dir)
       : [];
-    const apiSpecs = apiConfigs.length
-      ? await loadApiSpecs(apiConfigs).catch(() => [])
-      : [];
+    const apiSpecs = apiConfigs.length ? await loadApiSpecs(apiConfigs) : [];
 
     const [tree, page] = await Promise.all([
-      getPageTreeForVersion(route.version),
+      getPageTree(),
       route.type === RouteType.DocsPage ? getPage(route.slug) : Promise.resolve(null),
     ]);
 
