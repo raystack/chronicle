@@ -32,12 +32,7 @@ export function DocsPage({ slug }: DocsPageProps) {
         }}
       />
       <Page
-        page={{
-          slug: page.slug,
-          frontmatter: page.frontmatter,
-          content: page.content,
-          toc: page.toc
-        }}
+        page={page}
         config={config}
         tree={tree}
       />

@@ -12,7 +12,17 @@ export interface Frontmatter {
   lastModified?: string
 }
 
-export interface Page {
+export interface PageNavLink {
+  url: string
+  title: string
+}
+
+export interface PageNav {
+  prev: PageNavLink | null
+  next: PageNavLink | null
+}
+
+export interface Page extends PageNav {
   slug: string[]
   frontmatter: Frontmatter
   content: ReactNode

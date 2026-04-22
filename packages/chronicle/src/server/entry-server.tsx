@@ -58,6 +58,8 @@ export default {
             ? React.createElement(mdxModule.default, { components: mdxComponents })
             : null,
           toc: mdxModule?.toc ?? [],
+          prev: null,
+          next: null,
         }
       : null;
 
@@ -69,6 +71,8 @@ export default {
       frontmatter: pageData?.frontmatter ?? null,
       relativePath,
       originalPath,
+      prev: pageData?.prev ?? null,
+      next: pageData?.next ?? null,
     };
     const safeJson = JSON.stringify(embeddedData).replace(/</g, '\\u003c');
 
