@@ -1,32 +1,128 @@
-import { parse } from 'yaml';
-import type { ChronicleConfig } from '@/types';
+import { parse } from 'yaml'
+import {
+  type ApiConfig,
+  type BadgeConfig,
+  type ChronicleConfig,
+  chronicleConfigSchema,
+} from '@/types'
 
-const defaultConfig: ChronicleConfig = {
-  title: 'Documentation',
+const defaultConfig: ChronicleConfig = chronicleConfigSchema.parse({
+  site: { title: 'Documentation' },
+  content: [{ dir: 'docs', label: 'Docs' }],
   theme: { name: 'default' },
-  search: { enabled: true, placeholder: 'Search...' }
-};
+  search: { enabled: true, placeholder: 'Search...' },
+})
 
 export function loadConfig(): ChronicleConfig {
-  const raw = typeof __CHRONICLE_CONFIG_RAW__ !== 'undefined' ? __CHRONICLE_CONFIG_RAW__ : null;
+  const raw =
+    typeof __CHRONICLE_CONFIG_RAW__ !== 'undefined'
+      ? __CHRONICLE_CONFIG_RAW__
+      : null
 
-  if (!raw) {
-    return defaultConfig;
-  }
+  if (!raw) return defaultConfig
 
-  const userConfig = parse(raw) as Partial<ChronicleConfig>;
-
+  const parsed = chronicleConfigSchema.parse(parse(raw))
   return {
     ...defaultConfig,
-    ...userConfig,
-    theme: {
-      name: userConfig.theme?.name ?? defaultConfig.theme!.name,
-      colors: { ...defaultConfig.theme?.colors, ...userConfig.theme?.colors }
+    ...parsed,
+    theme: { ...defaultConfig.theme, ...parsed.theme },
+    search: { ...defaultConfig.search, ...parsed.search },
+  }
+}
+
+export interface ContentRoot {
+  versionDir: string | null
+  versionLabel: string | null
+  contentDir: string
+  contentLabel: string
+  fsPath: string
+  urlPrefix: string
+}
+
+export function getLatestContentRoots(config: ChronicleConfig): ContentRoot[] {
+  return config.content.map((c) => ({
+    versionDir: null,
+    versionLabel: config.latest?.label ?? null,
+    contentDir: c.dir,
+    contentLabel: c.label,
+    fsPath: `content/${c.dir}`,
+    urlPrefix: `/${c.dir}`,
+  }))
+}
+
+export function getVersionContentRoots(
+  config: ChronicleConfig,
+  versionDir: string,
+): ContentRoot[] {
+  const version = config.versions?.find((v) => v.dir === versionDir)
+  if (!version) return []
+
+  return version.content.map((c) => ({
+    versionDir: version.dir,
+    versionLabel: version.label,
+    contentDir: c.dir,
+    contentLabel: c.label,
+    fsPath: `versions/${version.dir}/${c.dir}`,
+    urlPrefix: `/${version.dir}/${c.dir}`,
+  }))
+}
+
+export interface VersionDescriptor {
+  dir: string | null
+  label: string
+  badge?: BadgeConfig
+  isLatest: boolean
+}
+
+export interface LandingEntry {
+  label: string
+  href: string
+  contentDir: string
+}
+
+export function getLandingEntries(
+  config: ChronicleConfig,
+  versionDir: string | null,
+): LandingEntry[] {
+  const roots =
+    versionDir === null
+      ? getLatestContentRoots(config)
+      : getVersionContentRoots(config, versionDir)
+
+  return roots.map((r) => ({
+    label: r.contentLabel,
+    href: r.urlPrefix,
+    contentDir: r.contentDir,
+  }))
+}
+
+export function getApiConfigsForVersion(
+  config: ChronicleConfig,
+  versionDir: string | null,
+): ApiConfig[] {
+  if (versionDir === null) return config.api ?? []
+  return (
+    config.versions?.find((v) => v.dir === versionDir)?.api ?? []
+  )
+}
+
+export function getAllVersions(config: ChronicleConfig): VersionDescriptor[] {
+  const result: VersionDescriptor[] = [
+    {
+      dir: null,
+      label: config.latest?.label ?? '',
+      isLatest: true,
     },
-    search: { ...defaultConfig.search, ...userConfig.search },
-    footer: userConfig.footer,
-    api: userConfig.api,
-    llms: { enabled: false, ...userConfig.llms },
-    analytics: { enabled: false, ...userConfig.analytics }
-  };
+  ]
+
+  for (const v of config.versions ?? []) {
+    result.push({
+      dir: v.dir,
+      label: v.label,
+      badge: v.badge,
+      isLatest: false,
+    })
+  }
+
+  return result
 }

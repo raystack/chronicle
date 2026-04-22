@@ -16,7 +16,9 @@ import { Footer } from '@/components/ui/footer';
 import { Search } from '@/components/ui/search';
 import type { Node } from 'fumadocs-core/page-tree';
 import type { ThemeLayoutProps } from '@/types';
+import { ContentDirButtons } from './ContentDirButtons';
 import styles from './Layout.module.css';
+import { VersionSwitcher } from './VersionSwitcher';
 
 const iconMap: Record<string, React.ReactNode> = {
   'rectangle-stack': <RectangleStackIcon width={16} height={16} />,
@@ -33,6 +35,7 @@ export function Layout({
   children,
   config,
   tree,
+  hideSidebar,
   classNames
 }: ThemeLayoutProps) {
   const { pathname } = useLocation();
@@ -65,12 +68,14 @@ export function Layout({
             style={{ textDecoration: 'none', color: 'inherit' }}
           >
             <Headline size='small' weight='medium' as='h1'>
-              {config.title}
+              {config.site.title}
             </Headline>
           </RouterLink>
         </Navbar.Start>
         <Navbar.End>
           <Flex gap='medium' align='center' className={styles.navActions}>
+            <ContentDirButtons />
+            <VersionSwitcher />
             {config.api?.map(api => (
               <RouterLink
                 key={api.basePath}
@@ -91,21 +96,23 @@ export function Layout({
         </Navbar.End>
       </Navbar>
       <Flex className={cx(styles.body, classNames?.body)}>
-        <Sidebar
-          defaultOpen
-          collapsible={false}
-          className={cx(styles.sidebar, classNames?.sidebar)}
-        >
-          <Sidebar.Main ref={scrollRef}>
-            {tree.children.map((item, i) => (
-              <SidebarNode
-                key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
-                item={item}
-                pathname={pathname}
-              />
-            ))}
-          </Sidebar.Main>
-        </Sidebar>
+        {hideSidebar ? null : (
+          <Sidebar
+            defaultOpen
+            collapsible={false}
+            className={cx(styles.sidebar, classNames?.sidebar)}
+          >
+            <Sidebar.Main ref={scrollRef}>
+              {tree.children.map((item, i) => (
+                <SidebarNode
+                  key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
+                  item={item}
+                  pathname={pathname}
+                />
+              ))}
+            </Sidebar.Main>
+          </Sidebar>
+        )}
         <main className={cx(styles.content, classNames?.content)}>
           {children}
         </main>

@@ -16,7 +16,8 @@
   },
   "scripts": {
     "build:cli": "bun build-cli.ts",
-    "lint": "biome lint src/"
+    "lint": "biome lint src/",
+    "test": "bun test"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.13",

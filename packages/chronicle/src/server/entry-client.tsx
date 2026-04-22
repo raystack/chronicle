@@ -4,7 +4,10 @@ import { hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
 import { mdxComponents } from '@/components/mdx';
+import { getApiConfigsForVersion } from '@/lib/config';
 import { PageProvider } from '@/lib/page-context';
+import { resolveRoute, RouteType } from '@/lib/route-resolver';
+import { resolveVersionFromUrl, type VersionContext } from '@/lib/version-source';
 import type { ChronicleConfig, Frontmatter, Root, TableOfContents } from '@/types';
 import type { ApiSpec } from '@/lib/openapi';
 import type { ReactNode } from 'react';
@@ -14,10 +17,16 @@ interface EmbeddedData {
   config: ChronicleConfig;
   tree: Root;
   slug: string[];
+  version: VersionContext;
   frontmatter: Frontmatter;
   relativePath: string;
   originalPath?: string;
 }
+
+const defaultConfig: ChronicleConfig = {
+  site: { title: 'Documentation' },
+  content: [{ dir: 'docs', label: 'Docs' }],
+};
 
 const contentModules = import.meta.glob<{ default?: React.ComponentType<any>; toc?: TableOfContents }>(
   '../../.content/**/*.{mdx,md}'
@@ -43,14 +52,28 @@ async function hydrate() {
       window as unknown as { __PAGE_DATA__?: EmbeddedData }
     ).__PAGE_DATA__;
 
-    const config: ChronicleConfig = embedded?.config ?? {
-      title: 'Documentation'
-    };
+    const config: ChronicleConfig = embedded?.config ?? defaultConfig;
     const tree: Root = embedded?.tree ?? { name: 'root', children: [] };
-    const isApiPage =
-      window.location.pathname.startsWith('/apis') && !!config.api?.length;
-    const apiSpecs: ApiSpec[] = isApiPage
-      ? await fetch('/api/specs')
+
+    const route = resolveRoute(window.location.pathname, config);
+    // resolveVersionFromUrl always returns a valid context — even for redirect
+    // targets (e.g. /v1 -> /v1/docs) where route.version isn't on the union.
+    const routeVersion: VersionContext = resolveVersionFromUrl(
+      window.location.pathname,
+      config,
+    );
+    const version: VersionContext = embedded?.version ?? routeVersion;
+
+    const isApiRoute =
+      route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage;
+    const apiConfigs = isApiRoute
+      ? getApiConfigsForVersion(config, routeVersion.dir)
+      : [];
+    const specsUrl = routeVersion.dir
+      ? `/api/specs?version=${encodeURIComponent(routeVersion.dir)}`
+      : '/api/specs';
+    const apiSpecs: ApiSpec[] = apiConfigs.length
+      ? await fetch(specsUrl)
           .then(r => r.json())
           .catch(() => [])
       : [];
@@ -73,6 +96,7 @@ async function hydrate() {
             initialTree={tree}
             initialPage={page}
             initialApiSpecs={apiSpecs}
+            initialVersion={version}
             loadMdx={loadMdxModule}
           >
             <App />

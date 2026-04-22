@@ -1,6 +1,6 @@
 import { defineHandler } from 'nitro';
 import { buildApiRoutes } from '@/lib/api-routes';
-import { loadConfig } from '@/lib/config';
+import { getAllVersions, getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { getPages } from '@/lib/source';
 
@@ -23,11 +23,19 @@ export default defineHandler(async event => {
     return `<url><loc>${baseUrl}/${page.slugs.join('/')}</loc>${lastmod}</url>`;
   });
 
-  const apiPages = config.api?.length
-    ? buildApiRoutes(await loadApiSpecs(config.api)).map(
-        route => `<url><loc>${baseUrl}/apis/${route.slug.join('/')}</loc></url>`
-      )
-    : [];
+  const apiPages: string[] = [];
+  for (const v of getAllVersions(config)) {
+    const versionDir = v.isLatest ? null : v.dir;
+    const apiConfigs = getApiConfigsForVersion(config, versionDir);
+    if (!apiConfigs.length) continue;
+    const prefix = versionDir ? `/${versionDir}` : '';
+    const routes = buildApiRoutes(await loadApiSpecs(apiConfigs));
+    for (const route of routes) {
+      apiPages.push(
+        `<url><loc>${baseUrl}${prefix}/apis/${route.slug.join('/')}</loc></url>`,
+      );
+    }
+  }
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">

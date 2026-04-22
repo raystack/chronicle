@@ -18,7 +18,7 @@ export function ApiPage({ slug }: ApiPageProps) {
       <>
         <Head
           title='API Reference'
-          description={`API documentation for ${config.title}`}
+          description={`API documentation for ${config.site.title}`}
           config={config}
         />
         <ApiLanding specs={apiSpecs} />

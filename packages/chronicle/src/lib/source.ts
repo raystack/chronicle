@@ -3,6 +3,17 @@ import type { Root, Node, Folder } from 'fumadocs-core/page-tree';
 import type { MDXContent } from 'mdx/types';
 import type { TableOfContents } from 'fumadocs-core/toc';
 import type { Frontmatter } from '@/types';
+import {
+  getLatestContentRoots,
+  getVersionContentRoots,
+  loadConfig,
+} from './config';
+import {
+  filterPagesByVersion,
+  filterPageTreeByVersion,
+  resolveVersionFromUrl,
+  type VersionContext,
+} from './version-source';
 
 const CONTENT_PREFIX = '../../.content/';
 
@@ -33,12 +44,48 @@ function buildFiles() {
     });
   }
 
+  const userMetaPaths = new Set<string>();
   for (const [key, data] of Object.entries(metaGlob)) {
     const relativePath = key.slice(CONTENT_PREFIX.length);
+    userMetaPaths.add(relativePath);
     files.push({ type: 'meta', path: relativePath, data: data ?? {} });
   }
 
+  for (const entry of buildSyntheticMeta()) {
+    if (userMetaPaths.has(entry.path)) continue;
+    files.push(entry);
+  }
+
   return files;
+}
+
+function buildSyntheticMeta(): {
+  type: 'meta';
+  path: string;
+  data: Record<string, unknown>;
+}[] {
+  const config = loadConfig();
+  const entries: { type: 'meta'; path: string; data: Record<string, unknown> }[] = [];
+
+  for (const root of getLatestContentRoots(config)) {
+    entries.push({
+      type: 'meta',
+      path: `${root.contentDir}/meta.json`,
+      data: { title: root.contentLabel, root: true },
+    });
+  }
+
+  for (const version of config.versions ?? []) {
+    for (const root of getVersionContentRoots(config, version.dir)) {
+      entries.push({
+        type: 'meta',
+        path: `${version.dir}/${root.contentDir}/meta.json`,
+        data: { title: root.contentLabel, root: true },
+      });
+    }
+  }
+
+  return entries;
 }
 
 let cachedSource: ReturnType<typeof loader> | null = null;
@@ -104,6 +151,22 @@ export async function getPage(slugs?: string[]) {
   const s = await getSource();
   return s.getPage(slugs);
 }
+
+export async function getPageTreeForVersion(ctx: VersionContext): Promise<Root> {
+  const tree = await getPageTree();
+  return filterPageTreeByVersion(tree, ctx, loadConfig());
+}
+
+export async function getPagesForVersion(ctx: VersionContext) {
+  const pages = await getPages();
+  return filterPagesByVersion(pages, ctx, loadConfig());
+}
+
+export function getVersionContextForUrl(url: string): VersionContext {
+  return resolveVersionFromUrl(url, loadConfig());
+}
+
+export type { VersionContext } from './version-source';
 
 export function extractFrontmatter(page: { data: unknown }, fallbackTitle?: string): Frontmatter {
   const d = page.data as Record<string, unknown>;

@@ -7,21 +7,21 @@ import { linkContent } from '@/cli/utils/scaffold';
 export const startCommand = new Command('start')
   .description('Start production server')
   .option('-p, --port <port>', 'Port number', '3000')
-  .option('--content <path>', 'Content directory')
+  .option('--config <path>', 'Path to chronicle.yaml')
   .option('--host <host>', 'Host address', 'localhost')
   .action(async options => {
-    const { contentDir, configPath } = await loadCLIConfig(undefined, { content: options.content });
+    const { config, projectRoot, configPath } = await loadCLIConfig(options.config);
     const port = parseInt(options.port, 10);
-    await linkContent(contentDir);
+    await linkContent(projectRoot, config);
 
     console.log(chalk.cyan('Starting production server...'));
 
     const { preview } = await import('vite');
     const { createViteConfig } = await import('@/server/vite-config');
 
-    const config = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot: process.cwd(), contentDir, configPath });
+    const viteConfig = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot, configPath });
     const server = await preview({
-      ...config,
+      ...viteConfig,
       preview: { port, host: options.host }
     });
 

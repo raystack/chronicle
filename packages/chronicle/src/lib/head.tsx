@@ -1,3 +1,4 @@
+import { useLocation } from 'react-router';
 import type { ChronicleConfig } from '@/types';
 
 export interface HeadProps {
@@ -8,14 +9,21 @@ export interface HeadProps {
 }
 
 export function Head({ title, description, config, jsonLd }: HeadProps) {
-  const fullTitle = `${title} | ${config.title}`;
+  const { pathname } = useLocation();
+  const fullTitle = `${title} | ${config.site.title}`;
   const ogParams = new URLSearchParams({ title });
   if (description) ogParams.set('description', description);
+  const siteUrl = config.url ? config.url.replace(/\/$/, '') : null;
+  const canonical = siteUrl ? `${siteUrl}${pathname}` : null;
+  const ogImage = siteUrl
+    ? `${siteUrl}/og?${ogParams.toString()}`
+    : `/og?${ogParams.toString()}`;
 
   return (
     <>
       <title>{fullTitle}</title>
       {description && <meta name='description' content={description} />}
+      {canonical && <link rel='canonical' href={canonical} />}
 
       {config.url && (
         <>
@@ -23,9 +31,10 @@ export function Head({ title, description, config, jsonLd }: HeadProps) {
           {description && (
             <meta property='og:description' content={description} />
           )}
-          <meta property='og:site_name' content={config.title} />
+          <meta property='og:site_name' content={config.site.title} />
           <meta property='og:type' content='website' />
-          <meta property='og:image' content={`/og?${ogParams.toString()}`} />
+          {canonical && <meta property='og:url' content={canonical} />}
+          <meta property='og:image' content={ogImage} />
           <meta property='og:image:width' content='1200' />
           <meta property='og:image:height' content='630' />
 
@@ -34,7 +43,7 @@ export function Head({ title, description, config, jsonLd }: HeadProps) {
           {description && (
             <meta name='twitter:description' content={description} />
           )}
-          <meta name='twitter:image' content={`/og?${ogParams.toString()}`} />
+          <meta name='twitter:image' content={ogImage} />
         </>
       )}
 

@@ -1,9 +1,21 @@
-import { defineHandler } from 'nitro';
-import { loadConfig } from '@/lib/config';
+import { defineHandler, HTTPError } from 'nitro';
+import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 
-export default defineHandler(async () => {
+export default defineHandler(async event => {
+  const versionParam = event.url.searchParams.get('version');
+  const versionDir = versionParam === null || versionParam === '' ? null : versionParam;
+
   const config = loadConfig();
-  const specs = config.api?.length ? await loadApiSpecs(config.api) : [];
-  return specs;
+  if (versionDir && !config.versions?.some(v => v.dir === versionDir)) {
+    throw new HTTPError({
+      status: 400,
+      message: `Unknown version: ${versionDir}`,
+    });
+  }
+
+  const apiConfigs = getApiConfigsForVersion(config, versionDir);
+  if (!apiConfigs.length) return [];
+
+  return loadApiSpecs(apiConfigs);
 });

@@ -6,15 +6,34 @@ order: 3
 
 # Configuration
 
-All site configuration lives in a single `chronicle.yaml` file in your project root. The config is validated using Zod — invalid fields will produce clear error messages at startup.
+All site configuration lives in a single `chronicle.yaml` file in your project root. The config is validated using Zod — invalid fields produce clear errors at startup.
 
-## Full Example
+## Project layout
+
+```
+my-docs-site/
+├── chronicle.yaml
+├── content/                     ← latest
+│   ├── docs/
+│   └── dev/
+└── versions/                    ← only if versions: is declared
+    ├── v2/
+    │   └── docs/
+    └── v1/
+        ├── docs/
+        └── dev/
+```
+
+Content dirs declared in top-level `content:` are resolved under `content/<dir>/` for the latest version; each `versions[].content[].dir` is resolved under `versions/<version-dir>/<dir>/`.
+
+## Full example
 
 ```yaml
-title: My Project Docs
-description: Documentation for My Project
+site:
+  title: My Project Docs
+  description: Documentation for My Project
+
 url: https://docs.example.com
-content: docs
 preset: vercel
 
 logo:
@@ -24,12 +43,45 @@ logo:
 theme:
   name: default
 
+content:
+  - dir: docs
+    label: Docs
+  - dir: dev
+    label: Dev Docs
+
+latest:
+  label: "3.0"
+  landing: true
+
+versions:
+  - dir: v2
+    label: "2.0"
+    content:
+      - dir: docs
+        label: Docs
+
+  - dir: v1
+    label: "1.0"
+    landing: true
+    badge:
+      label: deprecated
+      variant: warning
+    content:
+      - dir: dev
+        label: Developer Guide
+      - dir: docs
+        label: Docs
+    api:
+      - name: REST API (v1)
+        spec: ./v1-openapi.yaml
+        basePath: /apis
+        server:
+          url: https://api.example.com/v1
+
 navigation:
   links:
     - label: GitHub
       href: https://github.com/myorg/myproject
-    - label: Blog
-      href: https://blog.example.com
 
 search:
   enabled: true
@@ -40,8 +92,6 @@ footer:
   links:
     - label: GitHub
       href: https://github.com/myorg/myproject
-    - label: License
-      href: /license
 
 api:
   - name: REST API
@@ -71,17 +121,24 @@ telemetry:
 
 ## Reference
 
-### title
+### site
 
-**Required.** The site title displayed in the navbar and browser tab.
+**Required.** Site-level metadata.
 
 ```yaml
-title: My Documentation
+site:
+  title: My Documentation
+  description: Documentation powered by Chronicle
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `title` | `string` | Site title (navbar, browser tab, canonical metadata). Required. |
+| `description` | `string` | Meta description for SEO and OG. |
 
 ### url
 
-Optional site URL. Used for SEO metadata, sitemap, and canonical URLs.
+Optional site URL used for the sitemap and canonical URLs.
 
 ```yaml
 url: https://docs.example.com
@@ -89,31 +146,83 @@ url: https://docs.example.com
 
 ### content
 
-Optional content directory path. Can be overridden by the `--content` CLI flag.
+**Required.** Content dirs for the latest version. Each entry maps to `content/<dir>/` on disk and to `/<dir>/...` in URLs.
 
 ```yaml
-content: docs
+content:
+  - dir: docs
+    label: Docs
+  - dir: dev
+    label: Dev Docs
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `dir` | `string` | Folder name under `content/`. Must be unique. |
+| `label` | `string` | Display label in navigation and landing pages. |
+
+### latest
+
+Optional metadata for the latest version. Required when `versions:` is declared.
+
+```yaml
+latest:
+  label: "3.0"
+  landing: true
+```
+
+| Field | Type | Description | Default |
+|-------|------|-------------|---------|
+| `label` | `string` | Version label (e.g. `3.0`). Shown in the version switcher. | — |
+| `landing` | `boolean` | `true` → `/` renders a landing page listing content dirs. `false` (default) → `/` 302s to the first content dir. | `false` |
+
+### versions
+
+Optional list of older versions. Each entry lives under `versions/<dir>/` on disk and is reachable at `/<dir>/...` in URLs.
+
+```yaml
+versions:
+  - dir: v1
+    label: "1.0"
+    landing: true
+    badge:
+      label: deprecated
+      variant: warning
+    content:
+      - dir: dev
+        label: Developer Guide
+      - dir: docs
+        label: Docs
+    api:
+      - name: REST API (v1)
+        spec: ./v1-openapi.yaml
+        basePath: /apis
+        server:
+          url: https://api.example.com/v1
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `dir` | `string` | Folder name under `versions/`. Doubles as URL prefix. Must be unique. |
+| `label` | `string` | Version label. Shown in the switcher. |
+| `landing` | `boolean` | `true` → `/<dir>` renders a landing page; otherwise 302s to the version's first content dir. Default `false`. |
+| `badge` | `object` | Optional Apsara badge next to the version label. |
+| `badge.label` | `string` | Badge text. |
+| `badge.variant` | `"accent" \| "warning" \| "danger" \| "success" \| "neutral" \| "gradient"` | Badge colour. Default `accent`. |
+| `content` | `{dir, label}[]` | Content dirs for this version. Entries may rename, reorder, or omit top-level content dirs. |
+| `api` | `ApiConfig[]` | Version-scoped API specs, rendered at `/<dir>/apis/...`. Same shape as top-level `api:`. |
 
 ### preset
 
-Optional deploy preset. Can be overridden by the `--preset` CLI flag.
+Optional deploy preset. Can be overridden by `--preset`.
 
 ```yaml
 preset: vercel # vercel, cloudflare, or node-server
 ```
 
-### description
-
-Optional meta description for SEO.
-
-```yaml
-description: Documentation powered by Chronicle
-```
-
 ### logo
 
-Logo configuration with theme-aware variants.
+Logo with theme-aware variants.
 
 ```yaml
 logo:
@@ -151,13 +260,9 @@ navigation:
   links:
     - label: GitHub
       href: https://github.com/myorg/myproject
-    - label: API
-      href: /apis
   social:
     - type: github
       href: https://github.com/myorg/myproject
-    - type: discord
-      href: https://discord.gg/example
 ```
 
 **navigation.links**
@@ -176,7 +281,7 @@ navigation:
 
 ### search
 
-Search functionality powered by Fumadocs.
+Search functionality powered by Fumadocs. Automatically scoped to the active version.
 
 ```yaml
 search:
@@ -189,7 +294,7 @@ search:
 | `enabled` | `boolean` | Enable/disable search | `true` |
 | `placeholder` | `string` | Search input placeholder | `Search...` |
 
-When enabled, search is accessible via the navbar button or keyboard shortcut `Cmd+K` / `Ctrl+K`.
+When enabled, search is accessible via the navbar button or keyboard shortcut `Cmd+K` / `Ctrl+K`. Active version comes from the URL; switching versions scopes the index.
 
 ### footer
 
@@ -212,7 +317,7 @@ footer:
 
 ### api
 
-OpenAPI specification configuration for interactive API documentation.
+OpenAPI specification configuration at the top level applies to the latest version (served at `/apis/...`). Version-scoped specs live under each `versions[].api`.
 
 ```yaml
 api:
@@ -228,8 +333,6 @@ api:
       placeholder: Enter your API key
 ```
 
-Each entry in the `api` array creates a section of API documentation.
-
 | Field | Type | Description |
 |-------|------|-------------|
 | `name` | `string` | API display name |
@@ -241,11 +344,9 @@ Each entry in the `api` array creates a section of API documentation.
 | `auth.header` | `string` | Header name for auth token |
 | `auth.placeholder` | `string` | Placeholder text in auth input |
 
-API pages include a "Try it out" panel that uses the configured server URL and auth settings.
-
 ### llms
 
-Configuration for LLM-friendly content generation. When enabled, Chronicle generates `/llms.txt` and `/llms-full.txt` endpoints.
+Per-version `llms.txt` generation.
 
 ```yaml
 llms:
@@ -254,7 +355,7 @@ llms:
 
 | Field | Type | Description | Default |
 |-------|------|-------------|---------|
-| `enabled` | `boolean` | Enable/disable LLM content endpoints | `false` |
+| `enabled` | `boolean` | Emit `/llms.txt` and `/<version-dir>/llms.txt` | `false` |
 
 ### analytics
 
@@ -274,7 +375,7 @@ analytics:
 
 ### telemetry
 
-Prometheus metrics export via OpenTelemetry. When enabled, metrics are served on a separate port.
+Prometheus metrics export via OpenTelemetry. Served on a separate port.
 
 ```yaml
 telemetry:
@@ -293,10 +394,14 @@ Metrics are available at `http://localhost:<port>/metrics` in Prometheus exposit
 
 ## Defaults
 
-If `chronicle.yaml` is missing or fields are omitted, these defaults apply:
+When `chronicle.yaml` is missing or fields are omitted, these defaults apply:
 
 ```yaml
-title: Documentation
+site:
+  title: Documentation
+content:
+  - dir: docs
+    label: Docs
 theme:
   name: default
 search:

@@ -6,33 +6,30 @@ import { linkContent } from '@/cli/utils/scaffold';
 
 export const buildCommand = new Command('build')
   .description('Build for production')
-  .option('--content <path>', 'Content directory')
   .option('--config <path>', 'Path to chronicle.yaml')
   .option(
     '--preset <preset>',
     'Deploy preset (vercel, cloudflare, node-server)'
   )
   .action(async options => {
-    const { contentDir, configPath, preset } = await loadCLIConfig(options.config, {
-      content: options.content,
+    const { config, projectRoot, configPath, preset } = await loadCLIConfig(options.config, {
       preset: options.preset,
     });
-    await linkContent(contentDir);
+    await linkContent(projectRoot, config);
 
     console.log(chalk.cyan('Building for production...'));
 
     const { createBuilder } = await import('vite');
     const { createViteConfig } = await import('@/server/vite-config');
 
-    const config = await createViteConfig({
+    const viteConfig = await createViteConfig({
       packageRoot: PACKAGE_ROOT,
-      projectRoot: process.cwd(),
-      contentDir,
+      projectRoot,
       configPath,
       preset
     });
 
-    const builder = await createBuilder({ ...config, builder: {} });
+    const builder = await createBuilder({ ...viteConfig, builder: {} });
     await builder.buildApp();
 
     console.log(chalk.green('Build complete'));

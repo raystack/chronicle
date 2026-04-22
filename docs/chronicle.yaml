@@ -1,6 +1,10 @@
-title: Chronicle
-description: Config-driven documentation framework
-content: .
+site:
+  title: Chronicle
+  description: Config-driven documentation framework
+
+content:
+  - dir: docs
+    label: Docs
 
 theme:
   name: paper
@@ -19,6 +23,8 @@ llms:
 
 telemetry:
   enabled: true
+
+preset: "vercel"
 
 footer:
   copyright: "© 2026 Raystack. All rights reserved."
