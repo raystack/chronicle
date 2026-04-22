@@ -1,16 +1,20 @@
 import {
-  CodeBracketSquareIcon,
+  ArrowLeftIcon,
   CubeIcon,
+  ArrowRightIcon,
+  CodeBracketSquareIcon,
   RectangleStackIcon
 } from '@heroicons/react/24/outline';
-import { Flex, Sidebar } from '@raystack/apsara';
+import { Flex, IconButton, Sidebar } from '@raystack/apsara';
 import { cx } from 'class-variance-authority';
-import { useEffect, useRef } from 'react';
-import { Link as RouterLink, useLocation } from 'react-router';
+import { useEffect, useMemo, useRef } from 'react';
+import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
 import { Footer } from '@/components/ui/footer';
 import { Search } from '@/components/ui/search';
+import { Breadcrumbs } from '@/components/ui/breadcrumbs';
+import { usePageContext } from '@/lib/page-context';
 import type { Node } from 'fumadocs-core/page-tree';
 import type { ThemeLayoutProps } from '@/types';
 import { ContentDirButtons } from './ContentDirButtons';
@@ -36,8 +40,16 @@ export function Layout({
   classNames
 }: ThemeLayoutProps) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+  const { page } = usePageContext();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isApiRoute = pathname.startsWith('/apis');
+  const { prev, next } = page ?? { prev: null, next: null };
+
+  const slug = useMemo(
+    () => (pathname === '/' ? [] : pathname.split('/').filter(Boolean)),
+    [pathname]
+  );
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -104,9 +116,36 @@ export function Layout({
               ))}
             </div>
           </nav>
-          <main className={cx(styles.content, classNames?.content)}>
-            {children}
-          </main>
+          <div className={styles.cardWrapper}>
+            <div className={styles.card}>
+              <nav className={styles.subNav}>
+                <Flex align='center' gap='small' className={styles.subNavLeft}>
+                  <Flex align='center' gap='extra-small'>
+                    <IconButton
+                      size={2}
+                      disabled={!prev}
+                      onClick={() => prev && navigate(prev.url)}
+                      aria-label='Previous page'
+                    >
+                      <ArrowLeftIcon width={14} height={14} />
+                    </IconButton>
+                    <IconButton
+                      size={2}
+                      disabled={!next}
+                      onClick={() => next && navigate(next.url)}
+                      aria-label='Next page'
+                    >
+                      <ArrowRightIcon width={14} height={14} />
+                    </IconButton>
+                  </Flex>
+                  <Breadcrumbs slug={slug} tree={tree} />
+                </Flex>
+              </nav>
+              <main className={cx(styles.content, classNames?.content)}>
+                {children}
+              </main>
+            </div>
+          </div>
         </Flex>
       </Flex>
       <Footer config={config.footer} />
