@@ -3,7 +3,9 @@ import {
   CubeIcon,
   ArrowRightIcon,
   CodeBracketSquareIcon,
-  RectangleStackIcon
+  RectangleStackIcon,
+  DocumentTextIcon,
+  Squares2X2Icon
 } from '@heroicons/react/24/outline';
 import { Flex, IconButton, Sidebar } from '@raystack/apsara';
 import { cx } from 'class-variance-authority';
