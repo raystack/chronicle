@@ -1,6 +1,9 @@
-import { DocumentIcon, HashtagIcon } from '@heroicons/react/24/outline';
-import { Button, Command, Dialog, Text } from '@raystack/apsara';
-import { cx } from 'class-variance-authority';
+import {
+  DocumentIcon,
+  HashtagIcon,
+  MagnifyingGlassIcon
+} from '@heroicons/react/24/outline';
+import { Command, Dialog, IconButton, Text } from '@raystack/apsara';
 import type { SortedResult } from 'fumadocs-core/search';
 import { useDocsSearch } from 'fumadocs-core/search/client';
 import { useCallback, useEffect, useState } from 'react';
@@ -8,21 +11,6 @@ import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { usePageContext } from '@/lib/page-context';
 import styles from './search.module.css';
-
-function SearchShortcutKey({ className }: { className?: string }) {
-  const [key, setKey] = useState('⌘');
-
-  useEffect(() => {
-    const isMac = navigator.platform?.toUpperCase().includes('MAC');
-    setKey(isMac ? '⌘' : 'Ctrl');
-  }, []);
-
-  return (
-    <kbd className={className} suppressHydrationWarning>
-      {key} K
-    </kbd>
-  );
-}
 
 interface SearchProps {
   className?: string;
@@ -67,16 +55,13 @@ export function Search({ className }: SearchProps) {
 
   return (
     <>
-      <Button
-        variant='outline'
-        color='neutral'
-        size='small'
+      <IconButton
+        size={3}
         onClick={() => setOpen(true)}
-        className={cx(styles.trigger, className)}
-        trailingIcon={<SearchShortcutKey className={styles.kbd} />}
+        className={className}
       >
-        Search...
-      </Button>
+        <MagnifyingGlassIcon width={16} height={16} />
+      </IconButton>
 
       <Dialog open={open} onOpenChange={setOpen}>
         <Dialog.Content className={styles.dialogContent}>

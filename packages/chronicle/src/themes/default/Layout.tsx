@@ -1,12 +1,9 @@
-import { RectangleStackIcon } from '@heroicons/react/24/outline';
 import {
-  Button,
-  Flex,
-  Headline,
-  Link,
-  Navbar,
-  Sidebar
-} from '@raystack/apsara';
+  CodeBracketSquareIcon,
+  CubeIcon,
+  RectangleStackIcon
+} from '@heroicons/react/24/outline';
+import { Flex, Sidebar } from '@raystack/apsara';
 import { cx } from 'class-variance-authority';
 import { useEffect, useRef } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router';
@@ -40,6 +37,7 @@ export function Layout({
 }: ThemeLayoutProps) {
   const { pathname } = useLocation();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isApiRoute = pathname.startsWith('/apis');
 
   useEffect(() => {
     const el = scrollRef.current;
@@ -61,40 +59,6 @@ export function Layout({
 
   return (
     <Flex direction='column' className={cx(styles.layout, classNames?.layout)}>
-      <Navbar className={styles.header}>
-        <Navbar.Start>
-          <RouterLink
-            to='/'
-            style={{ textDecoration: 'none', color: 'inherit' }}
-          >
-            <Headline size='small' weight='medium' as='h1'>
-              {config.site.title}
-            </Headline>
-          </RouterLink>
-        </Navbar.Start>
-        <Navbar.End>
-          <Flex gap='medium' align='center' className={styles.navActions}>
-            <ContentDirButtons />
-            <VersionSwitcher />
-            {config.api?.map(api => (
-              <RouterLink
-                key={api.basePath}
-                to={api.basePath}
-                className={styles.navButton}
-              >
-                {api.name} API
-              </RouterLink>
-            ))}
-            {config.navigation?.links?.map(link => (
-              <Link key={link.href} href={link.href}>
-                {link.label}
-              </Link>
-            ))}
-            {config.search?.enabled && <Search />}
-          </Flex>
-          <ClientThemeSwitcher size={16} />
-        </Navbar.End>
-      </Navbar>
       <Flex className={cx(styles.body, classNames?.body)}>
         {hideSidebar ? null : (
           <Sidebar
@@ -102,6 +66,17 @@ export function Layout({
             collapsible={false}
             className={cx(styles.sidebar, classNames?.sidebar)}
           >
+            <Sidebar.Header className={styles.sidebarHeader}>
+              <Flex gap='small' align='center'>
+                <CubeIcon width={24} height={24} />
+                <div className={styles.headerDivider} />
+                <VersionSwitcher />
+              </Flex>
+              <Flex gap='small' align='center'>
+                {config.search?.enabled && <Search />}
+                <ClientThemeSwitcher size={16} />
+              </Flex>
+            </Sidebar.Header>
             <Sidebar.Main ref={scrollRef}>
               {tree.children.map((item, i) => (
                 <SidebarNode
@@ -113,9 +88,26 @@ export function Layout({
             </Sidebar.Main>
           </Sidebar>
         )}
-        <main className={cx(styles.content, classNames?.content)}>
-          {children}
-        </main>
+        <Flex direction='column' className={styles.mainArea}>
+          <nav className={styles.tabBar}>
+            <div className={styles.tabs}>
+              <ContentDirButtons />
+              {config.api?.map(api => (
+                <RouterLink
+                  key={api.basePath}
+                  to={api.basePath}
+                  className={cx(styles.tab, isApiRoute && styles.tabActive)}
+                >
+                  <CodeBracketSquareIcon width={12} height={12} />
+                  <span>{api.name} API</span>
+                </RouterLink>
+              ))}
+            </div>
+          </nav>
+          <main className={cx(styles.content, classNames?.content)}>
+            {children}
+          </main>
+        </Flex>
       </Flex>
       <Footer config={config.footer} />
     </Flex>
