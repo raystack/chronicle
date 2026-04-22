@@ -9,7 +9,7 @@ import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
-import { getPage, getPageTree, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
+import { getPageTree, getPage, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
 import { useNitroApp } from 'nitro/app';
 import { App } from './App';
 
@@ -41,9 +41,10 @@ export default {
       : [];
     const apiSpecs = apiConfigs.length ? await loadApiSpecs(apiConfigs) : [];
 
-    const [tree, page] = await Promise.all([
+    const [tree, page, nav] = await Promise.all([
       getPageTree(),
       route.type === RouteType.DocsPage ? getPage(route.slug) : Promise.resolve(null),
+      getPageNav(pageSlug),
     ]);
 
     const relativePath = page ? getRelativePath(page) : null;
@@ -58,8 +59,8 @@ export default {
             ? React.createElement(mdxModule.default, { components: mdxComponents })
             : null,
           toc: mdxModule?.toc ?? [],
-          prev: null,
-          next: null,
+          prev: nav.prev,
+          next: nav.next,
         }
       : null;
 
