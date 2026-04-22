@@ -46,6 +46,8 @@ export function Layout({
   const { page } = usePageContext();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isApiRoute = pathname.startsWith('/apis');
+  const isApiBase = (basePath: string) =>
+    pathname === basePath || pathname.startsWith(`${basePath}/`);
   const { prev, next } = page ?? { prev: null, next: null };
 
   const slug = useMemo(
@@ -110,7 +112,10 @@ export function Layout({
                 <RouterLink
                   key={api.basePath}
                   to={api.basePath}
-                  className={cx(styles.tab, isApiRoute && styles.tabActive)}
+                  className={cx(
+                    styles.tab,
+                    isApiBase(api.basePath) && styles.tabActive
+                  )}
                 >
                   <CodeBracketSquareIcon width={12} height={12} />
                   <span>{api.name} API</span>
@@ -140,7 +145,7 @@ export function Layout({
                       <ArrowRightIcon width={14} height={14} />
                     </IconButton>
                   </Flex>
-                  <Breadcrumbs slug={slug} tree={tree} />
+                  {!isApiRoute && <Breadcrumbs slug={slug} tree={tree} />}
                 </Flex>
               </nav>
               <main className={cx(styles.content, classNames?.content)}>

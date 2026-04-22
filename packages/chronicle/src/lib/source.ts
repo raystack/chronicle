@@ -177,7 +177,7 @@ export async function getPageNav(slug: string[]): Promise<PageNav> {
   if (i < 0) return { prev: null, next: null };
   const toLink = (p: (typeof pages)[number]): PageNavLink => ({
     url: p.url,
-    title: String(p.name ?? '')
+    title: typeof p.name === 'string' ? p.name : ''
   });
   return {
     prev: i > 0 ? toLink(pages[i - 1]) : null,

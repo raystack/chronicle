@@ -131,7 +131,7 @@ export function PageProvider({
         }
         return res.json();
       })
-      .then(async (data: { frontmatter: Frontmatter; relativePath: string; originalPath?: string; prev: Page['prev']; next: Page['next'] } | undefined) => {
+      .then(async (data: { frontmatter: Frontmatter; relativePath: string; originalPath?: string; prev?: Page['prev']; next?: Page['next'] } | undefined) => {
         if (cancelled.current || !data) return;
         const { content, toc } = await loadMdx(data.originalPath || data.relativePath);
         if (cancelled.current) return;

@@ -58,6 +58,7 @@ export function Search({ className }: SearchProps) {
       <IconButton
         size={3}
         aria-label='Search'
+        title='Search (⌘K)'
         onClick={() => setOpen(true)}
         className={className}
       >
