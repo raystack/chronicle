@@ -351,9 +351,11 @@ describe('getAllVersions', () => {
     ])
   })
 
-  test('returns empty when no latest and no versions', () => {
+  test('always includes the latest entry, even without latest or versions', () => {
     const cfg = chronicleConfigSchema.parse(minimal)
-    expect(getAllVersions(cfg)).toEqual([])
+    expect(getAllVersions(cfg)).toEqual([
+      { dir: null, label: '', isLatest: true },
+    ])
   })
 })
 

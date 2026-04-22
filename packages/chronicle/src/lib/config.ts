@@ -21,7 +21,13 @@ export function loadConfig(): ChronicleConfig {
 
   if (!raw) return defaultConfig
 
-  return chronicleConfigSchema.parse(parse(raw))
+  const parsed = chronicleConfigSchema.parse(parse(raw))
+  return {
+    ...defaultConfig,
+    ...parsed,
+    theme: { ...defaultConfig.theme, ...parsed.theme },
+    search: { ...defaultConfig.search, ...parsed.search },
+  }
 }
 
 export interface ContentRoot {
@@ -101,11 +107,13 @@ export function getApiConfigsForVersion(
 }
 
 export function getAllVersions(config: ChronicleConfig): VersionDescriptor[] {
-  const result: VersionDescriptor[] = []
-
-  if (config.latest) {
-    result.push({ dir: null, label: config.latest.label, isLatest: true })
-  }
+  const result: VersionDescriptor[] = [
+    {
+      dir: null,
+      label: config.latest?.label ?? '',
+      isLatest: true,
+    },
+  ]
 
   for (const v of config.versions ?? []) {
     result.push({
