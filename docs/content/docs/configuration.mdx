@@ -24,7 +24,7 @@ my-docs-site/
         └── dev/
 ```
 
-Content dirs declared in `content:` are resolved under `content/` for the latest version; each `versions[].content[]` entry is resolved under `versions/<version-dir>/`.
+Content dirs declared in top-level `content:` are resolved under `content/<dir>/` for the latest version; each `versions[].content[].dir` is resolved under `versions/<version-dir>/<dir>/`.
 
 ## Full example
 
