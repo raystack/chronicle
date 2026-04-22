@@ -50,6 +50,8 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--rs-space-3);
+  height: 48px;
+  box-sizing: border-box;
   padding: var(--rs-space-3) var(--rs-space-4);
 }
 
