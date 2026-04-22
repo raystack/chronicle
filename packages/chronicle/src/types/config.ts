@@ -127,7 +127,14 @@ const versionSchema = z.object({
 const allUnique = <T>(items: T[], key: (item: T) => string): boolean =>
   uniqBy(items, key).length === items.length
 
-const RESERVED_ROUTE_SEGMENTS = ['apis'] as const
+const RESERVED_ROUTE_SEGMENTS = [
+  'api',
+  'apis',
+  'og',
+  'llms.txt',
+  'robots.txt',
+  'sitemap.xml',
+] as const
 
 export const chronicleConfigSchema = z
   .object({
@@ -181,22 +188,34 @@ export const chronicleConfigSchema = z
       path: ['versions'],
     },
   )
-  .refine(
-    (cfg) => {
-      const reserved = new Set<string>(RESERVED_ROUTE_SEGMENTS)
-      const topLevel = cfg.content.map((c) => c.dir)
-      const versionDirs = cfg.versions?.map((v) => v.dir) ?? []
-      const versionContent =
-        cfg.versions?.flatMap((v) => v.content.map((c) => c.dir)) ?? []
-      return ![...topLevel, ...versionDirs, ...versionContent].some((d) =>
-        reserved.has(d),
-      )
-    },
-    {
-      message: `dir must not be a reserved route segment: ${RESERVED_ROUTE_SEGMENTS.join(', ')}`,
-      path: ['content'],
-    },
-  )
+  .superRefine((cfg, ctx) => {
+    const reserved = new Set<string>(RESERVED_ROUTE_SEGMENTS)
+    const message = `dir must not be a reserved route segment: ${RESERVED_ROUTE_SEGMENTS.join(', ')}`
+
+    cfg.content.forEach((c, i) => {
+      if (reserved.has(c.dir)) {
+        ctx.addIssue({ code: 'custom', message, path: ['content', i, 'dir'] })
+      }
+    })
+    cfg.versions?.forEach((v, vi) => {
+      if (reserved.has(v.dir)) {
+        ctx.addIssue({
+          code: 'custom',
+          message,
+          path: ['versions', vi, 'dir'],
+        })
+      }
+      v.content.forEach((c, ci) => {
+        if (reserved.has(c.dir)) {
+          ctx.addIssue({
+            code: 'custom',
+            message,
+            path: ['versions', vi, 'content', ci, 'dir'],
+          })
+        }
+      })
+    })
+  })
 
 export type ChronicleConfig = z.infer<typeof chronicleConfigSchema>
 export type SiteConfig = z.infer<typeof siteSchema>

@@ -1,7 +1,7 @@
 import '@raystack/apsara/normalize.css';
 import '@raystack/apsara/style.css';
 import { ThemeProvider } from '@raystack/apsara';
-import { useLocation } from 'react-router';
+import { Navigate, useLocation } from 'react-router';
 import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
@@ -18,6 +18,10 @@ export function App() {
   const { config } = usePageContext();
   const route = resolveRoute(pathname, config);
   const themeConfig = getThemeConfig(config.theme?.name);
+
+  if (route.type === RouteType.Redirect) {
+    return <Navigate to={route.to} replace />;
+  }
 
   const isApi =
     route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage;

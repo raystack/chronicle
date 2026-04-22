@@ -54,16 +54,19 @@ async function hydrate() {
 
     const config: ChronicleConfig = embedded?.config ?? defaultConfig;
     const tree: Root = embedded?.tree ?? { name: 'root', children: [] };
-    const version: VersionContext = embedded?.version ?? LATEST_CONTEXT;
 
     const route = resolveRoute(window.location.pathname, config);
+    const routeVersion: VersionContext =
+      route.type === RouteType.Redirect ? LATEST_CONTEXT : route.version;
+    const version: VersionContext = embedded?.version ?? routeVersion;
+
     const isApiRoute =
       route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage;
     const apiConfigs = isApiRoute
-      ? getApiConfigsForVersion(config, version.dir)
+      ? getApiConfigsForVersion(config, routeVersion.dir)
       : [];
-    const specsUrl = version.dir
-      ? `/api/specs?version=${encodeURIComponent(version.dir)}`
+    const specsUrl = routeVersion.dir
+      ? `/api/specs?version=${encodeURIComponent(routeVersion.dir)}`
       : '/api/specs';
     const apiSpecs: ApiSpec[] = apiConfigs.length
       ? await fetch(specsUrl)
