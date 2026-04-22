@@ -46,7 +46,10 @@ async function mirrorTree(source: string, dest: string): Promise<void> {
   try {
     entries = await fs.readdir(source, { withFileTypes: true });
   } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
+    const err = error as NodeJS.ErrnoException;
+    if (err.code === 'ENOENT') {
+      throw new Error(`Content directory not found: ${source}`);
+    }
     throw error;
   }
   await fs.mkdir(dest, { recursive: true });

@@ -91,11 +91,11 @@ export function filterPageTreeByContentDir(
 ): Root {
   if (contentDir === null) return tree
   const expectedPrefix = `${ctx.urlPrefix}/${contentDir}`
-  const match = tree.children.find(
-    (n): n is Folder =>
-      n.type === 'folder' &&
-      nodeUrls(n).every((u) => isUnderPrefix(u, expectedPrefix)),
-  )
+  const match = tree.children.find((n): n is Folder => {
+    if (n.type !== 'folder') return false
+    const urls = nodeUrls(n)
+    return urls.length > 0 && urls.every((u) => isUnderPrefix(u, expectedPrefix))
+  })
   if (!match) return { ...tree, children: [] }
   return { ...tree, children: match.children }
 }
