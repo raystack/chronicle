@@ -2,6 +2,7 @@ import {
   ArrowLeftIcon,
   CubeIcon,
   ArrowRightIcon,
+  CodeBracketSquareIcon,
   RectangleStackIcon,
   DocumentTextIcon,
   Squares2X2Icon
@@ -14,6 +15,8 @@ import { MethodBadge } from '@/components/api/method-badge';
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
 import { Search } from '@/components/ui/search';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
+import { getLandingEntries } from '@/lib/config';
+import { getActiveContentDir } from '@/lib/navigation';
 import { usePageContext } from '@/lib/page-context';
 import type { Node } from 'fumadocs-core/page-tree';
 import type { ThemeLayoutProps } from '@/types';
@@ -40,10 +43,17 @@ export function Layout({
 }: ThemeLayoutProps) {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { page } = usePageContext();
+  const { page, version } = usePageContext();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isApiRoute = pathname.startsWith('/apis');
+  const isApiBase = (basePath: string) =>
+    pathname === basePath || pathname.startsWith(`${basePath}/`);
   const { prev, next } = page ?? { prev: null, next: null };
+
+  const contentEntries = getLandingEntries(config, version.dir);
+  const activeContentDir = getActiveContentDir(pathname, config);
+  const apiEntries = config.api ?? [];
+  const showTopLinks = contentEntries.length + apiEntries.length > 1;
 
   const slug = useMemo(
     () => (pathname === '/' ? [] : pathname.split('/').filter(Boolean)),
@@ -85,6 +95,32 @@ export function Layout({
               </Flex>
             </Sidebar.Header>
             <Sidebar.Main ref={scrollRef} className={styles.sidebarMain}>
+              {showTopLinks ? (
+                <>
+                  {contentEntries.map(entry => (
+                    <Sidebar.Item
+                      key={entry.href}
+                      href={entry.href}
+                      active={activeContentDir === entry.contentDir}
+                      leadingIcon={<DocumentTextIcon width={16} height={16} />}
+                      render={<RouterLink to={entry.href} />}
+                    >
+                      {entry.label}
+                    </Sidebar.Item>
+                  ))}
+                  {apiEntries.map(api => (
+                    <Sidebar.Item
+                      key={api.basePath}
+                      href={api.basePath}
+                      active={isApiBase(api.basePath)}
+                      leadingIcon={<CodeBracketSquareIcon width={16} height={16} />}
+                      render={<RouterLink to={api.basePath} />}
+                    >
+                      {api.name} API
+                    </Sidebar.Item>
+                  ))}
+                </>
+              ) : null}
               {tree.children.map((item, i) => (
                 <SidebarNode
                   key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}

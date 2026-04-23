@@ -69,6 +69,7 @@
   gap: var(--rs-space-3);
   height: 48px;
   box-sizing: border-box;
+  margin-bottom: 0;
   padding: 0 var(--rs-space-5);
   background: var(--rs-color-background-base-secondary);
   border-bottom: 0.5px solid var(--rs-color-border-base-primary);
