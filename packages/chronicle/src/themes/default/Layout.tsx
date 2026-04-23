@@ -2,7 +2,6 @@ import {
   ArrowLeftIcon,
   CubeIcon,
   ArrowRightIcon,
-  CodeBracketSquareIcon,
   RectangleStackIcon,
   DocumentTextIcon,
   Squares2X2Icon
@@ -13,13 +12,11 @@ import { useEffect, useMemo, useRef } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
-import { Footer } from '@/components/ui/footer';
 import { Search } from '@/components/ui/search';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import { usePageContext } from '@/lib/page-context';
 import type { Node } from 'fumadocs-core/page-tree';
 import type { ThemeLayoutProps } from '@/types';
-import { ContentDirButtons } from './ContentDirButtons';
 import styles from './Layout.module.css';
 import { VersionSwitcher } from './VersionSwitcher';
 
@@ -46,8 +43,6 @@ export function Layout({
   const { page } = usePageContext();
   const scrollRef = useRef<HTMLDivElement>(null);
   const isApiRoute = pathname.startsWith('/apis');
-  const isApiBase = (basePath: string) =>
-    pathname === basePath || pathname.startsWith(`${basePath}/`);
   const { prev, next } = page ?? { prev: null, next: null };
 
   const slug = useMemo(
@@ -83,11 +78,7 @@ export function Layout({
             className={cx(styles.sidebar, classNames?.sidebar)}
           >
             <Sidebar.Header className={styles.sidebarHeader}>
-              <Flex gap='small' align='center'>
-                <CubeIcon width={24} height={24} />
-                <div className={styles.headerDivider} />
-                <VersionSwitcher />
-              </Flex>
+              <CubeIcon width={28} height={28} />
               <Flex gap='small' align='center'>
                 {config.search?.enabled && <Search />}
                 <ClientThemeSwitcher size={16} />
@@ -102,27 +93,14 @@ export function Layout({
                 />
               ))}
             </Sidebar.Main>
+            {config.versions?.length ? (
+              <Sidebar.Footer className={styles.sidebarFooter}>
+                <VersionSwitcher />
+              </Sidebar.Footer>
+            ) : null}
           </Sidebar>
         )}
         <Flex direction='column' className={styles.mainArea}>
-          <nav className={styles.tabBar}>
-            <div className={styles.tabs}>
-              <ContentDirButtons />
-              {config.api?.map(api => (
-                <RouterLink
-                  key={api.basePath}
-                  to={api.basePath}
-                  className={cx(
-                    styles.tab,
-                    isApiBase(api.basePath) && styles.tabActive
-                  )}
-                >
-                  <CodeBracketSquareIcon width={12} height={12} />
-                  <span>{api.name} API</span>
-                </RouterLink>
-              ))}
-            </div>
-          </nav>
           <div className={styles.cardWrapper}>
             <div className={styles.card}>
               <nav className={styles.subNav}>
@@ -155,7 +133,6 @@ export function Layout({
           </div>
         </Flex>
       </Flex>
-      <Footer config={config.footer} />
     </Flex>
   );
 }

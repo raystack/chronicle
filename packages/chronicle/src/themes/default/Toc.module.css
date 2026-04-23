@@ -1,6 +1,6 @@
 .toc {
   position: fixed;
-  right: calc(var(--rs-space-5) + var(--rs-space-3));
+  right: var(--rs-space-3);
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
