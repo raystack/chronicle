@@ -30,7 +30,7 @@ export function FieldRow({ field, location, editable, value, onChange }: FieldRo
     const objValue = (value ?? {}) as Record<string, unknown>
     return (
       <div className={styles.row}>
-        <Accordion collapsible className={styles.accordion}>
+        <Accordion className={styles.accordion}>
           <Accordion.Item value={field.name}>
             <Accordion.Trigger className={styles.trigger}>{label}</Accordion.Trigger>
             <Accordion.Content>

@@ -86,8 +86,8 @@ export async function createViteConfig(
     resolve: {
       alias: {
         '@': path.resolve(packageRoot, 'src'),
+        'tslib': 'tslib/tslib.es6.js',
       },
-      conditions: ['module-sync', 'import', 'node'],
       dedupe: [
         'react',
         'react-dom',

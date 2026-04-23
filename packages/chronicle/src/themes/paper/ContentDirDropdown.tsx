@@ -1,5 +1,5 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { Button, DropdownMenu } from '@raystack/apsara';
+import { Button, Menu } from '@raystack/apsara';
 import { useLocation, useNavigate } from 'react-router';
 import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir } from '@/lib/navigation';
@@ -18,28 +18,30 @@ export function ContentDirDropdown() {
     entries.find(e => e.contentDir === activeDir) ?? entries[0];
 
   return (
-    <DropdownMenu>
-      <DropdownMenu.Trigger asChild>
-        <Button
-          size='small'
-          variant='outline'
-          color='neutral'
-          width='100%'
-          trailingIcon={<ChevronDownIcon width={14} height={14} />}
-        >
-          {activeEntry.label}
-        </Button>
-      </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
+    <Menu>
+      <Menu.Trigger
+        render={
+          <Button
+            size='small'
+            variant='outline'
+            color='neutral'
+            width='100%'
+            trailingIcon={<ChevronDownIcon width={14} height={14} />}
+          />
+        }
+      >
+        {activeEntry.label}
+      </Menu.Trigger>
+      <Menu.Content>
         {entries.map(entry => (
-          <DropdownMenu.Item
+          <Menu.Item
             key={entry.href}
             onClick={() => navigate(entry.href)}
           >
             {entry.label}
-          </DropdownMenu.Item>
+          </Menu.Item>
         ))}
-      </DropdownMenu.Content>
-    </DropdownMenu>
+      </Menu.Content>
+    </Menu>
   );
 }

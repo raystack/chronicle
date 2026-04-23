@@ -20,7 +20,7 @@ function MdxTabs(props: ComponentProps<typeof Tabs>) {
   return <ClientOnly><Tabs {...props} /></ClientOnly>
 }
 MdxTabs.List = Tabs.List
-MdxTabs.Trigger = Tabs.Trigger
+MdxTabs.Tab = Tabs.Tab
 MdxTabs.Content = Tabs.Content
 
 export const mdxComponents: MDXComponents = {
