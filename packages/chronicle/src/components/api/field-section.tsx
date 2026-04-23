@@ -57,8 +57,8 @@ export function FieldSection({
         <div className={styles.separator} />
         <Tabs defaultValue="fields" className={styles.tabs}>
           <Tabs.List>
-            <Tabs.Trigger value="fields">Fields</Tabs.Trigger>
-            <Tabs.Trigger value="json">JSON</Tabs.Trigger>
+            <Tabs.Tab value="fields">Fields</Tabs.Tab>
+            <Tabs.Tab value="json">JSON</Tabs.Tab>
           </Tabs.List>
           <Tabs.Content value="fields">
             {fieldsContent}

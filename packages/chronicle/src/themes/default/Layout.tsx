@@ -162,7 +162,7 @@ function SidebarNode({
       href={href}
       active={isActive}
       leadingIcon={icon ?? undefined}
-      as={link}
+      render={link}
     >
       {item.name}
     </Sidebar.Item>
