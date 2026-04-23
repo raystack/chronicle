@@ -93,7 +93,7 @@ export function Layout({
                 <ClientThemeSwitcher size={16} />
               </Flex>
             </Sidebar.Header>
-            <Sidebar.Main ref={scrollRef}>
+            <Sidebar.Main ref={scrollRef} className={styles.sidebarMain}>
               {tree.children.map((item, i) => (
                 <SidebarNode
                   key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
@@ -162,28 +162,41 @@ export function Layout({
 
 function SidebarNode({
   item,
-  pathname
+  pathname,
+  depth = 0
 }: {
   item: Node;
   pathname: string;
+  depth?: number;
 }) {
   if (item.type === 'separator') {
     return null;
   }
 
   if (item.type === 'folder') {
+    if (depth > 1) return null;
     const icon = typeof item.icon === 'string' ? iconMap[item.icon] : item.icon;
     return (
       <Sidebar.Group
+        className={styles.navGroup}
+        data-depth={depth}
         label={item.name?.toString() ?? ''}
         leadingIcon={icon ?? undefined}
-        classNames={{ items: styles.groupItems }}
+        collapsible={depth === 1}
+        classNames={{
+          items: styles.groupItems,
+          header: styles.navGroupHeader,
+          trigger: styles.navGroupTrigger,
+          label: styles.navGroupLabel,
+          chevron: styles.navGroupChevron,
+        }}
       >
         {item.children.map((child, i) => (
           <SidebarNode
             key={child.type === 'page' ? child.url : (child.name?.toString() ?? i)}
             item={child}
             pathname={pathname}
+            depth={depth + 1}
           />
         ))}
       </Sidebar.Group>
