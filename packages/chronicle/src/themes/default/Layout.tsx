@@ -20,6 +20,7 @@ import { usePageContext } from '@/lib/page-context';
 import type { Node } from 'fumadocs-core/page-tree';
 import type { ThemeLayoutProps } from '@/types';
 import styles from './Layout.module.css';
+import { OpenInAI } from './OpenInAI';
 import { SidebarLogo } from './SidebarLogo';
 import { VersionSwitcher } from './VersionSwitcher';
 
@@ -189,6 +190,7 @@ export function Layout({
                   </Flex>
                   {!isApiRoute && <Breadcrumbs slug={slug} tree={tree} />}
                 </Flex>
+                <OpenInAI />
               </nav>
               <main className={cx(styles.content, classNames?.content)}>
                 {children}
