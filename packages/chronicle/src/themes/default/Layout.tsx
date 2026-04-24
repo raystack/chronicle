@@ -96,13 +96,14 @@ export function Layout({
             </Sidebar.Header>
             <Sidebar.Main ref={scrollRef} className={styles.sidebarMain}>
               {showTopLinks ? (
-                <>
+                <div className={styles.topLinks}>
                   {contentEntries.map(entry => (
                     <Sidebar.Item
                       key={entry.href}
                       href={entry.href}
                       active={activeContentDir === entry.contentDir}
                       leadingIcon={<DocumentTextIcon width={16} height={16} />}
+                      classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
                       render={<RouterLink to={entry.href} />}
                     >
                       {entry.label}
@@ -114,12 +115,13 @@ export function Layout({
                       href={api.basePath}
                       active={isApiBase(api.basePath)}
                       leadingIcon={<CodeBracketSquareIcon width={16} height={16} />}
+                      classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
                       render={<RouterLink to={api.basePath} />}
                     >
                       {api.name} API
                     </Sidebar.Item>
                   ))}
-                </>
+                </div>
               ) : null}
               {tree.children.map((item, i) => (
                 <SidebarNode

@@ -3,6 +3,7 @@
 import { Breadcrumb } from '@raystack/apsara'
 import { getBreadcrumbItems } from 'fumadocs-core/breadcrumb'
 import type { Root } from 'fumadocs-core/page-tree'
+import { Link as RouterLink } from 'react-router'
 
 interface BreadcrumbsProps {
   slug: string[]
@@ -18,11 +19,12 @@ export function Breadcrumbs({ slug, tree }: BreadcrumbsProps) {
   return (
     <Breadcrumb size="small">
       {items.flatMap((item, index) => {
+        const isCurrent = index === items.length - 1
         const breadcrumbItem = (
           <Breadcrumb.Item
             key={`item-${index}`}
-            href={item.url}
-            current={index === items.length - 1}
+            current={isCurrent}
+            render={isCurrent ? undefined : <RouterLink to={item.url} />}
           >
             {item.name}
           </Breadcrumb.Item>
