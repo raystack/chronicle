@@ -3,7 +3,7 @@ import {
   HashtagIcon,
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
-import { Command, Dialog, IconButton, Text } from '@raystack/apsara';
+import { Command, IconButton, Text } from '@raystack/apsara';
 import type { SortedResult } from 'fumadocs-core/search';
 import { useDocsSearch } from 'fumadocs-core/search/client';
 import { useCallback, useEffect, useState } from 'react';
@@ -65,20 +65,18 @@ export function Search({ className }: SearchProps) {
         <MagnifyingGlassIcon width={16} height={16} />
       </IconButton>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <Dialog.Content className={styles.dialogContent}>
-          <Dialog.Title className={styles.visuallyHidden}>
-            Search documentation
-          </Dialog.Title>
-          <Command loop>
+      <Command.Dialog open={open} onOpenChange={setOpen}>
+        <Command.DialogContent className={styles.dialogContent}>
+          <Command>
             <Command.Input
               placeholder='Search'
+              leadingIcon={<MagnifyingGlassIcon width={16} height={16} />}
               value={search}
-              onValueChange={setSearch}
+              onChange={(e) => setSearch(e.target.value)}
               className={styles.input}
             />
 
-            <Command.List className={styles.list}>
+            <Command.Content className={styles.list}>
               {query.isLoading && <Command.Empty>Loading...</Command.Empty>}
               {!query.isLoading &&
                 search.length > 0 &&
@@ -88,12 +86,13 @@ export function Search({ className }: SearchProps) {
               {!query.isLoading &&
                 search.length === 0 &&
                 results.length > 0 && (
-                  <Command.Group heading='Suggestions'>
+                  <Command.Group>
+                    <Command.Label>Suggestions</Command.Label>
                     {results.slice(0, 8).map((result: SortedResult) => (
                       <Command.Item
                         key={result.id}
                         value={result.id}
-                        onSelect={() => onSelect(result.url)}
+                        onClick={() => onSelect(result.url)}
                         className={styles.item}
                       >
                         <div className={styles.itemContent}>
@@ -113,7 +112,7 @@ export function Search({ className }: SearchProps) {
                   <Command.Item
                     key={result.id}
                     value={result.id}
-                    onSelect={() => onSelect(result.url)}
+                    onClick={() => onSelect(result.url)}
                     className={styles.item}
                   >
                     <div className={styles.itemContent}>
@@ -142,10 +141,10 @@ export function Search({ className }: SearchProps) {
                     </div>
                   </Command.Item>
                 ))}
-            </Command.List>
+            </Command.Content>
           </Command>
-        </Dialog.Content>
-      </Dialog>
+        </Command.DialogContent>
+      </Command.Dialog>
     </>
   );
 }

@@ -42,7 +42,7 @@
     "@opentelemetry/resources": "^2.6.1",
     "@opentelemetry/sdk-metrics": "^2.6.1",
     "@opentelemetry/semantic-conventions": "^1.40.0",
-    "@raystack/apsara": "1.0.0-rc.3",
+    "@raystack/apsara": "1.0.0-rc.4",
     "@shikijs/rehype": "^4.0.2",
     "@vitejs/plugin-react": "^6.0.1",
     "chalk": "^5.6.2",
