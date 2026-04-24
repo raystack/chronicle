@@ -1,4 +1,5 @@
 .layout {
+  --navbar-height: 48px;
   min-height: 100vh;
 }
 
@@ -46,7 +47,7 @@
   justify-content: space-between;
   gap: var(--rs-space-3);
   width: 100%;
-  height: 48px;
+  height: var(--navbar-height);
   padding: 0 var(--rs-space-5);
   flex-shrink: 0;
   backdrop-filter: blur(1px);
@@ -94,7 +95,7 @@
   display: flex;
   align-items: center;
   gap: var(--rs-space-3);
-  height: 48px;
+  height: var(--navbar-height);
   box-sizing: border-box;
   padding: 0 var(--rs-space-5);
   border-top: 0.5px solid var(--rs-color-border-base-primary);
@@ -111,7 +112,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--rs-space-3);
-  height: 48px;
+  height: var(--navbar-height);
   box-sizing: border-box;
   margin-bottom: 0;
   padding: 0 var(--rs-space-5);
@@ -147,7 +148,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 48px;
+  height: var(--navbar-height);
   padding: var(--rs-space-4) var(--rs-space-7);
   background: var(--rs-color-background-base-primary);
   border-bottom: 0.5px solid var(--rs-color-border-base-primary);
