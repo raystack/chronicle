@@ -38,10 +38,3 @@ analytics:
   googleAnalytics:
     measurementId: G-XXXXXXXXXX
 
-footer:
-  copyright: "© 2024 Chronicle. All rights reserved."
-  links:
-    - label: GitHub
-      href: https://github.com/raystack/chronicle
-    - label: Documentation
-      href: /
