@@ -16,6 +16,7 @@ export function DocsPage({ slug }: DocsPageProps) {
 
   const { Page } = getTheme(config.theme?.name);
   const pageUrl = config.url ? `${config.url}/${slug.join('/')}` : undefined;
+  const markdownHref = `/${slug.join('/')}.md`;
 
   return (
     <>
@@ -23,6 +24,7 @@ export function DocsPage({ slug }: DocsPageProps) {
         title={page.frontmatter.title}
         description={page.frontmatter.description}
         config={config}
+        markdownHref={markdownHref}
         jsonLd={{
           '@context': 'https://schema.org',
           '@type': 'Article',
