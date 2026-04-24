@@ -32,6 +32,24 @@ const iconMap: Record<string, React.ReactNode> = {
   'method-patch': <MethodBadge method='PATCH' size='micro' />
 };
 
+function renderConfigIcon(
+  icon: string | undefined,
+  alt: string,
+  fallback: React.ReactNode
+): React.ReactNode {
+  if (!icon) return fallback;
+  if (icon.trim().startsWith('<svg')) {
+    return (
+      <span
+        aria-label={alt}
+        className={styles.configIcon}
+        dangerouslySetInnerHTML={{ __html: icon }}
+      />
+    );
+  }
+  return <img src={icon} alt={alt} className={styles.configIcon} />;
+}
+
 let savedScrollTop = 0;
 
 export function Layout({
@@ -102,7 +120,11 @@ export function Layout({
                       key={entry.href}
                       href={entry.href}
                       active={activeContentDir === entry.contentDir}
-                      leadingIcon={<DocumentTextIcon width={16} height={16} />}
+                      leadingIcon={renderConfigIcon(
+                        entry.icon,
+                        entry.label,
+                        <DocumentTextIcon width={16} height={16} />
+                      )}
                       classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
                       render={<RouterLink to={entry.href} />}
                     >
@@ -114,7 +136,11 @@ export function Layout({
                       key={api.basePath}
                       href={api.basePath}
                       active={isApiBase(api.basePath)}
-                      leadingIcon={<CodeBracketSquareIcon width={16} height={16} />}
+                      leadingIcon={renderConfigIcon(
+                        api.icon,
+                        api.name,
+                        <CodeBracketSquareIcon width={16} height={16} />
+                      )}
                       classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
                       render={<RouterLink to={api.basePath} />}
                     >

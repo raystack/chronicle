@@ -35,6 +35,7 @@ export interface ContentRoot {
   versionLabel: string | null
   contentDir: string
   contentLabel: string
+  contentIcon?: string
   fsPath: string
   urlPrefix: string
 }
@@ -45,6 +46,7 @@ export function getLatestContentRoots(config: ChronicleConfig): ContentRoot[] {
     versionLabel: config.latest?.label ?? null,
     contentDir: c.dir,
     contentLabel: c.label,
+    contentIcon: c.icon,
     fsPath: `content/${c.dir}`,
     urlPrefix: `/${c.dir}`,
   }))
@@ -62,6 +64,7 @@ export function getVersionContentRoots(
     versionLabel: version.label,
     contentDir: c.dir,
     contentLabel: c.label,
+    contentIcon: c.icon,
     fsPath: `versions/${version.dir}/${c.dir}`,
     urlPrefix: `/${version.dir}/${c.dir}`,
   }))
@@ -78,6 +81,7 @@ export interface LandingEntry {
   label: string
   href: string
   contentDir: string
+  icon?: string
 }
 
 export function getLandingEntries(
@@ -93,6 +97,7 @@ export function getLandingEntries(
     label: r.contentLabel,
     href: r.urlPrefix,
     contentDir: r.contentDir,
+    icon: r.contentIcon,
   }))
 }
 

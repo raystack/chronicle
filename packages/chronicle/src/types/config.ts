@@ -46,6 +46,7 @@ const apiSchema = z.object({
   name: z.string(),
   spec: z.string(),
   basePath: z.string(),
+  icon: z.string().optional(),
   server: apiServerSchema,
   auth: apiAuthSchema.optional(),
 })
@@ -92,6 +93,7 @@ const dirNameSchema = z
 const contentEntrySchema = z.object({
   dir: dirNameSchema,
   label: z.string().min(1),
+  icon: z.string().optional(),
 })
 
 // Variants map to Apsara Badge color prop.
