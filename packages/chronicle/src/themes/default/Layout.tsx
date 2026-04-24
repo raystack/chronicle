@@ -1,6 +1,5 @@
 import {
   ArrowLeftIcon,
-  CubeIcon,
   ArrowRightIcon,
   CodeBracketSquareIcon,
   RectangleStackIcon,
@@ -21,6 +20,7 @@ import { usePageContext } from '@/lib/page-context';
 import type { Node } from 'fumadocs-core/page-tree';
 import type { ThemeLayoutProps } from '@/types';
 import styles from './Layout.module.css';
+import { SidebarLogo } from './SidebarLogo';
 import { VersionSwitcher } from './VersionSwitcher';
 
 const iconMap: Record<string, React.ReactNode> = {
@@ -88,7 +88,7 @@ export function Layout({
             className={cx(styles.sidebar, classNames?.sidebar)}
           >
             <Sidebar.Header className={styles.sidebarHeader}>
-              <CubeIcon width={28} height={28} />
+              <SidebarLogo config={config} />
               <Flex gap='small' align='center'>
                 {config.search?.enabled && <Search />}
                 <ClientThemeSwitcher size={16} />
