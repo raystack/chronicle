@@ -50,7 +50,7 @@ function TocContent({ items }: { items: TOCItemType[] }) {
 
   return (
     <aside className={styles.toc} aria-label='Table of contents'>
-      <div className={styles.markers}>
+      <div className={styles.markers} aria-hidden='true'>
         {items.map(item => {
           const id = item.url.replace('#', '');
           const isActive = activeAnchor === id;
@@ -58,7 +58,7 @@ function TocContent({ items }: { items: TOCItemType[] }) {
             <a
               key={item.url}
               href={item.url}
-              aria-label={nodeToText(item.title)}
+              tabIndex={-1}
               className={cx(styles.marker, isActive && styles.markerActive)}
               style={{ width: `${markerWidth(item.title)}px` }}
             >

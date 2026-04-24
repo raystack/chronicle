@@ -64,7 +64,7 @@ export function Layout({
   const navigate = useNavigate();
   const { page, version } = usePageContext();
   const scrollRef = useRef<HTMLDivElement>(null);
-  const isApiRoute = pathname.startsWith('/apis');
+  const isApiRoute = pathname === '/apis' || pathname.startsWith('/apis/');
   const isApiBase = (basePath: string) =>
     pathname === basePath || pathname.startsWith(`${basePath}/`);
   const { prev, next } = page ?? { prev: null, next: null };
