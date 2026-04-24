@@ -37,6 +37,3 @@ versions:
 search:
   enabled: true
   placeholder: Search...
-
-llms:
-  enabled: true

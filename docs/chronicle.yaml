@@ -18,9 +18,6 @@ search:
   enabled: true
   placeholder: Search docs...
 
-llms:
-  enabled: true
-
 telemetry:
   enabled: true
 

@@ -7,10 +7,6 @@ import { extractFrontmatter, getPagesForVersion } from '@/lib/source';
 export default defineHandler(async event => {
   const config = loadConfig();
 
-  if (!config.llms?.enabled) {
-    throw new HTTPError({ status: 404, message: 'Not Found' });
-  }
-
   const versionDir = getRouterParam(event, 'version');
   const version = config.versions?.find(v => v.dir === versionDir);
   if (!version) {

@@ -1,18 +1,12 @@
 import fs from 'node:fs/promises';
 import matter from 'gray-matter';
 import { defineHandler, HTTPError } from 'nitro';
-import { loadConfig } from '@/lib/config';
 import { getPage, getOriginalPath } from '@/lib/source';
 import { safePath } from '@/server/utils/safe-path';
 
 export default defineHandler(async event => {
   const pathname = event.path || event.req.url?.split('?')[0] || '';
   if (!pathname.endsWith('.md')) return;
-
-  const config = loadConfig();
-  if (!config.llms?.enabled) {
-    throw new HTTPError({ status: 404, message: 'Not Found' });
-  }
 
   const stripped = pathname.replace(/\.md$/, '');
   const parts = stripped === '/index' || stripped === '/'

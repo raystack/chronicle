@@ -56,10 +56,6 @@ const footerSchema = z.object({
   links: z.array(navLinkSchema).optional(),
 })
 
-const llmsSchema = z.object({
-  enabled: z.boolean().optional(),
-})
-
 const googleAnalyticsSchema = z.object({
   measurementId: z.string(),
 })
@@ -152,7 +148,6 @@ export const chronicleConfigSchema = z
     search: searchSchema.optional(),
     footer: footerSchema.optional(),
     api: z.array(apiSchema).optional(),
-    llms: llmsSchema.optional(),
     analytics: analyticsSchema.optional(),
     telemetry: telemetrySchema.optional(),
   })
@@ -236,7 +231,6 @@ export type ApiConfig = z.infer<typeof apiSchema>
 export type ApiServerConfig = z.infer<typeof apiServerSchema>
 export type ApiAuthConfig = z.infer<typeof apiAuthSchema>
 export type FooterConfig = z.infer<typeof footerSchema>
-export type LlmsConfig = z.infer<typeof llmsSchema>
 export type AnalyticsConfig = z.infer<typeof analyticsSchema>
 export type GoogleAnalyticsConfig = z.infer<typeof googleAnalyticsSchema>
 export type TelemetryConfig = z.infer<typeof telemetrySchema>
