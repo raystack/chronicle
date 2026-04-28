@@ -1,8 +1,8 @@
 import { loader } from 'fumadocs-core/source';
+import { flattenTree } from 'fumadocs-core/page-tree';
 import type { Root, Node, Folder } from 'fumadocs-core/page-tree';
 import type { MDXContent } from 'mdx/types';
 import type { TableOfContents } from 'fumadocs-core/toc';
-import type { Frontmatter } from '@/types';
 import {
   getLatestContentRoots,
   getVersionContentRoots,
@@ -14,6 +14,7 @@ import {
   resolveVersionFromUrl,
   type VersionContext,
 } from './version-source';
+import type { Frontmatter, PageNav, PageNavLink } from '@/types';
 
 const CONTENT_PREFIX = '../../.content/';
 
@@ -167,6 +168,35 @@ export function getVersionContextForUrl(url: string): VersionContext {
 }
 
 export type { VersionContext } from './version-source';
+
+function titleFromUrl(url: string): string {
+  if (url === '/') return 'Home';
+  const last = url.split('/').filter(Boolean).pop();
+  if (!last) return 'Home';
+  return last
+    .split('-')
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(' ');
+}
+
+export async function getPageNav(slug: string[], tree?: Root): Promise<PageNav> {
+  const resolvedTree = tree ?? (await getPageTree());
+  const pages = flattenTree(resolvedTree.children);
+  const url = slug.length === 0 ? '/' : `/${slug.join('/')}`;
+  const i = pages.findIndex(p => p.url === url);
+  if (i < 0) return { prev: null, next: null };
+  const toLink = (p: (typeof pages)[number]): PageNavLink => ({
+    url: p.url,
+    title:
+      typeof p.name === 'string' && p.name.length > 0
+        ? p.name
+        : titleFromUrl(p.url)
+  });
+  return {
+    prev: i > 0 ? toLink(pages[i - 1]) : null,
+    next: i < pages.length - 1 ? toLink(pages[i + 1]) : null
+  };
+}
 
 export function extractFrontmatter(page: { data: unknown }, fallbackTitle?: string): Frontmatter {
   const d = page.data as Record<string, unknown>;

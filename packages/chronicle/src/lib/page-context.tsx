@@ -10,21 +10,14 @@ import type { ApiSpec } from '@/lib/openapi';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import type { VersionContext } from '@/lib/version-source';
 import { LATEST_CONTEXT } from '@/lib/version-source';
-import type { ChronicleConfig, Frontmatter, Root, TableOfContents } from '@/types';
+import type { ChronicleConfig, Frontmatter, Page, Root, TableOfContents } from '@/types';
 
 export type MdxLoader = (relativePath: string) => Promise<{ content: ReactNode; toc: TableOfContents }>;
-
-interface PageData {
-  slug: string[];
-  frontmatter: Frontmatter;
-  content: ReactNode;
-  toc: TableOfContents;
-}
 
 interface PageContextValue {
   config: ChronicleConfig;
   tree: Root;
-  page: PageData | null;
+  page: Page | null;
   errorStatus: number | null;
   apiSpecs: ApiSpec[];
   version: VersionContext;
@@ -54,18 +47,18 @@ export function usePageContext(): PageContextValue {
 interface PageProviderProps {
   initialConfig: ChronicleConfig;
   initialTree: Root;
-  initialPage: PageData | null;
+  initialPage: Page | null;
   initialApiSpecs: ApiSpec[];
   initialVersion: VersionContext;
   loadMdx: MdxLoader;
   children: ReactNode;
 }
 
-function getInitialErrorStatus(
-  page: PageData | null,
-  config: ChronicleConfig,
-  pathname: string,
-): number | null {
+function isApisRoute(pathname: string): boolean {
+  return pathname === '/apis' || pathname.startsWith('/apis/');
+}
+
+function getInitialErrorStatus(page: Page | null, config: ChronicleConfig, pathname: string): number | null {
   if (page) return null;
   const route = resolveRoute(pathname, config);
   if (route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage) return null;
@@ -85,10 +78,8 @@ export function PageProvider({
 }: PageProviderProps) {
   const { pathname } = useLocation();
   const [tree] = useState<Root>(initialTree);
-  const [page, setPage] = useState<PageData | null>(initialPage);
-  const [errorStatus, setErrorStatus] = useState<number | null>(
-    getInitialErrorStatus(initialPage, initialConfig, pathname),
-  );
+  const [page, setPage] = useState<Page | null>(initialPage);
+  const [errorStatus, setErrorStatus] = useState<number | null>(getInitialErrorStatus(initialPage, initialConfig, pathname));
   const [apiSpecs, setApiSpecs] = useState<ApiSpec[]>(initialApiSpecs);
   const [version, setVersion] = useState<VersionContext>(initialVersion);
   const [currentPath, setCurrentPath] = useState(pathname);
@@ -140,12 +131,12 @@ export function PageProvider({
         }
         return res.json();
       })
-      .then(async (data: { frontmatter: Frontmatter; relativePath: string; originalPath?: string } | undefined) => {
+      .then(async (data: { frontmatter: Frontmatter; relativePath: string; originalPath?: string; prev?: Page['prev']; next?: Page['next'] } | undefined) => {
         if (cancelled.current || !data) return;
         const { content, toc } = await loadMdx(data.originalPath || data.relativePath);
         if (cancelled.current) return;
         setErrorStatus(null);
-        setPage({ slug: route.slug, frontmatter: data.frontmatter, content, toc });
+        setPage({ slug: route.slug, frontmatter: data.frontmatter, content, toc, prev: data.prev, next: data.next });
       })
       .catch(() => {
         if (!cancelled.current) {

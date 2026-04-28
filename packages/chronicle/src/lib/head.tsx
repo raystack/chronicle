@@ -6,9 +6,10 @@ export interface HeadProps {
   description?: string;
   config: ChronicleConfig;
   jsonLd?: Record<string, unknown>;
+  markdownHref?: string;
 }
 
-export function Head({ title, description, config, jsonLd }: HeadProps) {
+export function Head({ title, description, config, jsonLd, markdownHref }: HeadProps) {
   const { pathname } = useLocation();
   const fullTitle = `${title} | ${config.site.title}`;
   const ogParams = new URLSearchParams({ title });
@@ -24,6 +25,14 @@ export function Head({ title, description, config, jsonLd }: HeadProps) {
       <title>{fullTitle}</title>
       {description && <meta name='description' content={description} />}
       {canonical && <link rel='canonical' href={canonical} />}
+      {markdownHref && (
+        <link
+          rel='alternate'
+          type='text/markdown'
+          href={markdownHref}
+          title={`${title} (Markdown)`}
+        />
+      )}
 
       {config.url && (
         <>

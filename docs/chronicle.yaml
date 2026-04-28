@@ -7,7 +7,7 @@ content:
     label: Docs
 
 theme:
-  name: paper
+  name: default
 
 navigation:
   links:
@@ -18,16 +18,7 @@ search:
   enabled: true
   placeholder: Search docs...
 
-llms:
-  enabled: true
-
 telemetry:
   enabled: true
 
 preset: "vercel"
-
-footer:
-  copyright: "© 2026 Raystack. All rights reserved."
-  links:
-    - label: GitHub
-      href: https://github.com/raystack/chronicle

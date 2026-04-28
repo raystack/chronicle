@@ -8,7 +8,7 @@ import { getApiConfigsForVersion } from '@/lib/config';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import { resolveVersionFromUrl, type VersionContext } from '@/lib/version-source';
-import type { ChronicleConfig, Frontmatter, Root, TableOfContents } from '@/types';
+import type { ChronicleConfig, Frontmatter, PageNavLink, Root, TableOfContents } from '@/types';
 import type { ApiSpec } from '@/lib/openapi';
 import type { ReactNode } from 'react';
 import { App } from './App';
@@ -18,9 +18,11 @@ interface EmbeddedData {
   tree: Root;
   slug: string[];
   version: VersionContext;
-  frontmatter: Frontmatter;
-  relativePath: string;
-  originalPath?: string;
+  frontmatter: Frontmatter | null;
+  relativePath: string | null;
+  originalPath: string | null;
+  prev: PageNavLink | null;
+  next: PageNavLink | null;
 }
 
 const defaultConfig: ChronicleConfig = {
@@ -79,10 +81,12 @@ async function hydrate() {
       : [];
 
     const mdxPath = embedded?.originalPath || embedded?.relativePath;
-    const page = mdxPath
+    const page = embedded && mdxPath && embedded.frontmatter
       ? {
-          slug: embedded!.slug,
-          frontmatter: embedded!.frontmatter,
+          slug: embedded.slug,
+          frontmatter: embedded.frontmatter,
+          prev: embedded.prev,
+          next: embedded.next,
           ...(await loadMdxModule(mdxPath)),
         }
       : null;

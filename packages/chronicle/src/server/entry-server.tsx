@@ -9,7 +9,7 @@ import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
-import { getPage, getPageTree, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
+import { getPageTree, getPage, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
 import { useNitroApp } from 'nitro/app';
 import { App } from './App';
 
@@ -45,6 +45,7 @@ export default {
       getPageTree(),
       route.type === RouteType.DocsPage ? getPage(route.slug) : Promise.resolve(null),
     ]);
+    const nav = page ? await getPageNav(pageSlug, tree) : { prev: null, next: null };
 
     const relativePath = page ? getRelativePath(page) : null;
     const originalPath = page ? getOriginalPath(page) : null;
@@ -58,6 +59,8 @@ export default {
             ? React.createElement(mdxModule.default, { components: mdxComponents })
             : null,
           toc: mdxModule?.toc ?? [],
+          prev: nav.prev,
+          next: nav.next,
         }
       : null;
 
@@ -69,6 +72,8 @@ export default {
       frontmatter: pageData?.frontmatter ?? null,
       relativePath,
       originalPath,
+      prev: pageData?.prev ?? null,
+      next: pageData?.next ?? null,
     };
     const safeJson = JSON.stringify(embeddedData).replace(/</g, '\\u003c');
 

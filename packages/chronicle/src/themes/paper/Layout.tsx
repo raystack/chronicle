@@ -2,7 +2,6 @@
 
 import { Flex, Headline } from '@raystack/apsara';
 import { cx } from 'class-variance-authority';
-import { Footer } from '@/components/ui/footer';
 import type { ThemeLayoutProps } from '@/types';
 import { ChapterNav } from './ChapterNav';
 import { ContentDirDropdown } from './ContentDirDropdown';
@@ -40,7 +39,6 @@ export function Layout({
           {children}
         </div>
       </Flex>
-      <Footer config={config.footer} />
     </Flex>
   );
 }
