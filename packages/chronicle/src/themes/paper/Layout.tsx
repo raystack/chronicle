@@ -39,7 +39,7 @@ function SidebarHeader({ config }: { config: ThemeLayoutProps['config'] }) {
       }}
     >
       <Select.Trigger size='small' className={styles.contentDirTrigger}>
-        <Select.Value placeholder={activeEntry.label} />
+        <Select.Value placeholder={activeEntry.label} className={styles.title} />
       </Select.Trigger>
       <Select.Content>
         {entries.map(entry => (
