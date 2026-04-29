@@ -1,5 +1,6 @@
-import { renderMermaidSVG } from 'beautiful-mermaid'
-import { useMemo } from 'react'
+'use client'
+
+import { useEffect, useId, useState } from 'react'
 import styles from './mermaid.module.css'
 
 interface MermaidProps {
@@ -7,34 +8,30 @@ interface MermaidProps {
 }
 
 export function Mermaid({ chart }: MermaidProps) {
-  const { svg, error } = useMemo(() => {
-    try {
-      return {
-        svg: renderMermaidSVG(chart, {
-          bg: 'var(--rs-color-background-base-primary)',
-          fg: 'var(--rs-color-foreground-base-primary)',
-          line: 'var(--rs-color-border-base-focus)',
-          accent: 'var(--rs-color-foreground-accent-primary)',
-          muted: 'var(--rs-color-foreground-base-secondary)',
-          surface: 'var(--rs-color-background-neutral-secondary)',
-          border: 'var(--rs-color-border-base-tertiary)',
-          transparent: true,
-        }),
-        error: null,
-      }
-    } catch (err) {
-      return {
-        svg: null,
-        error: err instanceof Error ? err : new Error(String(err)),
-      }
+  const mermaidId = useId().replace(/:/g, '-')
+  const [svg, setSvg] = useState<string>('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function render() {
+      const { default: mermaid } = await import('mermaid')
+      mermaid.initialize({ startOnLoad: false, theme: 'default' })
+      const { svg: rendered } = await mermaid.render(
+        mermaidId,
+        chart
+      )
+      if (!cancelled) setSvg(rendered)
     }
+
+    render()
+    return () => { cancelled = true }
   }, [chart])
 
-  if (error) return <pre className={styles.error}>{error.message}</pre>
   return (
     <div
       className={styles.mermaid}
-      dangerouslySetInnerHTML={{ __html: svg! }}
+      dangerouslySetInnerHTML={{ __html: svg }}
     />
   )
 }
