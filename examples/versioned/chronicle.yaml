@@ -3,7 +3,7 @@ site:
   description: Multi-content + multi-version sample
 
 theme:
-  name: default
+  name: paper
 
 content:
   - dir: docs

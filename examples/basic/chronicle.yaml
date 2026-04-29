@@ -9,7 +9,7 @@ content:
     label: Docs
 
 theme:
-  name: default
+  name: paper
 
 search:
   enabled: true

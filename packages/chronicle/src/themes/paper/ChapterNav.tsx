@@ -15,23 +15,8 @@ interface ChapterNavProps {
   tree: Root;
 }
 
-function buildChapterIndices(
-  children: Node[]
-): Map<Node, number> {
-  const indices = new Map<Node, number>();
-  let index = 0;
-  for (const item of children) {
-    if (item.type === 'folder') {
-      index++;
-      indices.set(item, index);
-    }
-  }
-  return indices;
-}
-
 export function ChapterNav({ tree }: ChapterNavProps) {
   const { pathname } = useLocation();
-  const chapterIndices = buildChapterIndices(tree.children);
 
   return (
     <nav className={styles.nav}>
@@ -40,11 +25,10 @@ export function ChapterNav({ tree }: ChapterNavProps) {
           if (item.type === 'separator') return null;
 
           if (item.type === 'folder') {
-            const chapterIndex = chapterIndices.get(item) ?? 0;
             return (
               <li key={item.name?.toString()} className={styles.chapter}>
                 <span className={styles.chapterLabel}>
-                  {String(chapterIndex).padStart(2, '0')}. {item.name}
+                  {item.name}
                 </span>
                 <ul className={styles.chapterItems}>
                   {item.children.map(child => (
