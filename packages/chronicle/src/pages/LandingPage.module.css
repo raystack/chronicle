@@ -152,7 +152,7 @@
   }
 
   .title {
-    font-size: 36px;
+    font-size: var(--rs-font-size-t4);
   }
 
   .description {
