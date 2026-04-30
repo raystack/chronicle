@@ -8,8 +8,16 @@ theme:
 content:
   - dir: docs
     label: Docs
+    description: A reference manual for the core platform and services. Covers authentication, data models, API integrations, deployment guides, and troubleshooting. Everything you need to get started with the platform and build production-ready applications.
   - dir: dev
     label: Dev Docs
+    description: Developer guides for building integrations and extensions
+  - dir: ops
+    label: Ops Guide
+    description: Operations handbook for deployment, monitoring, and incident response
+  - dir: design
+    label: Design System
+    description: Component library documentation, design tokens, and usage patterns
 
 latest:
   label: "3.0"

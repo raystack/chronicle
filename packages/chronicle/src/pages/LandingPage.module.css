@@ -1,56 +1,146 @@
 .root {
   display: flex;
   flex-direction: column;
-  gap: var(--rs-space-8);
-  padding: var(--rs-space-9) var(--rs-space-7);
-  max-width: 960px;
-  margin: 0 auto;
+  padding: var(--rs-space-12) var(--rs-space-9);
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  padding-bottom: var(--rs-space-10);
+  border-bottom: 0.5px solid var(--rs-color-border-base-primary);
 }
 
 .title {
-  font-size: var(--rs-font-size-h3);
-  font-weight: 600;
+  flex: 1;
+  font-family: var(--paper-font-mono, inherit);
+  font-size: 64px;
+  line-height: 1.1;
+  color: var(--rs-color-foreground-accent-primary);
+  text-transform: uppercase;
+  margin: 0;
+  font-weight: 400;
+}
+
+.description {
+  width: 385px;
+  flex-shrink: 0;
+  font-family: var(--paper-font-body, inherit);
+  font-size: var(--rs-font-size-regular);
+  line-height: 1.4;
   color: var(--rs-color-foreground-base-primary);
   margin: 0;
 }
 
-.description {
-  font-size: var(--rs-font-size-regular);
-  color: var(--rs-color-foreground-base-secondary);
-  margin: 0;
-}
-
 .grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: var(--rs-space-6);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rs-space-7);
+  margin-top: var(--rs-space-9);
 }
 
 .card {
   display: flex;
   flex-direction: column;
-  gap: var(--rs-space-3);
-  padding: var(--rs-space-6);
-  border: 1px solid var(--rs-color-border-base-primary);
-  border-radius: var(--rs-radius-3);
+  gap: var(--rs-space-7);
+  padding: var(--rs-space-2);
   text-decoration: none;
   color: inherit;
-  background: var(--rs-color-background-base-primary);
-  transition: border-color 0.15s ease, background 0.15s ease;
+  width: 360px;
 }
 
-.card:hover {
-  border-color: var(--rs-color-border-accent-primary);
-  background: var(--rs-color-background-neutral-secondary);
+.card:hover .cardImage {
+  border-color: var(--rs-color-foreground-accent-primary);
+}
+
+.cardImage {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1.05;
+  min-height: 280px;
+  max-width: 360px;
+  background: var(--rs-color-background-accent-secondary);
+  border: 1px solid var(--rs-color-foreground-accent-primary);
+  overflow: hidden;
+  transition: border-color 0.15s ease;
+}
+
+.cardImage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, var(--rs-color-foreground-accent-primary) 1px, transparent 1px);
+  background-size: 10px 10px;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.cardImageLabel {
+  position: absolute;
+  font-family: var(--paper-font-mono, monospace);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--rs-color-foreground-base-secondary);
+  background: var(--rs-color-background-accent-secondary);
+  padding: var(--rs-space-1);
+  white-space: nowrap;
+}
+
+.cardImageLabelTop {
+  top: 19px;
+  left: -1px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+.cardImageLabelRight {
+  bottom: 19px;
+  right: -1px;
+  writing-mode: vertical-rl;
+}
+
+.cardIcon {
+  width: 90%;
+  height: 90%;
+  min-width: 64px;
+  min-height: 64px;
+  color: var(--rs-color-foreground-accent-primary);
+  opacity: 0.3;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.card:hover .cardIcon {
+  opacity: 0.5;
+  transform: scale(1.05);
+}
+
+.card:hover .cardImage {
+  background: var(--rs-color-background-accent-primary);
+}
+
+.cardBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-bottom: var(--rs-space-4);
 }
 
 .cardLabel {
-  font-size: var(--rs-font-size-large);
-  font-weight: 500;
+  font-family: var(--paper-font-mono, inherit);
+  font-size: 16px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  color: var(--rs-color-foreground-base-primary);
 }
 
-.cardHref {
+.cardDescription {
+  font-family: var(--paper-font-body, inherit);
   font-size: var(--rs-font-size-small);
-  color: var(--rs-color-foreground-base-secondary);
-  font-family: var(--rs-font-family-mono);
+  line-height: 1.4;
+  color: var(--rs-color-foreground-base-primary);
 }
