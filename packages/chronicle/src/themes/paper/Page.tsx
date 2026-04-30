@@ -114,9 +114,18 @@ export function Page({ page, tree }: ThemePageProps) {
             )}
           </div>
         </div>
-        <article className={styles.article} data-article-content>
-          <div className={styles.content}>{page.content}</div>
-        </article>
+        <div className={styles.content}>
+          <header className={styles.articleHeader}>
+            <h1 className={styles.articleTitle}>{page.frontmatter.title}</h1>
+            {page.frontmatter.description && (
+              <p className={styles.articleDescription}>{page.frontmatter.description}</p>
+            )}
+            <hr className={styles.articleSeparator} />
+          </header>
+          <article className={styles.article} data-article-content>
+            {page.content}
+          </article>
+        </div>
       </main>
       {!readerMode && <ReadingProgress items={page.toc} />}
     </>
