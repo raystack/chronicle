@@ -3,9 +3,12 @@ import {
   ArrowRightIcon,
   ChevronRightIcon,
   AdjustmentsHorizontalIcon,
+  EyeIcon,
+  SunIcon,
+  XMarkIcon,
 } from '@heroicons/react/24/outline';
 import { IconButton } from '@raystack/apsara';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router';
 import { getBreadcrumbItems } from 'fumadocs-core/breadcrumb';
 import { flattenTree } from 'fumadocs-core/page-tree';
@@ -15,6 +18,7 @@ import { ReadingProgress } from './ReadingProgress';
 
 export function Page({ page, tree }: ThemePageProps) {
   const { pathname } = useLocation();
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   const { prev, next, crumbs } = useMemo(() => {
     const pages = flattenTree(tree.children);
@@ -79,9 +83,23 @@ export function Page({ page, tree }: ThemePageProps) {
             </nav>
           </div>
           <div className={styles.navRight}>
-            <IconButton size={2}>
-              <AdjustmentsHorizontalIcon width={14} height={14} />
-            </IconButton>
+            {settingsOpen ? (
+              <>
+                <IconButton size={2}>
+                  <EyeIcon width={14} height={14} />
+                </IconButton>
+                <IconButton size={2}>
+                  <SunIcon width={14} height={14} />
+                </IconButton>
+                <IconButton size={2} onClick={() => setSettingsOpen(false)}>
+                  <XMarkIcon width={14} height={14} />
+                </IconButton>
+              </>
+            ) : (
+              <IconButton size={2} onClick={() => setSettingsOpen(true)}>
+                <AdjustmentsHorizontalIcon width={14} height={14} />
+              </IconButton>
+            )}
           </div>
         </div>
         <article className={styles.article} data-article-content>
