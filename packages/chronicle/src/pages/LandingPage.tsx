@@ -23,7 +23,7 @@ export function LandingPage() {
       <div className={styles.grid}>
         {entries.map((entry, i) => (
           <RouterLink key={entry.href} to={entry.href} className={styles.card}>
-            <div className={styles.cardImage}>
+            <div className={styles.cardImage} aria-hidden='true'>
               <span className={`${styles.cardImageLabel} ${styles.cardImageLabelTop}`}>
                 Fig_{String(i + 1).padStart(3, '0')}
               </span>

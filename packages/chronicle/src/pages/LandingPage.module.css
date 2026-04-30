@@ -144,3 +144,26 @@
   line-height: 1.4;
   color: var(--rs-color-foreground-base-primary);
 }
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    gap: var(--rs-space-5);
+  }
+
+  .title {
+    font-size: 36px;
+  }
+
+  .description {
+    width: 100%;
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  .cardImage {
+    max-width: 100%;
+  }
+}

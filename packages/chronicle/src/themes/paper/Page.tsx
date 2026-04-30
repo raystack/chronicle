@@ -52,26 +52,22 @@ export function Page({ page, tree }: ThemePageProps) {
           <div className={styles.navLeft}>
             <div className={styles.arrows}>
               {prev ? (
-                <RouterLink to={prev.url} aria-label='Previous page'>
-                  <IconButton size={2}>
-                    <ArrowLeftIcon width={14} height={14} />
-                  </IconButton>
+                <RouterLink to={prev.url} className={styles.arrowLink} aria-label='Previous page'>
+                  <ArrowLeftIcon width={14} height={14} />
                 </RouterLink>
               ) : (
-                <IconButton size={2} disabled>
+                <span className={styles.arrowDisabled} aria-hidden='true'>
                   <ArrowLeftIcon width={14} height={14} />
-                </IconButton>
+                </span>
               )}
               {next ? (
-                <RouterLink to={next.url} aria-label='Next page'>
-                  <IconButton size={2}>
-                    <ArrowRightIcon width={14} height={14} />
-                  </IconButton>
+                <RouterLink to={next.url} className={styles.arrowLink} aria-label='Next page'>
+                  <ArrowRightIcon width={14} height={14} />
                 </RouterLink>
               ) : (
-                <IconButton size={2} disabled>
+                <span className={styles.arrowDisabled} aria-hidden='true'>
                   <ArrowRightIcon width={14} height={14} />
-                </IconButton>
+                </span>
               )}
             </div>
             <nav className={styles.breadcrumb}>
@@ -107,12 +103,12 @@ export function Page({ page, tree }: ThemePageProps) {
                     }
                   </IconButton>
                 )}
-                <IconButton size={2} onClick={() => setSettingsOpen(false)}>
+                <IconButton size={2} onClick={() => setSettingsOpen(false)} aria-label='Close settings'>
                   <XMarkIcon width={14} height={14} />
                 </IconButton>
               </>
             ) : (
-              <IconButton size={2} onClick={() => setSettingsOpen(true)}>
+              <IconButton size={2} onClick={() => setSettingsOpen(true)} aria-label='Open settings'>
                 <AdjustmentsHorizontalIcon width={14} height={14} />
               </IconButton>
             )}

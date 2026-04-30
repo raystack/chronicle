@@ -1,8 +1,7 @@
 .main {
   flex: 1;
   width: 90%;
-  max-width: 1024px;
-  box-sizing: content-box;
+  max-width: calc(1024px + var(--rs-space-17));
   margin: 0 auto;
   padding-top: var(--rs-space-12);
   padding-right: var(--rs-space-17);
@@ -45,10 +44,27 @@
   gap: var(--rs-space-2);
 }
 
-.arrows a {
+.arrowLink {
   display: flex;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
-  color: inherit;
+  color: var(--rs-color-foreground-base-primary);
+  padding: var(--rs-space-1);
+  border-radius: var(--rs-radius-2);
+}
+
+.arrowLink:hover {
+  color: var(--rs-color-foreground-accent-primary);
+}
+
+.arrowDisabled {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--rs-color-foreground-base-tertiary);
+  opacity: 0.4;
+  padding: var(--rs-space-1);
 }
 
 .breadcrumb {
