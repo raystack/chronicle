@@ -15,6 +15,7 @@ import { getBreadcrumbItems } from 'fumadocs-core/breadcrumb';
 import { flattenTree } from 'fumadocs-core/page-tree';
 import type { ThemePageProps } from '@/types';
 import styles from './Page.module.css';
+import { useReaderMode } from './ReaderModeContext';
 import { ReadingProgress } from './ReadingProgress';
 
 export function Page({ page, tree }: ThemePageProps) {
@@ -22,6 +23,7 @@ export function Page({ page, tree }: ThemePageProps) {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [isClient, setIsClient] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
+  const { readerMode, toggleReaderMode } = useReaderMode();
 
   useEffect(() => { setIsClient(true); }, []);
 
@@ -45,7 +47,7 @@ export function Page({ page, tree }: ThemePageProps) {
 
   return (
     <>
-      <main className={styles.main}>
+      <main className={`${styles.main} ${readerMode ? styles.readerMode : ''}`}>
         <div className={styles.navbar}>
           <div className={styles.navLeft}>
             <div className={styles.arrows}>
@@ -90,7 +92,7 @@ export function Page({ page, tree }: ThemePageProps) {
           <div className={styles.navRight}>
             {settingsOpen ? (
               <>
-                <IconButton size={2}>
+                <IconButton size={2} onClick={toggleReaderMode} aria-label='Toggle reader mode'>
                   <EyeIcon width={14} height={14} />
                 </IconButton>
                 {isClient && (
@@ -120,7 +122,7 @@ export function Page({ page, tree }: ThemePageProps) {
           <div className={styles.content}>{page.content}</div>
         </article>
       </main>
-      <ReadingProgress items={page.toc} />
+      {!readerMode && <ReadingProgress items={page.toc} />}
     </>
   );
 }

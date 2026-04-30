@@ -8,6 +8,11 @@
   padding-right: var(--rs-space-17);
 }
 
+.readerMode {
+  padding-right: 0;
+  margin: 0 auto;
+}
+
 .navbar {
   display: flex;
   align-items: center;

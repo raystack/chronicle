@@ -9,6 +9,7 @@ import { usePageContext } from '@/lib/page-context';
 import type { ThemeLayoutProps } from '@/types';
 import { ChapterNav } from './ChapterNav';
 import styles from './Layout.module.css';
+import { ReaderModeProvider, useReaderMode } from './ReaderModeContext';
 import { VersionSwitcher } from './VersionSwitcher';
 
 function SidebarHeader({ config }: { config: ThemeLayoutProps['config'] }) {
@@ -52,17 +53,20 @@ function SidebarHeader({ config }: { config: ThemeLayoutProps['config'] }) {
   );
 }
 
-export function Layout({
+function LayoutInner({
   children,
   config,
   tree,
   hideSidebar,
   classNames
 }: ThemeLayoutProps) {
+  const { readerMode } = useReaderMode();
+  const showSidebar = !hideSidebar && !readerMode;
+
   return (
     <Flex direction='column' className={cx(styles.layout, classNames?.layout)}>
       <Flex className={cx(styles.body, classNames?.body)}>
-        {hideSidebar ? null : (
+        {showSidebar ? (
           <aside className={cx(styles.sidebar, classNames?.sidebar)}>
             <div className={styles.header}>
               <SidebarHeader config={config} />
@@ -76,11 +80,19 @@ export function Layout({
               </div>
             ) : null}
           </aside>
-        )}
+        ) : null}
         <div className={cx(styles.content, classNames?.content)}>
           {children}
         </div>
       </Flex>
     </Flex>
+  );
+}
+
+export function Layout(props: ThemeLayoutProps) {
+  return (
+    <ReaderModeProvider>
+      <LayoutInner {...props} />
+    </ReaderModeProvider>
   );
 }
