@@ -116,6 +116,9 @@ export function Page({ page, tree }: ThemePageProps) {
         </div>
         <div className={styles.content}>
           <header className={styles.articleHeader}>
+            {page.frontmatter._readingTime && (
+              <span className={styles.readingTime}>{page.frontmatter._readingTime}min Read</span>
+            )}
             <h1 className={styles.articleTitle}>{page.frontmatter.title}</h1>
             {page.frontmatter.description && (
               <p className={styles.articleDescription}>{page.frontmatter.description}</p>

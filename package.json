@@ -1,13 +1,12 @@
 {
   "name": "chronicle",
-  "private": true,
-  "workspaces": [
-    "packages/*",
-    "examples/*"
-  ],
+  "dependencies": {
+    "std-env": "^4.0.0"
+  },
   "engines": {
     "node": ">=22"
   },
+  "private": true,
   "scripts": {
     "build:cli": "bun run --filter @raystack/chronicle build:cli",
     "dev:docs": "./packages/chronicle/bin/chronicle.js dev --config docs/chronicle.yaml",
@@ -18,7 +17,12 @@
     "dev:examples:versioned": "./packages/chronicle/bin/chronicle.js dev --config examples/versioned/chronicle.yaml",
     "build:examples:versioned": "./packages/chronicle/bin/chronicle.js build --config examples/versioned/chronicle.yaml"
   },
-  "dependencies": {
-    "std-env": "^4.0.0"
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "devDependencies": {
+    "@raystack/chronicle": "workspace:*",
+    "remark-reading-time": "^2.1.0"
   }
 }

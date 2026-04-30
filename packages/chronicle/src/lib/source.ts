@@ -206,6 +206,7 @@ export function extractFrontmatter(page: { data: unknown }, fallbackTitle?: stri
     order: d.order as number | undefined,
     icon: d.icon as string | undefined,
     lastModified: d.lastModified as string | undefined,
+    _readingTime: d._readingTime as number | undefined,
   };
 }
 
@@ -217,13 +218,20 @@ export function getOriginalPath(page: { data: unknown }): string {
   return ((page.data as Record<string, unknown>)._originalPath as string) ?? '';
 }
 
-const ssrModules = import.meta.glob<{ default?: MDXContent; toc?: TableOfContents }>(
+interface ReadingTime {
+  text: string;
+  minutes: number;
+  words: number;
+  time: number;
+}
+
+const ssrModules = import.meta.glob<{ default?: MDXContent; toc?: TableOfContents; readingTime?: ReadingTime }>(
   '../../.content/**/*.{mdx,md}'
 );
 
 export async function loadPageModule(
   relativePath: string
-): Promise<{ default: MDXContent | null; toc: TableOfContents }> {
+): Promise<{ default: MDXContent | null; toc: TableOfContents; _readingTime?: number }> {
   if (!relativePath || relativePath.includes('..')) return { default: null, toc: [] };
   const withoutExt = relativePath.replace(/\.(mdx|md)$/, '');
   const key = relativePath.endsWith('.md')
@@ -232,5 +240,6 @@ export async function loadPageModule(
   const loader = ssrModules[key];
   if (!loader) return { default: null, toc: [] };
   const mod = await loader();
-  return { default: mod.default ?? null, toc: mod.toc ?? [] };
+  const minutes = mod.readingTime?.minutes;
+  return { default: mod.default ?? null, toc: mod.toc ?? [], _readingTime: minutes ? Math.max(1, Math.round(minutes)) : undefined };
 }

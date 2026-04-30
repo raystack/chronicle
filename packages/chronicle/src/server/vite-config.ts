@@ -8,6 +8,7 @@ import path from 'node:path';
 import remarkDirective from 'remark-directive';
 import { type InlineConfig } from 'vite';
 import remarkStripMdExtensions from '../lib/remark-strip-md-extensions';
+import remarkReadingTime from 'remark-reading-time';
 import remarkUnusedDirectives from '../lib/remark-unused-directives';
 
 function resolveOutputDir(projectRoot: string, preset?: string): string {
@@ -55,6 +56,7 @@ export async function createViteConfig(
       mdx({
         default: defineFumadocsConfig({
           mdxOptions: {
+            valueToExport: ['readingTime'],
             remarkPlugins: [
               remarkDirective,
               [remarkDirectiveAdmonition, {
@@ -77,6 +79,7 @@ export async function createViteConfig(
               remarkUnusedDirectives,
               remarkStripMdExtensions,
               remarkMdxMermaid,
+              remarkReadingTime,
             ],
           },
         }),

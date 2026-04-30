@@ -54,7 +54,10 @@ export default {
     const pageData = page
       ? {
           slug: pageSlug,
-          frontmatter: extractFrontmatter(page, pageSlug[pageSlug.length - 1]),
+          frontmatter: {
+            ...extractFrontmatter(page, pageSlug[pageSlug.length - 1]),
+            _readingTime: mdxModule?._readingTime,
+          },
           content: mdxModule?.default
             ? React.createElement(mdxModule.default, { components: mdxComponents })
             : null,
