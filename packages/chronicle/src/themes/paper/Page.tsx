@@ -5,10 +5,11 @@ import {
   AdjustmentsHorizontalIcon,
   EyeIcon,
   SunIcon,
+  MoonIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline';
-import { IconButton } from '@raystack/apsara';
-import { useMemo, useState } from 'react';
+import { IconButton, useTheme } from '@raystack/apsara';
+import { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router';
 import { getBreadcrumbItems } from 'fumadocs-core/breadcrumb';
 import { flattenTree } from 'fumadocs-core/page-tree';
@@ -19,6 +20,10 @@ import { ReadingProgress } from './ReadingProgress';
 export function Page({ page, tree }: ThemePageProps) {
   const { pathname } = useLocation();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const { resolvedTheme, setTheme } = useTheme();
+
+  useEffect(() => { setIsClient(true); }, []);
 
   const { prev, next, crumbs } = useMemo(() => {
     const pages = flattenTree(tree.children);
@@ -88,9 +93,18 @@ export function Page({ page, tree }: ThemePageProps) {
                 <IconButton size={2}>
                   <EyeIcon width={14} height={14} />
                 </IconButton>
-                <IconButton size={2}>
-                  <SunIcon width={14} height={14} />
-                </IconButton>
+                {isClient && (
+                  <IconButton
+                    size={2}
+                    onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
+                    aria-label={resolvedTheme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+                  >
+                    {resolvedTheme === 'dark'
+                      ? <SunIcon width={14} height={14} />
+                      : <MoonIcon width={14} height={14} />
+                    }
+                  </IconButton>
+                )}
                 <IconButton size={2} onClick={() => setSettingsOpen(false)}>
                   <XMarkIcon width={14} height={14} />
                 </IconButton>
