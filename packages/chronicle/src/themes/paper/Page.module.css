@@ -1,6 +1,6 @@
 .main {
   flex: 1;
-  width: 100%;
+  width: 90%;
   max-width: 1024px;
   box-sizing: content-box;
   margin: 0 auto;
@@ -49,6 +49,7 @@
 .breadcrumb {
   display: flex;
   align-items: center;
+  font-family: var(--paper-font-mono);
   font-size: var(--rs-font-size-small);
   line-height: var(--rs-line-height-small);
   letter-spacing: var(--rs-letter-spacing-small);
@@ -61,6 +62,7 @@
 
 .crumbLink {
   color: var(--rs-color-foreground-base-tertiary);
+  font-weight: var(--rs-font-weight-medium);
   text-decoration: none;
 }
 
@@ -70,7 +72,7 @@
 
 .crumbActive {
   color: var(--rs-color-foreground-base-primary);
-  font-weight: 600;
+  font-weight: var(--rs-font-weight-medium);
 }
 
 .article {
@@ -81,7 +83,7 @@
 }
 
 .content {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--paper-font-body);
   line-height: 1.8;
   background: var(--rs-color-background-base-primary);
   padding: var(--rs-space-9);
@@ -134,6 +136,7 @@
 
 .content p {
   margin: 0.75rem 0;
+  line-height: 2;
 }
 
 .content ul,
