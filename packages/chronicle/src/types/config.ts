@@ -84,6 +84,7 @@ const dirNameSchema = z
 const contentEntrySchema = z.object({
   dir: dirNameSchema,
   label: z.string().min(1),
+  description: z.string().optional(),
   icon: z.string().optional(),
 })
 
