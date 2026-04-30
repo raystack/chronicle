@@ -1,71 +1,61 @@
 .main {
-  --paper-navbar-height: 40px;
-  --paper-navbar-padding: var(--rs-space-3);
-  --paper-navbar-total: calc(
-    var(--paper-navbar-height) +
-    var(--paper-navbar-padding) *
-    2 +
-    1px
-  );
-
   flex: 1;
+  width: 100%;
   max-width: 1024px;
+  box-sizing: content-box;
   margin: 0 auto;
+  padding-top: var(--rs-space-12);
+  padding-right: var(--rs-space-17);
 }
 
 .navbar {
-  height: var(--paper-navbar-height);
-  padding: var(--paper-navbar-padding) 0;
-  border-bottom: 1px solid var(--rs-color-border-base-primary);
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  width: 100%;
-  position: fixed;
-  top: 0;
+  height: 48px;
+  padding: var(--rs-space-2) var(--rs-space-7);
   background: var(--rs-color-background-neutral-primary);
+  backdrop-filter: blur(8px);
+  border-bottom: 0.5px solid var(--rs-color-border-base-primary);
+  position: sticky;
+  top: 0;
   z-index: 10;
-  max-width: 1024px;
 }
 
 .navLeft {
+  display: flex;
   align-items: center;
+  gap: var(--rs-space-3);
 }
 
 .navRight {
-  align-items: center;
-}
-
-.arrow {
   display: flex;
   align-items: center;
-  color: var(--rs-color-foreground-base-primary);
+  gap: var(--rs-space-3);
+}
+
+.arrows {
+  display: flex;
+  align-items: center;
+  gap: var(--rs-space-2);
+}
+
+.arrows a {
+  display: flex;
   text-decoration: none;
-}
-
-.arrow:hover {
-  color: var(--rs-color-foreground-accent-primary);
-}
-
-.arrowDisabled {
-  display: flex;
-  align-items: center;
-  color: var(--rs-color-foreground-base-tertiary);
-  opacity: 0.4;
-  cursor: default;
-  border: none;
-  background: none;
-  padding: 0;
+  color: inherit;
 }
 
 .breadcrumb {
-  font-family: "SF Mono", "Fira Code", monospace;
+  display: flex;
+  align-items: center;
   font-size: var(--rs-font-size-small);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-left: var(--rs-space-3);
+  line-height: var(--rs-line-height-small);
+  letter-spacing: var(--rs-letter-spacing-small);
 }
 
 .separator {
-  margin: 0 var(--rs-space-2);
+  margin: 0 var(--rs-space-1);
   color: var(--rs-color-foreground-base-tertiary);
 }
 
@@ -86,16 +76,8 @@
 .article {
   flex: 1;
   min-width: 0;
-  margin-top: var(--paper-navbar-total);
+  width: 100%;
   padding: 0 var(--rs-space-7);
-}
-
-.searchButton {
-  height: 28px;
-  padding: 0 var(--rs-space-3);
-  font-size: var(--rs-font-size-small);
-  border: none;
-  box-shadow: none;
 }
 
 .content {

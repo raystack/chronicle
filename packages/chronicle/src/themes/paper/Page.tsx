@@ -1,15 +1,19 @@
-import { ChevronLeftIcon, ChevronRightIcon } from '@heroicons/react/24/outline';
-import { Flex } from '@raystack/apsara';
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ChevronRightIcon,
+  AdjustmentsHorizontalIcon,
+} from '@heroicons/react/24/outline';
+import { IconButton } from '@raystack/apsara';
 import { useMemo } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router';
 import { getBreadcrumbItems } from 'fumadocs-core/breadcrumb';
 import { flattenTree } from 'fumadocs-core/page-tree';
-import { Search } from '@/components/ui/search';
 import type { ThemePageProps } from '@/types';
 import styles from './Page.module.css';
 import { ReadingProgress } from './ReadingProgress';
 
-export function Page({ page, config, tree }: ThemePageProps) {
+export function Page({ page, tree }: ThemePageProps) {
   const { pathname } = useLocation();
 
   const { prev, next, crumbs } = useMemo(() => {
@@ -33,46 +37,36 @@ export function Page({ page, config, tree }: ThemePageProps) {
   return (
     <>
       <main className={styles.main}>
-        <Flex align='center' className={styles.navbar}>
-          <Flex align='center' gap='small' className={styles.navLeft}>
-            {prev ? (
-              <RouterLink
-                to={prev.url}
-                className={styles.arrow}
-                aria-label='Previous page'
-              >
-                <ChevronLeftIcon width={14} height={14} />
-              </RouterLink>
-            ) : (
-              <button
-                disabled
-                className={styles.arrowDisabled}
-                aria-label='Previous page'
-              >
-                <ChevronLeftIcon width={14} height={14} />
-              </button>
-            )}
-            {next ? (
-              <RouterLink
-                to={next.url}
-                className={styles.arrow}
-                aria-label='Next page'
-              >
-                <ChevronRightIcon width={14} height={14} />
-              </RouterLink>
-            ) : (
-              <button
-                disabled
-                className={styles.arrowDisabled}
-                aria-label='Next page'
-              >
-                <ChevronRightIcon width={14} height={14} />
-              </button>
-            )}
+        <div className={styles.navbar}>
+          <div className={styles.navLeft}>
+            <div className={styles.arrows}>
+              {prev ? (
+                <RouterLink to={prev.url} aria-label='Previous page'>
+                  <IconButton size={2}>
+                    <ArrowLeftIcon width={14} height={14} />
+                  </IconButton>
+                </RouterLink>
+              ) : (
+                <IconButton size={2} disabled>
+                  <ArrowLeftIcon width={14} height={14} />
+                </IconButton>
+              )}
+              {next ? (
+                <RouterLink to={next.url} aria-label='Next page'>
+                  <IconButton size={2}>
+                    <ArrowRightIcon width={14} height={14} />
+                  </IconButton>
+                </RouterLink>
+              ) : (
+                <IconButton size={2} disabled>
+                  <ArrowRightIcon width={14} height={14} />
+                </IconButton>
+              )}
+            </div>
             <nav className={styles.breadcrumb}>
               {crumbs.map((crumb, i) => (
                 <span key={crumb.href}>
-                  {i > 0 && <span className={styles.separator}>/</span>}
+                  {i > 0 && <ChevronRightIcon width={12} height={12} className={styles.separator} />}
                   {i === crumbs.length - 1 ? (
                     <span className={styles.crumbActive}>{crumb.label}</span>
                   ) : (
@@ -83,13 +77,13 @@ export function Page({ page, config, tree }: ThemePageProps) {
                 </span>
               ))}
             </nav>
-          </Flex>
-          <Flex align='center' className={styles.navRight}>
-            {config.search?.enabled && (
-              <Search className={styles.searchButton} />
-            )}
-          </Flex>
-        </Flex>
+          </div>
+          <div className={styles.navRight}>
+            <IconButton size={2}>
+              <AdjustmentsHorizontalIcon width={14} height={14} />
+            </IconButton>
+          </div>
+        </div>
         <article className={styles.article} data-article-content>
           <div className={styles.content}>{page.content}</div>
         </article>
