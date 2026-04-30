@@ -39,7 +39,7 @@
   gap: var(--rs-space-3);
   font-family: var(--paper-font-body);
   font-size: var(--rs-font-size-small);
-  font-weight: 400;
+  font-weight: var(--rs-font-weight-regular);
   line-height: var(--rs-line-height-small);
   letter-spacing: var(--rs-letter-spacing-small);
   color: var(--rs-color-foreground-base-primary);

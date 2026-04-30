@@ -20,7 +20,7 @@
   color: var(--rs-color-foreground-accent-primary);
   text-transform: uppercase;
   margin: 0;
-  font-weight: 400;
+  font-weight: var(--rs-font-weight-regular);
 }
 
 .description {
@@ -83,7 +83,7 @@
 .cardImageLabel {
   position: absolute;
   font-family: var(--paper-font-mono, monospace);
-  font-size: 10px;
+  font-size: var(--rs-font-size-micro);
   text-transform: uppercase;
   color: var(--rs-color-foreground-base-secondary);
   background: var(--rs-color-background-accent-secondary);
@@ -126,13 +126,13 @@
 .cardBody {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: var(--rs-space-3);
   padding-bottom: var(--rs-space-4);
 }
 
 .cardLabel {
   font-family: var(--paper-font-mono, inherit);
-  font-size: 16px;
+  font-size: var(--rs-font-size-large);
   line-height: 1.4;
   text-transform: uppercase;
   color: var(--rs-color-foreground-base-primary);
