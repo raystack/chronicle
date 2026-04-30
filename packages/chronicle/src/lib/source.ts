@@ -241,5 +241,5 @@ export async function loadPageModule(
   if (!loader) return { default: null, toc: [] };
   const mod = await loader();
   const minutes = mod.readingTime?.minutes;
-  return { default: mod.default ?? null, toc: mod.toc ?? [], _readingTime: minutes ? Math.max(1, Math.round(minutes)) : undefined };
+  return { default: mod.default ?? null, toc: mod.toc ?? [], _readingTime: minutes != null ? Math.max(1, Math.round(minutes)) : undefined };
 }
