@@ -21,6 +21,5 @@ export default defineHandler(async event => {
     ctx,
   );
 
-  event.res.headers.set('Content-Type', 'text/plain');
-  return body;
+  return new Response(body, { headers: { 'Content-Type': 'text/plain' } });
 });

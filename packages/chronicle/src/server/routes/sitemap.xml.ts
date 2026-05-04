@@ -4,12 +4,11 @@ import { getAllVersions, getApiConfigsForVersion, loadConfig } from '@/lib/confi
 import { loadApiSpecs } from '@/lib/openapi';
 import { getPages } from '@/lib/source';
 
-export default defineHandler(async event => {
+export default defineHandler(async () => {
   const config = loadConfig();
 
   if (!config.url) {
-    event.res.headers.set('Content-Type', 'application/xml');
-    return '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"/>';
+    return new Response('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"/>', { headers: { 'Content-Type': 'application/xml' } });
   }
 
   const baseUrl = config.url.replace(/\/$/, '');
@@ -43,6 +42,5 @@ export default defineHandler(async event => {
 ${[...docPages, ...apiPages].join('\n')}
 </urlset>`;
 
-  event.res.headers.set('Content-Type', 'application/xml');
-  return xml;
+  return new Response(xml, { headers: { 'Content-Type': 'application/xml' } });
 });

@@ -15,7 +15,7 @@ export default defineHandler(async event => {
   }
 
   const apiConfigs = getApiConfigsForVersion(config, versionDir);
-  if (!apiConfigs.length) return [];
+  if (!apiConfigs.length) return Response.json([]);
 
-  return loadApiSpecs(apiConfigs);
+  return Response.json(await loadApiSpecs(apiConfigs));
 });

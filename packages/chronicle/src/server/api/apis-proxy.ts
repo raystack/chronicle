@@ -51,11 +51,11 @@ export default defineHandler(async event => {
       ? await response.json()
       : await response.text();
 
-    return {
+    return Response.json({
       status: response.status,
       statusText: response.statusText,
       body: responseBody
-    };
+    });
   } catch (error) {
     const message =
       error instanceof Error

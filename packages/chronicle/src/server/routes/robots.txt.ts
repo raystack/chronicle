@@ -1,11 +1,10 @@
 import { defineHandler } from 'nitro';
 import { loadConfig } from '@/lib/config';
 
-export default defineHandler(event => {
+export default defineHandler(() => {
   const config = loadConfig();
   const sitemap = config.url ? `\nSitemap: ${config.url}/sitemap.xml` : '';
   const body = `User-agent: *\nAllow: /${sitemap}`;
 
-  event.res.headers.set('Content-Type', 'text/plain');
-  return body;
+  return new Response(body, { headers: { 'Content-Type': 'text/plain' } });
 });

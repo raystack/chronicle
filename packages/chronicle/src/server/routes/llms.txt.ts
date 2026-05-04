@@ -4,7 +4,7 @@ import { buildLlmsTxt } from '@/lib/llms';
 import { extractFrontmatter, getPagesForVersion } from '@/lib/source';
 import { LATEST_CONTEXT } from '@/lib/version-source';
 
-export default defineHandler(async event => {
+export default defineHandler(async () => {
   const config = loadConfig();
 
   const pages = await getPagesForVersion(LATEST_CONTEXT);
@@ -14,6 +14,5 @@ export default defineHandler(async event => {
     LATEST_CONTEXT,
   );
 
-  event.res.headers.set('Content-Type', 'text/plain');
-  return body;
+  return new Response(body, { headers: { 'Content-Type': 'text/plain' } });
 });
