@@ -7,7 +7,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import remarkDirective from 'remark-directive';
 import { type InlineConfig } from 'vite';
-import remarkStripMdExtensions from '../lib/remark-strip-md-extensions';
+import remarkResolveLinks from '../lib/remark-resolve-links';
 import remarkReadingTime from 'remark-reading-time';
 import remarkUnusedDirectives from '../lib/remark-unused-directives';
 
@@ -77,7 +77,7 @@ export async function createViteConfig(
                 },
               }],
               remarkUnusedDirectives,
-              remarkStripMdExtensions,
+              remarkResolveLinks,
               remarkMdxMermaid,
               remarkReadingTime,
             ],

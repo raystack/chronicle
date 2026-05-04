@@ -13,10 +13,10 @@ import { usePageContext } from '@/lib/page-context';
 import styles from './search.module.css';
 
 interface SearchProps {
-  className?: string;
+  classNames?: { trigger?: string };
 }
 
-export function Search({ className }: SearchProps) {
+export function Search({ classNames }: SearchProps) {
   const [open, setOpen] = useState(false);
   const navigate = useNavigate();
   const { version } = usePageContext();
@@ -60,7 +60,7 @@ export function Search({ className }: SearchProps) {
         aria-label='Search'
         title='Search (Ctrl/⌘K)'
         onClick={() => setOpen(true)}
-        className={className}
+        className={classNames?.trigger}
       >
         <MagnifyingGlassIcon width={16} height={16} />
       </IconButton>
