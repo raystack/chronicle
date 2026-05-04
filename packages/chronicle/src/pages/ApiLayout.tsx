@@ -1,6 +1,5 @@
 import { cx } from 'class-variance-authority';
 import type { ReactNode } from 'react';
-import { Search } from '@/components/ui/search';
 import { buildApiPageTree } from '@/lib/api-routes';
 import { usePageContext } from '@/lib/page-context';
 import { getTheme } from '@/themes/registry';
@@ -26,7 +25,6 @@ export function ApiLayout({ children }: ApiLayoutProps) {
         content: styles.content
       }}
     >
-      <Search classNames={{ trigger: styles.hiddenSearch }} />
       {children}
     </Layout>
   );

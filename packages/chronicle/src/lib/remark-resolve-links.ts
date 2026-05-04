@@ -8,7 +8,7 @@ const remarkResolveLinks: Plugin = () => {
     const filePath = file.path
     if (!filePath) return
 
-    const contentIdx = filePath.indexOf('/content/')
+    const contentIdx = filePath.lastIndexOf('/content/')
     if (contentIdx === -1) return
 
     const relative = filePath.slice(contentIdx + '/content/'.length)
@@ -16,7 +16,7 @@ const remarkResolveLinks: Plugin = () => {
 
     visit(tree, 'link', (node: Link) => {
       if (!node.url) return
-      if (node.url.startsWith('http://') || node.url.startsWith('https://')) return
+      if (/^[a-z][a-z0-9+\-.]*:/i.test(node.url)) return
       if (node.url.startsWith('#')) return
       if (node.url.startsWith('/')) return
 
