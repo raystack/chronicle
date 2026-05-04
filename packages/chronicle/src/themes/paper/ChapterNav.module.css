@@ -1,21 +1,25 @@
 .nav {
   display: flex;
   flex-direction: column;
-  gap: var(--rs-space-5);
+  gap: var(--rs-space-8);
 }
 
 .chapter {
   display: flex;
   flex-direction: column;
   gap: var(--rs-space-2);
+  margin-top: var(--rs-space-8);
 }
 
 .chapterLabel {
+  font-family: var(--paper-font-mono);
   font-size: var(--rs-font-size-small);
-  font-weight: 600;
+  font-weight: var(--rs-font-weight-medium);
+  line-height: var(--rs-line-height-small);
+  letter-spacing: var(--rs-letter-spacing-small);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--rs-color-foreground-base-primary);
+  color: var(--rs-color-foreground-base-secondary);
+  padding: 0 var(--rs-space-3);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -27,30 +31,32 @@
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--rs-space-1);
-  padding-left: var(--rs-space-4);
 }
 
 .link {
   display: flex;
   align-items: center;
-  gap: var(--rs-space-2);
+  gap: var(--rs-space-3);
+  font-family: var(--paper-font-body);
   font-size: var(--rs-font-size-small);
-  color: var(--rs-color-foreground-base-tertiary);
+  font-weight: var(--rs-font-weight-regular);
+  line-height: var(--rs-line-height-small);
+  letter-spacing: var(--rs-letter-spacing-small);
+  color: var(--rs-color-foreground-base-primary);
   text-decoration: none;
-  padding: var(--rs-space-1) 0;
+  padding: var(--rs-space-3);
+  border-radius: var(--rs-radius-2);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .link:hover {
-  color: var(--rs-color-foreground-base-primary);
+  color: var(--rs-color-foreground-accent-primary);
 }
 
 .active {
   color: var(--rs-color-foreground-accent-primary);
-  font-weight: 500;
 }
 
 .icon {
@@ -60,9 +66,14 @@
 }
 
 .subLabel {
+  font-family: var(--paper-font-mono);
   font-size: var(--rs-font-size-small);
-  font-weight: 500;
+  font-weight: var(--rs-font-weight-medium);
+  line-height: var(--rs-line-height-small);
+  letter-spacing: var(--rs-letter-spacing-small);
+  text-transform: uppercase;
   color: var(--rs-color-foreground-base-secondary);
+  padding: 0 var(--rs-space-3);
   margin-top: var(--rs-space-3);
   display: block;
   white-space: nowrap;

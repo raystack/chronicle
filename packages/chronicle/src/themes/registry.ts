@@ -15,7 +15,7 @@ export function getTheme(name?: string): Theme {
 
 export function getThemeConfig(name?: string) {
   if (name === 'paper') {
-    return { enableSystem: false, forcedTheme: 'light' };
+    return { enableSystem: true };
   }
   return { enableSystem: true };
 }

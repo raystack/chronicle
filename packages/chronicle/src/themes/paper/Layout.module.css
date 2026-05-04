@@ -1,5 +1,17 @@
+@import url("https://fonts.googleapis.com/css2?family=Hanuman:wght@400;700&display=swap");
+
+@font-face {
+  font-family: "Departure Mono";
+  src: url("./fonts/DepartureMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 .layout {
-  --paper-sidebar-width: 260px;
+  --paper-sidebar-width: 262px;
+  --paper-font-mono: "Departure Mono", "SF Mono", "Fira Code", monospace;
+  --paper-font-body: "Hanuman", sans-serif;
 
   min-height: 100vh;
 }
@@ -8,33 +20,62 @@
   flex: 1;
 }
 
+:global(body) {
+  background: var(--rs-color-background-neutral-primary);
+}
+
 .sidebar {
   width: var(--paper-sidebar-width);
-  padding: var(--rs-space-7) var(--rs-space-5);
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
   background: var(--rs-color-background-neutral-primary);
-  overflow-y: auto;
-  font-family: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 var(--rs-space-5);
+  flex-shrink: 0;
+}
+
+.contentDirTrigger {
+  border: none;
+  outline: none;
+  background: var(--rs-color-background-neutral-primary);
+  color: var(--rs-color-foreground-accent-primary);
+  font-family: var(--paper-font-mono);
+  font-size: var(--rs-font-size-regular);
+  font-weight: var(--rs-font-weight-medium);
+  line-height: var(--rs-line-height-mini);
+  letter-spacing: var(--rs-letter-spacing-mini);
+  text-transform: uppercase;
 }
 
 .title {
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: var(--rs-font-size-regular);
+  letter-spacing: var(--rs-letter-spacing-mini);
   color: var(--rs-color-foreground-accent-primary);
-  font-family: inherit;
-  font-size: var(--rs-font-size-mono-large);
-  margin-bottom: var(--rs-space-7);
+  font-family: var(--paper-font-mono);
+  text-transform: uppercase;
 }
 
-.nav {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rs-space-3);
-  margin-bottom: var(--rs-space-7);
+.navScroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--rs-space-5) var(--rs-space-5);
+}
+
+.footer {
+  flex-shrink: 0;
+  padding: var(--rs-space-4) var(--rs-space-5);
+  border-top: 1px solid var(--rs-color-border-base-primary);
 }
 
 .content {
   flex: 1;
-  overflow-y: auto;
   background: var(--rs-color-background-neutral-primary);
-  padding-right: var(--paper-sidebar-width);
 }

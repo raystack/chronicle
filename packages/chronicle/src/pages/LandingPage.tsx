@@ -1,3 +1,4 @@
+import { FolderIcon } from '@heroicons/react/24/outline';
 import { Link as RouterLink } from 'react-router';
 import { getLandingEntries } from '@/lib/config';
 import { usePageContext } from '@/lib/page-context';
@@ -13,15 +14,30 @@ export function LandingPage() {
 
   return (
     <div className={styles.root}>
-      <h1 className={styles.title}>{heading}</h1>
-      {config.site.description ? (
-        <p className={styles.description}>{config.site.description}</p>
-      ) : null}
+      <div className={styles.header}>
+        <h1 className={styles.title}>{heading}</h1>
+        {config.site.description ? (
+          <p className={styles.description}>{config.site.description}</p>
+        ) : null}
+      </div>
       <div className={styles.grid}>
-        {entries.map((entry) => (
+        {entries.map((entry, i) => (
           <RouterLink key={entry.href} to={entry.href} className={styles.card}>
-            <span className={styles.cardLabel}>{entry.label}</span>
-            <span className={styles.cardHref}>{entry.href}</span>
+            <div className={styles.cardImage} aria-hidden='true'>
+              <span className={`${styles.cardImageLabel} ${styles.cardImageLabelTop}`}>
+                Fig_{String(i + 1).padStart(3, '0')}
+              </span>
+              <span className={`${styles.cardImageLabel} ${styles.cardImageLabelRight}`}>
+                [ {entry.label} ]
+              </span>
+              <FolderIcon className={styles.cardIcon} />
+            </div>
+            <div className={styles.cardBody}>
+              <span className={styles.cardLabel}>{entry.label}</span>
+              {entry.description ? (
+                <span className={styles.cardDescription}>{entry.description}</span>
+              ) : null}
+            </div>
           </RouterLink>
         ))}
       </div>

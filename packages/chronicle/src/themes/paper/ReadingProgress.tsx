@@ -220,6 +220,7 @@ export function ReadingProgress({ items }: ReadingProgressProps) {
     const element = document.getElementById(id);
     if (!element) return;
 
+    history.pushState(null, '', `#${id}`);
     const elementTop = element.getBoundingClientRect().top + window.scrollY;
     window.scrollTo({
       top: Math.max(0, elementTop - NAV_HEIGHT),
