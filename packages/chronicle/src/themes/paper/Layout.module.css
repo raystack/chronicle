@@ -79,3 +79,7 @@
   flex: 1;
   background: var(--rs-color-background-neutral-primary);
 }
+
+.hiddenTrigger {
+  display: none;
+}

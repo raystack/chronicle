@@ -26,7 +26,7 @@ export function ApiLayout({ children }: ApiLayoutProps) {
         content: styles.content
       }}
     >
-      <Search className={styles.hiddenSearch} />
+      <Search classNames={{ trigger: styles.hiddenSearch }} />
       {children}
     </Layout>
   );

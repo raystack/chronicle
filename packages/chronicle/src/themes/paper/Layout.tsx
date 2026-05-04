@@ -6,6 +6,7 @@ import { useLocation, useNavigate } from 'react-router';
 import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir } from '@/lib/navigation';
 import { usePageContext } from '@/lib/page-context';
+import { Search } from '@/components/ui/search';
 import type { ThemeLayoutProps } from '@/types';
 import { ChapterNav } from './ChapterNav';
 import styles from './Layout.module.css';
@@ -82,6 +83,7 @@ function LayoutInner({
           </aside>
         ) : null}
         <div className={cx(styles.content, classNames?.content)}>
+          {config.search?.enabled && <Search classNames={{ trigger: styles.hiddenTrigger }} />}
           {children}
         </div>
       </Flex>
