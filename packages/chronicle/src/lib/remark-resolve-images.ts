@@ -37,9 +37,11 @@ const remarkResolveImages: Plugin = () => {
       )
     })
 
-    visit(tree, ['mdxJsxFlowElement', 'mdxJsxTextElement'], (node: MdxJsxFlowElement | MdxJsxTextElement) => {
-      if (node.name !== 'img') return
-      const srcAttr = node.attributes.find((a): a is MdxJsxAttribute => a.type === 'mdxJsxAttribute' && a.name === 'src')
+    visit(tree, (node) => {
+      if (node.type !== 'mdxJsxFlowElement' && node.type !== 'mdxJsxTextElement') return
+      const jsx = node as MdxJsxFlowElement | MdxJsxTextElement
+      if (jsx.name !== 'img') return
+      const srcAttr = jsx.attributes.find((a): a is MdxJsxAttribute => a.type === 'mdxJsxAttribute' && a.name === 'src')
       if (!srcAttr?.value || typeof srcAttr.value !== 'string') return
       srcAttr.value = resolveUrl(srcAttr.value, dir)
     })
