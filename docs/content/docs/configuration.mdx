@@ -87,12 +87,6 @@ search:
   enabled: true
   placeholder: Search docs...
 
-footer:
-  copyright: "© 2026 My Company"
-  links:
-    - label: GitHub
-      href: https://github.com/myorg/myproject
-
 api:
   - name: REST API
     spec: ./openapi.yaml
@@ -104,9 +98,6 @@ api:
       type: apiKey
       header: Authorization
       placeholder: "Bearer token"
-
-llms:
-  enabled: true
 
 analytics:
   enabled: true
@@ -160,6 +151,8 @@ content:
 |-------|------|-------------|
 | `dir` | `string` | Folder name under `content/`. Must be unique. |
 | `label` | `string` | Display label in navigation and landing pages. |
+| `description` | `string` | Optional description shown on landing page cards. |
+| `icon` | `string` | Optional icon identifier for landing page cards. |
 
 ### latest
 
@@ -296,25 +289,6 @@ search:
 
 When enabled, search is accessible via the navbar button or keyboard shortcut `Cmd+K` / `Ctrl+K`. Active version comes from the URL; switching versions scopes the index.
 
-### footer
-
-Footer content displayed at the bottom of every page.
-
-```yaml
-footer:
-  copyright: "© 2026 My Company. All rights reserved."
-  links:
-    - label: Terms
-      href: /terms
-    - label: Privacy
-      href: /privacy
-```
-
-| Field | Type | Description |
-|-------|------|-------------|
-| `copyright` | `string` | Copyright text (left-aligned) |
-| `links` | `NavLink[]` | Footer links (right-aligned) |
-
 ### api
 
 OpenAPI specification configuration at the top level applies to the latest version (served at `/apis/...`). Version-scoped specs live under each `versions[].api`.
@@ -338,24 +312,12 @@ api:
 | `name` | `string` | API display name |
 | `spec` | `string` | Path to OpenAPI spec file (JSON or YAML), relative to `chronicle.yaml` |
 | `basePath` | `string` | URL path prefix for API pages (e.g., `/apis`) |
+| `icon` | `string` | Optional icon identifier |
 | `server.url` | `string` | Base URL for the API server |
 | `server.description` | `string` | Server description |
 | `auth.type` | `string` | Authentication type (e.g., `apiKey`, `bearer`) |
 | `auth.header` | `string` | Header name for auth token |
 | `auth.placeholder` | `string` | Placeholder text in auth input |
-
-### llms
-
-Per-version `llms.txt` generation.
-
-```yaml
-llms:
-  enabled: true
-```
-
-| Field | Type | Description | Default |
-|-------|------|-------------|---------|
-| `enabled` | `boolean` | Emit `/llms.txt` and `/<version-dir>/llms.txt` | `false` |
 
 ### analytics
 
