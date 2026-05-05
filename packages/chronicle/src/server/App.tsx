@@ -40,7 +40,7 @@ export function App() {
           <ApiPage slug={apiSlug} />
         </ApiLayout>
       ) : (
-        <DocsLayout>
+        <DocsLayout hideSidebar={isLanding}>
           {isLanding ? <LandingPage /> : <DocsPage slug={docsSlug} />}
         </DocsLayout>
       )}
