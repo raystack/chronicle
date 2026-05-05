@@ -7,6 +7,7 @@ import type { MdxJsxFlowElement, MdxJsxTextElement, MdxJsxAttribute } from 'mdas
 
 function resolveUrl(src: string, dir: string): string {
   if (/^[a-z][a-z0-9+\-.]*:/i.test(src)) return src
+  if (src.startsWith('//')) return src
   if (src.startsWith('#')) return src
   if (src.startsWith('/_content/')) return src
 

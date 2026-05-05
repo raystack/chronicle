@@ -21,7 +21,8 @@ export default defineHandler(async event => {
   }
 
   const contentDir = __CHRONICLE_CONTENT_DIR__;
-  const filePath = safePath(contentDir, pathname);
+  let filePath: string | null = null;
+  try { filePath = safePath(contentDir, pathname); } catch { /* malformed URL encoding */ }
   if (!filePath) throw new HTTPError({ status: 404, message: 'Not Found' });
 
   const data = await fs.readFile(filePath).catch(() => null);
