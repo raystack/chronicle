@@ -23,6 +23,11 @@ const frontmatterGlob: Record<string, Record<string, unknown>> = import.meta.glo
   { eager: true, import: 'frontmatter' }
 );
 
+const readingTimeGlob: Record<string, { text: string; minutes: number; words: number; time: number } | undefined> = import.meta.glob(
+  '../../.content/**/*.{mdx,md}',
+  { eager: true, import: 'readingTime' }
+);
+
 const metaGlob: Record<string, Record<string, unknown>> = import.meta.glob(
   '../../.content/**/meta.json',
   { eager: true }
@@ -38,10 +43,12 @@ function buildFiles() {
   for (const [key, data] of Object.entries(frontmatterGlob)) {
     const originalPath = key.slice(CONTENT_PREFIX.length);
     const relativePath = originalPath.replace(/readme\.(mdx?)$/i, 'index.$1');
+    const rt = readingTimeGlob[key];
+    const _readingTime = rt?.minutes != null ? Math.max(1, Math.round(rt.minutes)) : undefined;
     files.push({
       type: 'page',
       path: relativePath,
-      data: { ...data, _relativePath: relativePath, _originalPath: originalPath }
+      data: { ...data, _readingTime, _relativePath: relativePath, _originalPath: originalPath }
     });
   }
 

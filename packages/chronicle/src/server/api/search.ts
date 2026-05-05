@@ -125,7 +125,7 @@ export default defineHandler(async event => {
 
   if (!query) {
     const docs = await getDocs(ctx);
-    return docs
+    return Response.json(docs
       .filter(d => d.type === 'page')
       .slice(0, 8)
       .map(d => ({
@@ -133,13 +133,13 @@ export default defineHandler(async event => {
         url: d.url,
         type: d.type,
         content: d.title
-      }));
+      })));
   }
 
-  return index.search(query).map(r => ({
+  return Response.json(index.search(query).map(r => ({
     id: r.id,
     url: r.url,
     type: r.type,
     content: r.title
-  }));
+  })));
 });

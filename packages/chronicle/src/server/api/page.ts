@@ -1,5 +1,5 @@
 import { defineHandler, HTTPError } from 'nitro';
-import { getPage, getPageNav, extractFrontmatter, getRelativePath, getOriginalPath, loadPageModule } from '@/lib/source';
+import { getPage, getPageNav, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
 
 export default defineHandler(async event => {
   const slugParam = event.url.searchParams.get('slug') ?? '';
@@ -11,18 +11,12 @@ export default defineHandler(async event => {
   }
 
   const nav = await getPageNav(slug);
-  const originalPath = getOriginalPath(page);
-  const relativePath = getRelativePath(page);
-  const mdxModule = (originalPath || relativePath) ? await loadPageModule(originalPath || relativePath) : null;
 
-  return {
-    frontmatter: {
-      ...extractFrontmatter(page, slug[slug.length - 1]),
-      _readingTime: mdxModule?._readingTime,
-    },
-    relativePath,
-    originalPath,
+  return Response.json({
+    frontmatter: extractFrontmatter(page, slug[slug.length - 1]),
+    relativePath: getRelativePath(page),
+    originalPath: getOriginalPath(page),
     prev: nav.prev,
     next: nav.next,
-  };
+  });
 });

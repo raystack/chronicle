@@ -69,7 +69,5 @@ export default defineHandler(async event => {
     },
   );
 
-  event.res.headers.set('Content-Type', 'image/svg+xml');
-  event.res.headers.set('Cache-Control', 'public, max-age=86400');
-  return svg;
+  return new Response(svg, { headers: { 'Content-Type': 'image/svg+xml', 'Cache-Control': 'public, max-age=86400' } });
 });

@@ -34,6 +34,5 @@ export default defineHandler(async event => {
     throw new HTTPError({ status: 404, message: 'Not Found' });
   }
 
-  event.res.headers.set('Content-Type', 'text/markdown; charset=utf-8');
-  return matter(raw).content;
+  return new Response(matter(raw).content, { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } });
 });
