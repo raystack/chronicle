@@ -1,7 +1,18 @@
 import path from 'node:path'
 import { visit } from 'unist-util-visit'
 import type { Plugin } from 'unified'
-import type { Image } from 'mdast'
+import type { Image, Html } from 'mdast'
+import type { Element } from 'hast'
+import type { MdxJsxFlowElement, MdxJsxTextElement, MdxJsxAttribute } from 'mdast-util-mdx-jsx'
+
+function resolveUrl(src: string, dir: string): string {
+  if (/^[a-z][a-z0-9+\-.]*:/i.test(src)) return src
+  if (src.startsWith('#')) return src
+  if (src.startsWith('/_content/')) return src
+
+  if (src.startsWith('/')) return `/_content${src}`
+  return `/_content/${path.posix.normalize(path.posix.join(dir, src))}`
+}
 
 const remarkResolveImages: Plugin = () => {
   return (tree, file) => {
@@ -16,28 +27,28 @@ const remarkResolveImages: Plugin = () => {
 
     visit(tree, 'image', (node: Image) => {
       if (!node.url) return
-      if (/^[a-z][a-z0-9+\-.]*:/i.test(node.url)) return
-      if (node.url.startsWith('/_content/')) return
-
-      if (node.url.startsWith('/')) {
-        node.url = `/_content${node.url}`
-      } else {
-        node.url = `/_content/${path.posix.normalize(path.posix.join(dir, node.url))}`
-      }
+      node.url = resolveUrl(node.url, dir)
     })
 
-    visit(tree, ['mdxJsxFlowElement', 'mdxJsxTextElement'], (node: any) => {
-      if (node.name !== 'img') return
-      const srcAttr = node.attributes?.find((a: any) => a.name === 'src')
-      if (!srcAttr?.value || typeof srcAttr.value !== 'string') return
-      if (/^[a-z][a-z0-9+\-.]*:/i.test(srcAttr.value)) return
-      if (srcAttr.value.startsWith('/_content/')) return
+    visit(tree, 'html', (node: Html) => {
+      node.value = node.value.replace(
+        /(<img\b[^>]*\bsrc=["'])([^"']+)(["'])/gi,
+        (_, before, src, after) => `${before}${resolveUrl(src, dir)}${after}`
+      )
+    })
 
-      if (srcAttr.value.startsWith('/')) {
-        srcAttr.value = `/_content${srcAttr.value}`
-      } else {
-        srcAttr.value = `/_content/${path.posix.normalize(path.posix.join(dir, srcAttr.value))}`
-      }
+    visit(tree, ['mdxJsxFlowElement', 'mdxJsxTextElement'], (node: MdxJsxFlowElement | MdxJsxTextElement) => {
+      if (node.name !== 'img') return
+      const srcAttr = node.attributes.find((a): a is MdxJsxAttribute => a.type === 'mdxJsxAttribute' && a.name === 'src')
+      if (!srcAttr?.value || typeof srcAttr.value !== 'string') return
+      srcAttr.value = resolveUrl(srcAttr.value, dir)
+    })
+
+    visit(tree, 'element', (node: Element) => {
+      if (node.tagName !== 'img') return
+      const src = node.properties?.src
+      if (typeof src !== 'string') return
+      node.properties.src = resolveUrl(src, dir)
     })
   }
 }
