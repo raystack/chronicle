@@ -1,8 +1,10 @@
 import {
   createContext,
   type ReactNode,
+  useCallback,
   useContext,
   useEffect,
+  useRef,
   useState
 } from 'react';
 import { useLocation } from 'react-router';
@@ -10,7 +12,7 @@ import type { ApiSpec } from '@/lib/openapi';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import type { VersionContext } from '@/lib/version-source';
 import { LATEST_CONTEXT } from '@/lib/version-source';
-import type { ChronicleConfig, Frontmatter, Page, Root, TableOfContents } from '@/types';
+import type { ChronicleConfig, Frontmatter, Page, PageNavLink, Root, TableOfContents } from '@/types';
 
 export type MdxLoader = (relativePath: string) => Promise<{ content: ReactNode; toc: TableOfContents }>;
 
@@ -18,6 +20,7 @@ interface PageContextValue {
   config: ChronicleConfig;
   tree: Root;
   page: Page | null;
+  isLoading: boolean;
   errorStatus: number | null;
   apiSpecs: ApiSpec[];
   version: VersionContext;
@@ -36,6 +39,7 @@ export function usePageContext(): PageContextValue {
       },
       tree: { name: 'root', children: [] } as Root,
       page: null,
+      isLoading: false,
       errorStatus: null,
       apiSpecs: [],
       version: LATEST_CONTEXT,
@@ -82,11 +86,52 @@ export function PageProvider({
   const [errorStatus, setErrorStatus] = useState<number | null>(getInitialErrorStatus(initialPage, initialConfig, pathname));
   const [apiSpecs, setApiSpecs] = useState<ApiSpec[]>(initialApiSpecs);
   const [version, setVersion] = useState<VersionContext>(initialVersion);
-  const [currentPath, setCurrentPath] = useState(pathname);
+  const [isLoading, setIsLoading] = useState(false);
+  const currentPathRef = useRef(pathname);
+
+  const fetchApiSpecs = useCallback(async (route: { version: VersionContext }, cancelled: { current: boolean }) => {
+    setIsLoading(true);
+    try {
+      const specsUrl = route.version.dir
+        ? `/api/specs?version=${encodeURIComponent(route.version.dir)}`
+        : '/api/specs';
+      const res = await fetch(specsUrl);
+      const specs = await res.json();
+      if (!cancelled.current) setApiSpecs(specs);
+    } catch {
+      // best-effort on client nav
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  interface PageData {
+    frontmatter: Frontmatter;
+    relativePath: string;
+    originalPath?: string;
+    prev?: PageNavLink | null;
+    next?: PageNavLink | null;
+  }
+
+  const fetchPageData = useCallback(async (slug: string[]): Promise<PageData> => {
+    setIsLoading(true);
+    try {
+      const apiPath = slug.length === 0
+        ? '/api/page'
+        : `/api/page?slug=${slug.join(',')}`;
+      const res = await fetch(apiPath);
+      if (!res.ok) throw new Error(String(res.status));
+      return await res.json();
+    } catch (err) {
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    if (pathname === currentPath) return;
-    setCurrentPath(pathname);
+    if (pathname === currentPathRef.current) return;
+    currentPathRef.current = pathname;
 
     const route = resolveRoute(pathname, initialConfig);
     if (route.type !== RouteType.Redirect) setVersion(route.version);
@@ -96,17 +141,7 @@ export function PageProvider({
     if (route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage) {
       setPage(null);
       setErrorStatus(null);
-      const specsUrl = route.version.dir
-        ? `/api/specs?version=${encodeURIComponent(route.version.dir)}`
-        : '/api/specs';
-      fetch(specsUrl)
-        .then(res => res.json())
-        .then(specs => {
-          if (!cancelled.current) setApiSpecs(specs);
-        })
-        .catch(() => {
-          // swallow — api specs are best-effort on client nav
-        });
+      fetchApiSpecs(route, cancelled);
       return () => { cancelled.current = true; };
     }
 
@@ -116,41 +151,34 @@ export function PageProvider({
       return () => { cancelled.current = true; };
     }
 
-    const apiPath = route.slug.length === 0
-      ? '/api/page'
-      : `/api/page?slug=${route.slug.join(',')}`;
-
-    fetch(apiPath)
-      .then(res => {
-        if (!res.ok) {
-          if (!cancelled.current) {
-            setPage(null);
-            setErrorStatus(res.status);
-          }
-          return;
-        }
-        return res.json();
-      })
-      .then(async (data: { frontmatter: Frontmatter; relativePath: string; originalPath?: string; prev?: Page['prev']; next?: Page['next'] } | undefined) => {
-        if (cancelled.current || !data) return;
+    (async () => {
+      try {
+        const data = await fetchPageData(route.slug);
+        if (cancelled.current) return;
         const { content, toc } = await loadMdx(data.originalPath || data.relativePath);
         if (cancelled.current) return;
         setErrorStatus(null);
-        setPage({ slug: route.slug, frontmatter: data.frontmatter, content, toc, prev: data.prev, next: data.next });
-      })
-      .catch(() => {
-        if (!cancelled.current) {
-          setPage(null);
-          setErrorStatus(500);
-        }
-      });
-
+        setPage({
+          slug: route.slug,
+          frontmatter: data.frontmatter,
+          content,
+          toc,
+          prev: data.prev ?? null,
+          next: data.next ?? null,
+        });
+      } catch (err) {
+        if (cancelled.current) return;
+        const status = Number((err as Error).message) || 500;
+        setPage(null);
+        setErrorStatus(status);
+      }
+    })();
     return () => { cancelled.current = true; };
-  }, [pathname]);
+  }, [pathname, initialConfig, fetchApiSpecs, fetchPageData, loadMdx]);
 
   return (
     <PageContext.Provider
-      value={{ config: initialConfig, tree, page, errorStatus, apiSpecs, version }}
+      value={{ config: initialConfig, tree, page, isLoading, errorStatus, apiSpecs, version }}
     >
       {children}
     </PageContext.Provider>

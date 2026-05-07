@@ -8,11 +8,11 @@ interface DocsPageProps {
 }
 
 export function DocsPage({ slug }: DocsPageProps) {
-  const { config, tree, page, errorStatus } = usePageContext();
+  const { config, tree, page, isLoading, errorStatus } = usePageContext();
 
   if (errorStatus === 404) return <NotFound />;
   if (errorStatus) return <NotFound />;
-  if (!page) return null;
+  if (isLoading || !page) return <div>Loading...</div>;
 
   const { Page } = getTheme(config.theme?.name);
   const pageUrl = config.url ? `${config.url}/${slug.join('/')}` : undefined;
