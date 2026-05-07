@@ -8,13 +8,13 @@ interface DocsPageProps {
 }
 
 export function DocsPage({ slug }: DocsPageProps) {
-  const { config, tree, page, errorStatus } = usePageContext();
+  const { config, tree, page, isLoading, errorStatus } = usePageContext();
 
   if (errorStatus === 404) return <NotFound />;
   if (errorStatus) return <NotFound />;
-  if (!page) return null;
+  const { Page, Skeleton } = getTheme(config.theme?.name);
 
-  const { Page } = getTheme(config.theme?.name);
+  if (isLoading || !page) return <Skeleton />;
   const pageUrl = config.url ? `${config.url}/${slug.join('/')}` : undefined;
   const markdownHref = `/${slug.join('/')}.md`;
 
