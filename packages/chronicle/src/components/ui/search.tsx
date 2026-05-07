@@ -4,30 +4,86 @@ import {
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { Command, IconButton, Text } from '@raystack/apsara';
-import type { SortedResult } from 'fumadocs-core/search';
-import { useDocsSearch } from 'fumadocs-core/search/client';
-import { useCallback, useEffect, useState } from 'react';
+import debounce from 'lodash/debounce';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { usePageContext } from '@/lib/page-context';
 import styles from './search.module.css';
 
+interface SearchResult {
+  id: string;
+  url: string;
+  type: string;
+  content: string;
+}
+
 interface SearchProps {
   classNames?: { trigger?: string };
 }
 
+function buildSearchUrl(query: string, tag?: string): string {
+  const params = new URLSearchParams();
+  if (query) params.set('query', query);
+  if (tag) params.set('tag', tag);
+  const qs = params.toString();
+  return qs ? `/api/search?${qs}` : '/api/search';
+}
+
 export function Search({ classNames }: SearchProps) {
   const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState('');
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { version } = usePageContext();
+  const tag = version.dir ?? undefined;
+  const abortRef = useRef<AbortController | null>(null);
 
-  const { search, setSearch, query } = useDocsSearch({
-    type: 'fetch',
-    api: '/api/search',
-    tag: version.dir ?? undefined,
-    delayMs: 100,
-    allowEmpty: true
-  });
+  const fetchResults = useCallback(async (query: string, signal?: AbortSignal) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(buildSearchUrl(query, tag), { signal });
+      if (!res.ok || signal?.aborted) return;
+      const data: SearchResult[] = await res.json();
+      if (signal?.aborted) return;
+      if (query) {
+        setResults(data);
+      } else {
+        setSuggestions(data);
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return;
+      console.error('Search fetch failed:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [tag]);
+
+  const debouncedSearch = useMemo(
+    () => debounce((query: string) => {
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+      fetchResults(query, controller.signal);
+    }, 150),
+    [fetchResults]
+  );
+
+  useEffect(() => {
+    if (!open) {
+      setSearch('');
+      setResults([]);
+      return;
+    }
+    if (!search) {
+      fetchResults('');
+      return;
+    }
+    debouncedSearch(search);
+    return () => debouncedSearch.cancel();
+  }, [open, search, fetchResults, debouncedSearch]);
 
   const onSelect = useCallback(
     (url: string) => {
@@ -49,9 +105,7 @@ export function Search({ classNames }: SearchProps) {
     return () => document.removeEventListener('keydown', down);
   }, []);
 
-  const results = deduplicateByUrl(
-    query.data === 'empty' ? [] : (query.data ?? [])
-  );
+  const displayResults = deduplicateByUrl(search ? results : suggestions);
 
   return (
     <>
@@ -77,18 +131,17 @@ export function Search({ classNames }: SearchProps) {
             />
 
             <Command.Content className={styles.list}>
-              {query.isLoading && <Command.Empty>Loading...</Command.Empty>}
-              {!query.isLoading &&
+              {isLoading && displayResults.length === 0 && <Command.Empty>Loading...</Command.Empty>}
+              {!isLoading &&
                 search.length > 0 &&
-                results.length === 0 && (
+                displayResults.length === 0 && (
                   <Command.Empty>No results found.</Command.Empty>
                 )}
-              {!query.isLoading &&
-                search.length === 0 &&
-                results.length > 0 && (
+              {search.length === 0 &&
+                displayResults.length > 0 && (
                   <Command.Group>
                     <Command.Label>Suggestions</Command.Label>
-                    {results.slice(0, 8).map((result: SortedResult) => (
+                    {displayResults.slice(0, 8).map((result) => (
                       <Command.Item
                         key={result.id}
                         value={result.id}
@@ -108,7 +161,7 @@ export function Search({ classNames }: SearchProps) {
                   </Command.Group>
                 )}
               {search.length > 0 &&
-                results.map((result: SortedResult) => (
+                displayResults.map((result) => (
                   <Command.Item
                     key={result.id}
                     value={result.id}
@@ -149,7 +202,7 @@ export function Search({ classNames }: SearchProps) {
   );
 }
 
-function deduplicateByUrl(results: SortedResult[]): SortedResult[] {
+function deduplicateByUrl(results: SearchResult[]): SearchResult[] {
   const seen = new Set<string>();
   return results.filter(r => {
     const base = r.url.split('#')[0];
@@ -183,7 +236,7 @@ function HighlightedText({
   );
 }
 
-function getResultIcon(result: SortedResult): React.ReactNode {
+function getResultIcon(result: SearchResult): React.ReactNode {
   if (!result.url.startsWith('/apis/')) {
     return result.type === 'page' ? (
       <DocumentIcon className={styles.icon} />
