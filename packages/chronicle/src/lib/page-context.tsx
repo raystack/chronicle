@@ -130,6 +130,29 @@ export function PageProvider({
     }
   }, []);
 
+  const loadDocsPage = useCallback(async (slug: string[], cancelled: { current: boolean }) => {
+    try {
+      const data = await fetchPageData(slug);
+      if (cancelled.current) return;
+      const { content, toc } = await loadMdx(data.originalPath || data.relativePath);
+      if (cancelled.current) return;
+      setErrorStatus(null);
+      setPage({
+        slug,
+        frontmatter: data.frontmatter,
+        content,
+        toc,
+        prev: data.prev ?? null,
+        next: data.next ?? null,
+      });
+    } catch (err) {
+      if (cancelled.current) return;
+      const status = Number((err as Error).message) || 500;
+      setPage(null);
+      setErrorStatus(status);
+    }
+  }, [fetchPageData, loadMdx]);
+
   useEffect(() => {
     if (pathname === currentPathRef.current) return;
     currentPathRef.current = pathname;
@@ -154,30 +177,9 @@ export function PageProvider({
 
     setPage(null);
     setErrorStatus(null);
-    (async () => {
-      try {
-        const data = await fetchPageData(route.slug);
-        if (cancelled.current) return;
-        const { content, toc } = await loadMdx(data.originalPath || data.relativePath);
-        if (cancelled.current) return;
-        setErrorStatus(null);
-        setPage({
-          slug: route.slug,
-          frontmatter: data.frontmatter,
-          content,
-          toc,
-          prev: data.prev ?? null,
-          next: data.next ?? null,
-        });
-      } catch (err) {
-        if (cancelled.current) return;
-        const status = Number((err as Error).message) || 500;
-        setPage(null);
-        setErrorStatus(status);
-      }
-    })();
+    loadDocsPage(route.slug, cancelled);
     return () => { cancelled.current = true; };
-  }, [pathname, initialConfig, fetchApiSpecs, fetchPageData, loadMdx]);
+  }, [pathname, initialConfig, fetchApiSpecs, loadDocsPage]);
 
   return (
     <PageContext.Provider
