@@ -152,6 +152,8 @@ export function PageProvider({
       return () => { cancelled.current = true; };
     }
 
+    setPage(null);
+    setErrorStatus(null);
     (async () => {
       try {
         const data = await fetchPageData(route.slug);
