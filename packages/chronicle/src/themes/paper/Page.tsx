@@ -1,7 +1,6 @@
 import {
   ArrowLeftIcon,
   ArrowRightIcon,
-  ChevronRightIcon,
   AdjustmentsHorizontalIcon,
   EyeIcon,
   SunIcon,
@@ -11,8 +10,8 @@ import {
 import { IconButton, useTheme } from '@raystack/apsara';
 import { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router';
-import { getBreadcrumbItems } from 'fumadocs-core/breadcrumb';
 import { flattenTree } from 'fumadocs-core/page-tree';
+import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import type { ThemePageProps } from '@/types';
 import styles from './Page.module.css';
 import { useReaderMode } from './ReaderModeContext';
@@ -27,21 +26,14 @@ export function Page({ page, tree }: ThemePageProps) {
 
   useEffect(() => { setIsClient(true); }, []);
 
-  const { prev, next, crumbs } = useMemo(() => {
+  const slug = pathname === '/' ? [] : pathname.replace(/^\//, '').split('/');
+
+  const { prev, next } = useMemo(() => {
     const pages = flattenTree(tree.children);
     const currentIndex = pages.findIndex(p => p.url === pathname);
-    const breadcrumbItems = getBreadcrumbItems(
-      pathname,
-      tree,
-      { includePage: true }
-    );
     return {
       prev: currentIndex > 0 ? pages[currentIndex - 1] : null,
       next: currentIndex < pages.length - 1 ? pages[currentIndex + 1] : null,
-      crumbs: breadcrumbItems.map(item => ({
-        label: item.name,
-        href: item.url ?? pathname,
-      })),
     };
   }, [tree, pathname]);
 
@@ -70,20 +62,7 @@ export function Page({ page, tree }: ThemePageProps) {
                 </span>
               )}
             </div>
-            <nav className={styles.breadcrumb}>
-              {crumbs.map((crumb, i) => (
-                <span key={crumb.href}>
-                  {i > 0 && <ChevronRightIcon width={12} height={12} className={styles.separator} />}
-                  {i === crumbs.length - 1 ? (
-                    <span className={styles.crumbActive}>{crumb.label}</span>
-                  ) : (
-                    <RouterLink to={crumb.href} className={styles.crumbLink}>
-                      {crumb.label}
-                    </RouterLink>
-                  )}
-                </span>
-              ))}
-            </nav>
+            <Breadcrumbs slug={slug} tree={tree} className={styles.breadcrumb} />
           </div>
           <div className={styles.navRight}>
             {settingsOpen ? (

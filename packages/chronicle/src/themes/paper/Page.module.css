@@ -68,32 +68,10 @@
 }
 
 .breadcrumb {
-  display: flex;
-  align-items: center;
   font-family: var(--paper-font-mono);
   font-size: var(--rs-font-size-small);
   line-height: var(--rs-line-height-small);
   letter-spacing: var(--rs-letter-spacing-small);
-}
-
-.separator {
-  margin: 0 var(--rs-space-1);
-  color: var(--rs-color-foreground-base-tertiary);
-}
-
-.crumbLink {
-  color: var(--rs-color-foreground-base-tertiary);
-  font-weight: var(--rs-font-weight-medium);
-  text-decoration: none;
-}
-
-.crumbLink:hover {
-  color: var(--rs-color-foreground-base-primary);
-}
-
-.crumbActive {
-  color: var(--rs-color-foreground-base-primary);
-  font-weight: var(--rs-font-weight-medium);
 }
 
 .article {
@@ -219,6 +197,9 @@
 }
 
 .content table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
   margin-bottom: var(--rs-space-5);
 }
 

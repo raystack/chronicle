@@ -8,16 +8,17 @@ import { Link as RouterLink } from 'react-router'
 interface BreadcrumbsProps {
   slug: string[]
   tree: Root
+  className?: string
 }
 
-export function Breadcrumbs({ slug, tree }: BreadcrumbsProps) {
+export function Breadcrumbs({ slug, tree, className }: BreadcrumbsProps) {
   const url = slug.length === 0 ? '/' : `/${slug.join('/')}`
   const items = getBreadcrumbItems(url, tree, { includePage: true })
 
   if (items.length === 0) return null
 
   return (
-    <Breadcrumb size="small">
+    <Breadcrumb size="small" className={className}>
       {items.flatMap((item, index) => {
         const isCurrent = index === items.length - 1
         const breadcrumbItem = (

@@ -67,7 +67,7 @@ function ChapterItem({
 
   if (item.type === 'folder') {
     return (
-      <li>
+      <li className={styles.subFolder}>
         <span className={styles.subLabel}>{item.name}</span>
         <ul className={styles.chapterItems}>
           {item.children.map(child => (
