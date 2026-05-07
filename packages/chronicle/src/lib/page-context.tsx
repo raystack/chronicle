@@ -114,23 +114,16 @@ export function PageProvider({
   }
 
   const fetchPageData = useCallback(async (slug: string[]): Promise<PageData> => {
-    setIsLoading(true);
-    try {
-      const apiPath = slug.length === 0
-        ? '/api/page'
-        : `/api/page?slug=${slug.join(',')}`;
-      const res = await fetch(apiPath);
-      if (!res.ok) throw new Error(String(res.status));
-      return await res.json();
-    } catch (err) {
-      console.error('Failed to fetch page data:', err);
-      throw err;
-    } finally {
-      setIsLoading(false);
-    }
+    const apiPath = slug.length === 0
+      ? '/api/page'
+      : `/api/page?slug=${slug.join(',')}`;
+    const res = await fetch(apiPath);
+    if (!res.ok) throw new Error(String(res.status));
+    return res.json();
   }, []);
 
   const loadDocsPage = useCallback(async (slug: string[], cancelled: { current: boolean }) => {
+    setIsLoading(true);
     try {
       const data = await fetchPageData(slug);
       if (cancelled.current) return;
@@ -150,6 +143,8 @@ export function PageProvider({
       const status = Number((err as Error).message) || 500;
       setPage(null);
       setErrorStatus(status);
+    } finally {
+      if (!cancelled.current) setIsLoading(false);
     }
   }, [fetchPageData, loadMdx]);
 
