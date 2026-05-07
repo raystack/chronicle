@@ -65,6 +65,10 @@
   flex-shrink: 0;
 }
 
+.subFolder {
+  margin-top: var(--rs-space-5);
+}
+
 .subLabel {
   font-family: var(--paper-font-mono);
   font-size: var(--rs-font-size-small);
