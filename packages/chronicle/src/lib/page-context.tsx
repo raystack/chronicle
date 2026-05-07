@@ -123,6 +123,7 @@ export function PageProvider({
       if (!res.ok) throw new Error(String(res.status));
       return await res.json();
     } catch (err) {
+      console.error('Failed to fetch page data:', err);
       throw err;
     } finally {
       setIsLoading(false);

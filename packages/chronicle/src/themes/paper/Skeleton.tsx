@@ -1,4 +1,4 @@
-import { Flex, Skeleton } from '@raystack/apsara';
+import { Skeleton } from '@raystack/apsara';
 import styles from './Page.module.css';
 
 export function PageSkeleton() {
