@@ -12,9 +12,9 @@ export function DocsPage({ slug }: DocsPageProps) {
 
   if (errorStatus === 404) return <NotFound />;
   if (errorStatus) return <NotFound />;
-  if (isLoading || !page) return <div>Loading...</div>;
+  const { Page, Skeleton } = getTheme(config.theme?.name);
 
-  const { Page } = getTheme(config.theme?.name);
+  if (isLoading || !page) return <Skeleton />;
   const pageUrl = config.url ? `${config.url}/${slug.join('/')}` : undefined;
   const markdownHref = `/${slug.join('/')}.md`;
 
