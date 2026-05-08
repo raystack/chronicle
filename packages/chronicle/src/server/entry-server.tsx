@@ -19,7 +19,7 @@ import serverAssets from './entry-server?assets=ssr';
 export default {
   async fetch(req: Request) {
     const url = new URL(req.url);
-    const pathname = url.pathname;
+    const pathname = decodeURIComponent(url.pathname);
 
     const config = loadConfig();
     const route = resolveRoute(pathname, config);
