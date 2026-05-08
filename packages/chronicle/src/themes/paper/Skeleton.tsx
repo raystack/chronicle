@@ -1,9 +1,18 @@
 import { Skeleton } from '@raystack/apsara';
 import styles from './Page.module.css';
+import { cx } from 'class-variance-authority';
 
 export function PageSkeleton() {
   return (
     <main className={styles.main}>
+      <div className={styles.navbar}>
+        <div className={cx(styles.navLeft, styles.navbarLoaderWrapper)}>
+          <Skeleton highlightColor="var(--rs-color-foreground-base-emphasis)" containerClassName={styles.loader}/>
+        </div>
+        <div className={cx(styles.navRight, styles.navbarLoaderWrapper)}>
+          <Skeleton highlightColor="var(--rs-color-foreground-base-emphasis)" containerClassName={styles.loader}/>
+        </div>
+      </div>
     <div className={styles.content}>
         <header className={styles.articleHeader}>
           <Skeleton width="50%" height="16px" containerClassName={styles.headerLoader}/>

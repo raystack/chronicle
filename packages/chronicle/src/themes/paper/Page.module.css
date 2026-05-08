@@ -225,5 +225,10 @@
 }
 
 .loader {
+    flex: 1;
     margin-bottom: var(--rs-space-3)
+}
+
+.navbarLoaderWrapper {
+    width: 30%;
 }
