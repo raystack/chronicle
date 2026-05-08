@@ -45,7 +45,7 @@ export default {
       getPageTree(),
       route.type === RouteType.DocsPage ? getPage(route.slug) : Promise.resolve(null),
     ]);
-    const nav = page ? await getPageNav(pageSlug, tree) : { prev: null, next: null };
+    const nav = page ? await getPageNav(pageSlug) : { prev: null, next: null };
 
     const relativePath = page ? getRelativePath(page) : null;
     const originalPath = page ? getOriginalPath(page) : null;
