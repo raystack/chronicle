@@ -48,6 +48,7 @@ export async function createViteConfig(
 
   return {
     root: packageRoot,
+    publicDir: path.resolve(projectRoot, 'public'),
     configFile: false,
     plugins: [
       nitro({
@@ -131,6 +132,7 @@ export async function createViteConfig(
     },
     nitro: {
       logLevel: 2,
+      publicAssets: [{ dir: path.resolve(projectRoot, 'public') }],
       output: {
         dir: resolveOutputDir(projectRoot, preset),
       },

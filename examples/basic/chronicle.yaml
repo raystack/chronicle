@@ -4,12 +4,16 @@ site:
 
 url: https://docs.example.com
 
+logo:
+  light: /logo.svg
+  dark: /logo.svg
+
 content:
   - dir: docs
     label: Docs
 
 theme:
-  name: paper
+  name: default
 
 search:
   enabled: true
