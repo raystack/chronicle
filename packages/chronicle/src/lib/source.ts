@@ -97,6 +97,8 @@ function buildSyntheticMeta(): {
 }
 
 let cachedSource: ReturnType<typeof loader> | null = null;
+let cachedTree: Root | null = null;
+let cachedNavMap: Map<string, PageNav> | null = null;
 
 async function getSource() {
   if (cachedSource) return cachedSource;
@@ -112,6 +114,8 @@ export { getSource as source };
 
 export function invalidate() {
   cachedSource = null;
+  cachedTree = null;
+  cachedNavMap = null;
 }
 
 function getOrder(node: Node, orderMap: Map<string, number>): number | undefined {
@@ -146,8 +150,10 @@ function sortTreeByOrder(tree: Root, pages: { url: string; data: unknown }[]): R
 }
 
 export async function getPageTree(): Promise<Root> {
+  if (cachedTree) return cachedTree;
   const s = await getSource();
-  return sortTreeByOrder(s.pageTree as Root, s.getPages());
+  cachedTree = sortTreeByOrder(s.pageTree as Root, s.getPages());
+  return cachedTree;
 }
 
 export async function getPages() {
@@ -186,12 +192,10 @@ function titleFromUrl(url: string): string {
     .join(' ');
 }
 
-export async function getPageNav(slug: string[], tree?: Root): Promise<PageNav> {
-  const resolvedTree = tree ?? (await getPageTree());
-  const pages = flattenTree(resolvedTree.children);
-  const url = slug.length === 0 ? '/' : `/${slug.join('/')}`;
-  const i = pages.findIndex(p => p.url === url);
-  if (i < 0) return { prev: null, next: null };
+async function getNavMap(): Promise<Map<string, PageNav>> {
+  if (cachedNavMap) return cachedNavMap;
+  const tree = await getPageTree();
+  const pages = flattenTree(tree.children);
   const toLink = (p: (typeof pages)[number]): PageNavLink => ({
     url: p.url,
     title:
@@ -199,10 +203,21 @@ export async function getPageNav(slug: string[], tree?: Root): Promise<PageNav> 
         ? p.name
         : titleFromUrl(p.url)
   });
-  return {
-    prev: i > 0 ? toLink(pages[i - 1]) : null,
-    next: i < pages.length - 1 ? toLink(pages[i + 1]) : null
-  };
+  const navMap = new Map<string, PageNav>();
+  for (let i = 0; i < pages.length; i++) {
+    navMap.set(pages[i].url, {
+      prev: i > 0 ? toLink(pages[i - 1]) : null,
+      next: i < pages.length - 1 ? toLink(pages[i + 1]) : null
+    });
+  }
+  cachedNavMap = navMap;
+  return cachedNavMap;
+}
+
+export async function getPageNav(slug: string[]): Promise<PageNav> {
+  const navMap = await getNavMap();
+  const url = slug.length === 0 ? '/' : `/${slug.join('/')}`;
+  return navMap.get(url) ?? { prev: null, next: null };
 }
 
 export function extractFrontmatter(page: { data: unknown }, fallbackTitle?: string): Frontmatter {
