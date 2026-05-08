@@ -11,6 +11,7 @@ logo:
 content:
   - dir: docs
     label: Docs
+    icon: /icons/docs.svg
 
 theme:
   name: default
