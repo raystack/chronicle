@@ -125,6 +125,7 @@ function convertV2toV3(doc: OpenAPIV2.Document): OpenAPIV3.Document {
     info: resolved.info as unknown as OpenAPIV3.InfoObject,
     paths: v3Paths,
     tags: (resolved.tags ?? []) as unknown as OpenAPIV3.TagObject[],
+    ...(resolved.externalDocs ? { externalDocs: resolved.externalDocs as unknown as OpenAPIV3.ExternalDocumentationObject } : {}),
   }
 }
 

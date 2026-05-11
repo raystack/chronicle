@@ -6,11 +6,13 @@ import {
   DocumentTextIcon,
   Squares2X2Icon
 } from '@heroicons/react/24/outline';
-import { Flex, IconButton, Sidebar } from '@raystack/apsara';
+import { Flex, IconButton, Button, Sidebar } from '@raystack/apsara';
 import { cx } from 'class-variance-authority';
 import { useEffect, useMemo, useRef } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
+import type { OpenAPIV3 } from 'openapi-types';
 import { MethodBadge } from '@/components/api/method-badge';
+import { useApiOperation } from '@/lib/use-api-operation';
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
 import { Search } from '@/components/ui/search';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
@@ -190,7 +192,10 @@ export function Layout({
                   </Flex>
                   {!isApiRoute && <Breadcrumbs slug={slug} tree={tree} />}
                 </Flex>
-                <OpenInAI />
+                <Flex align='center' gap='small'>
+                  {isApiRoute && <ViewDocsButton />}
+                  <OpenInAI />
+                </Flex>
               </nav>
               <main className={cx(styles.content, classNames?.content)}>
                 {children}
@@ -260,5 +265,26 @@ function SidebarNode({
     >
       {item.name}
     </Sidebar.Item>
+  );
+}
+
+function ViewDocsButton() {
+  const match = useApiOperation();
+  if (!match) return null;
+
+  const operation = match.operation as OpenAPIV3.OperationObject;
+  const docsUrl = operation.externalDocs?.url ?? match.spec.document.externalDocs?.url;
+  if (!docsUrl) return null;
+
+  return (
+    <Button
+      variant='outline'
+      color='neutral'
+      size='small'
+      leadingIcon={<DocumentTextIcon width={12} height={12} />}
+      onClick={() => window.open(docsUrl, '_blank', 'noopener,noreferrer')}
+    >
+      View documentation
+    </Button>
   );
 }
