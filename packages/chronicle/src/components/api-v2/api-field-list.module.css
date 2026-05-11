@@ -1,0 +1,76 @@
+.sectionTitle {
+  font-size: var(--rs-font-size-large);
+  font-weight: var(--rs-font-weight-medium);
+  line-height: var(--rs-line-height-large);
+  letter-spacing: var(--rs-letter-spacing-large);
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.fieldItem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-4);
+  padding-bottom: var(--rs-space-5);
+  border-bottom: 0.5px solid var(--rs-color-border-base-primary);
+}
+
+.fieldItem:last-child {
+  border-bottom: none;
+}
+
+.fieldType {
+  font-size: var(--rs-font-size-small);
+  line-height: var(--rs-line-height-small);
+  letter-spacing: var(--rs-letter-spacing-small);
+  color: var(--rs-color-foreground-base-secondary);
+}
+
+.fieldDescription {
+  font-size: var(--rs-font-size-small);
+  line-height: var(--rs-line-height-small);
+  letter-spacing: var(--rs-letter-spacing-small);
+  color: var(--rs-color-foreground-base-secondary);
+}
+
+.statusDescription {
+  font-size: var(--rs-font-size-regular);
+  line-height: var(--rs-line-height-regular);
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.contentType {
+  font-family: var(--rs-font-mono);
+  font-size: var(--rs-font-size-mono-small);
+  line-height: var(--rs-line-height-small);
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.expandButton {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--rs-space-3) var(--rs-space-4);
+  border: 1px solid var(--rs-color-border-base-primary);
+  border-radius: var(--rs-radius-2);
+  background: var(--rs-color-background-base-secondary);
+  cursor: pointer;
+  width: 100%;
+}
+
+.expandButton:hover {
+  background: var(--rs-color-background-neutral-secondary);
+}
+
+.expandLabel {
+  font-size: var(--rs-font-size-small);
+  line-height: var(--rs-line-height-small);
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.childFields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-5);
+  padding-left: var(--rs-space-5);
+  margin-top: var(--rs-space-3);
+}
