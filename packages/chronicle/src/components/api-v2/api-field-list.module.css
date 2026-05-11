@@ -16,6 +16,7 @@
 
 .fieldItem:last-child {
   border-bottom: none;
+  padding-bottom: 0;
 }
 
 .fieldType {
@@ -38,13 +39,6 @@
   color: var(--rs-color-foreground-base-primary);
 }
 
-.contentType {
-  font-family: var(--rs-font-mono);
-  font-size: var(--rs-font-size-mono-small);
-  line-height: var(--rs-line-height-small);
-  color: var(--rs-color-foreground-base-primary);
-}
-
 .expandButton {
   display: flex;
   align-items: center;
@@ -55,6 +49,7 @@
   background: var(--rs-color-background-base-secondary);
   cursor: pointer;
   width: 100%;
+  color: var(--rs-color-foreground-base-primary);
 }
 
 .expandButton:hover {
@@ -70,7 +65,6 @@
 .childFields {
   display: flex;
   flex-direction: column;
-  gap: var(--rs-space-5);
   padding-left: var(--rs-space-5);
   margin-top: var(--rs-space-3);
 }

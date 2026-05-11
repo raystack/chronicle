@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, type ReactNode } from 'react'
-import { Badge, Flex, IconButton, Separator } from '@raystack/apsara'
+import { Badge, Flex, IconButton } from '@raystack/apsara'
 import { ChevronRightIcon, ChevronDownIcon } from '@radix-ui/react-icons'
 import type { SchemaField } from '@/lib/schema'
 import styles from './api-field-list.module.css'
@@ -17,16 +17,15 @@ export function ApiFieldSection({ title, fields, headerRight, description }: Api
   if (fields.length === 0 && !description) return null
 
   return (
-    <Flex direction="column" gap="medium">
+    <Flex direction="column" gap={6}>
       <Flex align="center" justify="between">
         <span className={styles.sectionTitle}>{title}</span>
         {headerRight && (
-          <Flex align="center" gap="small">
+          <Flex align="center" gap={3}>
             {headerRight}
           </Flex>
         )}
       </Flex>
-      <Separator />
       {description && <span className={styles.statusDescription}>{description}</span>}
       <Flex direction="column">
         {fields.map((field) => (
@@ -42,12 +41,14 @@ function FieldItem({ field }: { field: SchemaField }) {
 
   return (
     <div className={styles.fieldItem}>
-      <Flex align="center" gap="small">
+      <Flex align="center" gap={3}>
         <Badge variant="neutral" size="micro">{field.name}</Badge>
         <span className={styles.fieldType}>{field.type}</span>
       </Flex>
       {field.description && (
-        <span className={styles.fieldDescription}>{field.description}</span>
+        <Flex>
+          <span className={styles.fieldDescription}>{field.description}</span>
+        </Flex>
       )}
       {hasChildren && <ExpandableChildren field={field} />}
     </div>
@@ -67,11 +68,11 @@ function ExpandableChildren({ field }: { field: SchemaField }) {
         <span className={styles.expandLabel}>
           {expanded ? 'Hide' : 'Show'} child attributes
         </span>
-        <IconButton size={2} asChild>
-          <span>
-            {expanded ? <ChevronDownIcon /> : <ChevronRightIcon />}
-          </span>
-        </IconButton>
+        {expanded ? (
+          <ChevronDownIcon width={16} height={16} />
+        ) : (
+          <ChevronRightIcon width={16} height={16} />
+        )}
       </button>
       {expanded && (
         <div className={styles.childFields}>

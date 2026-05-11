@@ -1,11 +1,12 @@
 'use client'
 
+import { useState } from 'react'
 import type { OpenAPIV3 } from 'openapi-types'
-import { Flex, IconButton, Badge, Button } from '@raystack/apsara'
-import { CopyIcon, ChevronDownIcon } from '@radix-ui/react-icons'
+import { Button, Menu, CopyButton, Separator } from '@raystack/apsara'
+import { ChevronDownIcon } from '@radix-ui/react-icons'
 import { MethodBadge } from '@/components/api/method-badge'
-import { CodeSnippets } from '@/components/api/code-snippets'
-import { ResponsePanel } from '@/components/api/response-panel'
+import { ApiCodeSnippet } from './api-code-snippet'
+import { ApiResponsePanel } from './api-response-panel'
 import { flattenSchema, generateExampleJson, type SchemaField } from '@/lib/schema'
 import { ApiFieldSection } from './api-field-list'
 import styles from './api-overview.module.css'
@@ -39,79 +40,118 @@ export function ApiOverview({ method, path, operation, auth }: ApiOverviewProps)
   if (auth) snippetHeaders[auth.header] = auth.placeholder ?? 'YOUR_API_KEY'
   if (body) snippetHeaders['Content-Type'] = body.contentType ?? 'application/json'
 
-  const copyPath = () => {
-    void navigator.clipboard.writeText(path)
-  }
+
+  const hasSections = authFields.length > 0 || pathFields.length > 0 ||
+    queryFields.length > 0 || (body && body.fields.length > 0) || responses.length > 0
 
   return (
     <div className={styles.layout}>
-      <Flex direction="column" gap="large" className={styles.left}>
-        <Flex direction="column" gap="small">
-          {operation.summary && (
-            <h1 className={styles.title}>{operation.summary}</h1>
-          )}
-          {operation.description && (
-            <p className={styles.description}>{operation.description}</p>
-          )}
-        </Flex>
+      <div className={styles.left}>
+        <div className={styles.titleBlock}>
+          <div className={styles.titleText}>
+            {operation.summary && (
+              <h1 className={styles.title}>{operation.summary}</h1>
+            )}
+            {operation.description && (
+              <p className={styles.description}>{operation.description}</p>
+            )}
+          </div>
+          <div className={styles.methodBar}>
+            <MethodBadge method={method} />
+            <span className={styles.path}>{path}</span>
+            <CopyButton text={path} size={2} />
+          </div>
+        </div>
 
-        <Flex align="center" gap="small" style={{ padding: 'var(--rs-space-3) 0' }}>
-          <MethodBadge method={method} />
-          <span className={styles.path}>{path}</span>
-          <IconButton size={2} onClick={copyPath}>
-            <CopyIcon />
-          </IconButton>
-        </Flex>
+        {hasSections && (
+          <div className={styles.sections}>
+            {authFields.length > 0 && (
+              <ApiFieldSection title="Authorisations" fields={authFields} />
+            )}
 
-        {authFields.length > 0 && (
-          <ApiFieldSection title="Authorisations" fields={authFields} />
+            {authFields.length > 0 && (queryFields.length > 0 || pathFields.length > 0 || (body && body.fields.length > 0) || responses.length > 0) && (
+              <Separator className={styles.divider} />
+            )}
+
+            {pathFields.length > 0 && (
+              <ApiFieldSection title="Path Parameters" fields={pathFields} />
+            )}
+
+            {pathFields.length > 0 && (queryFields.length > 0 || (body && body.fields.length > 0) || responses.length > 0) && (
+              <Separator className={styles.divider} />
+            )}
+
+            {queryFields.length > 0 && (
+              <ApiFieldSection title="Query Parameters" fields={queryFields} />
+            )}
+
+            {queryFields.length > 0 && ((body && body.fields.length > 0) || responses.length > 0) && (
+              <Separator className={styles.divider} />
+            )}
+
+            {body && body.fields.length > 0 && (
+              <ApiFieldSection title="Request Body" fields={body.fields} />
+            )}
+
+            {body && body.fields.length > 0 && responses.length > 0 && (
+              <Separator className={styles.divider} />
+            )}
+
+            {responses.length > 0 && (
+              <ResponseSection responses={responses} />
+            )}
+          </div>
         )}
+      </div>
 
-        {pathFields.length > 0 && (
-          <ApiFieldSection title="Path Parameters" fields={pathFields} />
-        )}
-
-        {queryFields.length > 0 && (
-          <ApiFieldSection title="Query Parameters" fields={queryFields} />
-        )}
-
-        {body && body.fields.length > 0 && (
-          <ApiFieldSection title="Request Body" fields={body.fields} />
-        )}
-
-        {responses.map((resp) => (
-          <ApiFieldSection
-            key={resp.status}
-            title="Response"
-            fields={resp.fields}
-            description={resp.description}
-            headerRight={
-              <>
-                {resp.contentType && (
-                  <span className={styles.path}>{resp.contentType}</span>
-                )}
-                <Button variant="text" color="neutral" size="small" trailingIcon={<ChevronDownIcon />}>
-                  {resp.status}
-                </Button>
-              </>
-            }
-          />
-        ))}
-      </Flex>
-
-      <Flex direction="column" gap="medium" className={styles.right}>
-        <CodeSnippets
+      <div className={styles.right}>
+        <ApiCodeSnippet
+          title={operation.summary ?? `${method.toUpperCase()} ${path}`}
           method={method}
           url={fullUrl}
           headers={snippetHeaders}
           body={body ? body.jsonExample : undefined}
         />
-        <Flex direction="column" gap="small">
-          <span className={styles.responseLabel}>Response:</span>
-          <ResponsePanel responses={responses} />
-        </Flex>
-      </Flex>
+        <ApiResponsePanel responses={responses} />
+      </div>
     </div>
+  )
+}
+
+function ResponseSection({ responses }: { responses: ResponseSectionData[] }) {
+  const [selectedStatus, setSelectedStatus] = useState(responses[0]?.status ?? '200')
+  const active = responses.find((r) => r.status === selectedStatus) ?? responses[0]
+  if (!active) return null
+
+  return (
+    <ApiFieldSection
+      title="Response"
+      fields={active.fields}
+      description={active.description}
+      headerRight={
+        <>
+          {active.contentType && (
+            <span className={styles.path}>{active.contentType}</span>
+          )}
+          <Menu>
+            <Menu.Trigger
+              render={
+                <Button variant="text" color="neutral" size="small" trailingIcon={<ChevronDownIcon />} />
+              }
+            >
+              {active.status}
+            </Menu.Trigger>
+            <Menu.Content>
+              {responses.map((resp) => (
+                <Menu.Item key={resp.status} onClick={() => setSelectedStatus(resp.status)}>
+                  {resp.status}{resp.description ? ` — ${resp.description}` : ''}
+                </Menu.Item>
+              ))}
+            </Menu.Content>
+          </Menu>
+        </>
+      }
+    />
   )
 }
 
@@ -147,7 +187,7 @@ function getRequestBody(body: OpenAPIV3.RequestBodyObject | undefined): RequestB
   }
 }
 
-interface ResponseSection {
+interface ResponseSectionData {
   status: string
   description?: string
   contentType?: string
@@ -155,7 +195,7 @@ interface ResponseSection {
   jsonExample?: string
 }
 
-function getResponseSections(responses: Record<string, OpenAPIV3.ResponseObject>): ResponseSection[] {
+function getResponseSections(responses: Record<string, OpenAPIV3.ResponseObject>): ResponseSectionData[] {
   return Object.entries(responses).map(([status, resp]) => {
     const content = resp.content ?? {}
     const contentType = Object.keys(content)[0]
