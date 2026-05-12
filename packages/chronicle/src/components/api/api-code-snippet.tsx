@@ -31,7 +31,7 @@ export function ApiCodeSnippet({ title, method, url, headers, body }: ApiCodeSni
 
   const code = useMemo(
     () => current.generate({ method, url, headers, body }),
-    [selected, method, url, headers, body],
+    [current.generate, method, url, headers, body],
   )
 
   return (

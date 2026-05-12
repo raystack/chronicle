@@ -216,7 +216,7 @@
 }
 
 .statusValue {
-  color: #30a46c;
+  color: var(--rs-color-foreground-success-primary);
 }
 
 .statusSeparator {

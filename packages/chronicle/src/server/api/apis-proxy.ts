@@ -51,8 +51,11 @@ export default defineHandler(async event => {
       ? await response.json()
       : await response.text();
 
+    const sensitiveHeaders = new Set(['set-cookie', 'authorization', 'proxy-authorization', 'cookie']);
     const responseHeaders: Record<string, string> = {};
-    response.headers.forEach((v, k) => { responseHeaders[k] = v; });
+    response.headers.forEach((v, k) => {
+      if (!sensitiveHeaders.has(k.toLowerCase())) responseHeaders[k] = v;
+    });
 
     return Response.json({
       status: response.status,

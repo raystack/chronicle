@@ -9,6 +9,7 @@ import { ApiCodeSnippet } from './api-code-snippet'
 import { ApiResponsePanel } from './api-response-panel'
 import { flattenSchema, generateExampleJson, type SchemaField } from '@/lib/schema'
 import { ApiFieldSection } from './api-field-list'
+import { toKind } from '@/lib/schema'
 import styles from './api-overview.module.css'
 
 interface ApiOverviewProps {
@@ -119,9 +120,9 @@ export function ApiOverview({ method, path, operation, auth }: ApiOverviewProps)
 }
 
 function ResponseSection({ responses }: { responses: ResponseSectionData[] }) {
-  const [selectedStatus, setSelectedStatus] = useState(responses[0]?.status ?? '200')
+  if (responses.length === 0) return null
+  const [selectedStatus, setSelectedStatus] = useState(responses[0].status)
   const active = responses.find((r) => r.status === selectedStatus) ?? responses[0]
-  if (!active) return null
 
   return (
     <ApiFieldSection
@@ -161,7 +162,7 @@ function paramsToFields(params: OpenAPIV3.ParameterObject[]): SchemaField[] {
     return {
       name: p.name,
       type: schema.type ? String(schema.type) : 'string',
-      kind: (schema.type as SchemaField['kind']) ?? 'string',
+      kind: toKind(schema.type),
       required: p.required ?? false,
       description: p.description,
       default: schema.default,

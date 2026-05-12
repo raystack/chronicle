@@ -1,6 +1,16 @@
 import type { OpenAPIV3 } from 'openapi-types'
 
-export type SchemaFieldKind = 'string' | 'integer' | 'number' | 'boolean' | 'array' | 'object'
+const schemaFieldKinds = {
+  string: 'string', integer: 'integer', number: 'number',
+  boolean: 'boolean', array: 'array', object: 'object',
+} as const
+
+export type SchemaFieldKind = keyof typeof schemaFieldKinds
+
+export function toKind(type: unknown): SchemaFieldKind {
+  if (typeof type === 'string' && type in schemaFieldKinds) return type as SchemaFieldKind
+  return 'object'
+}
 
 export interface SchemaField {
   name: string
@@ -76,7 +86,7 @@ export function flattenSchema(
       return {
         name,
         type: fieldType,
-        kind: (prop.type as SchemaFieldKind) ?? 'object',
+        kind: toKind(prop.type),
         required: required.includes(name),
         description: rawProp.description ?? prop.description,
         default: prop.default,

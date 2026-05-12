@@ -9,6 +9,7 @@ import { MethodBadge } from '@/components/api/method-badge'
 import { flattenSchema, generateExampleJson, type SchemaField } from '@/lib/schema'
 import { generateCurl } from '@/lib/snippet-generators'
 import { JsonEditor } from '@/components/api/json-editor'
+import { toKind } from '@/lib/schema'
 import styles from './playground-dialog.module.css'
 
 type AuthScheme = {
@@ -27,7 +28,7 @@ function getAuthSchemes(
 
   for (const [name, scheme] of Object.entries(securitySchemes)) {
     if (scheme.type === 'apiKey' && 'name' in scheme && 'in' in scheme && scheme.in === 'header') {
-      schemes.push({ name: `API Key (${scheme.name})`, type: 'apiKey', headerName: scheme.name!, placeholder: 'Enter API key' })
+      schemes.push({ name: `API Key (${scheme.name ?? name})`, type: 'apiKey', headerName: scheme.name ?? name, placeholder: 'Enter API key' })
     } else if (scheme.type === 'http' && 'scheme' in scheme) {
       if (scheme.scheme === 'bearer') {
         schemes.push({ name: 'Bearer Token', type: 'bearer', headerName: 'Authorization', placeholder: 'Enter bearer token' })
@@ -126,8 +127,8 @@ export function PlaygroundDialog({
       if (!body) return {}
       const init: Record<string, unknown> = {}
       for (const f of body.fields) {
-        if (f.type.endsWith('[]')) init[f.name] = []
-        else if (f.children) init[f.name] = {}
+        if (f.kind === 'array') init[f.name] = []
+        else if (f.kind === 'object' || f.children) init[f.name] = {}
         else init[f.name] = ''
       }
       return init
@@ -549,7 +550,7 @@ function paramsToFields(params: OpenAPIV3.ParameterObject[]): SchemaField[] {
     return {
       name: p.name,
       type: schema.type ? String(schema.type) : 'string',
-      kind: (schema.type as SchemaField['kind']) ?? 'string',
+      kind: toKind(schema.type),
       required: p.required ?? false,
       description: p.description,
     }
