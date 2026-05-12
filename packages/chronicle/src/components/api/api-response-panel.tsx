@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { CodeBlock, CopyButton } from '@raystack/apsara'
+import { CodeBlock, CopyButton, Flex } from '@raystack/apsara'
 import styles from './api-response-panel.module.css'
 
 interface ResponseData {
@@ -23,11 +23,11 @@ export function ApiResponsePanel({ responses }: ApiResponsePanelProps) {
   const displayJson = active.jsonExample ?? '{}'
 
   return (
-    <div className={styles.wrapper}>
+    <Flex direction='column' gap={4}>
       <span className={styles.label}>Response:</span>
-      <div className={styles.container}>
-        <div className={styles.header}>
-          <div className={styles.tabs}>
+      <Flex direction='column' className={styles.container}>
+        <Flex align='center' justify='between' className={styles.header}>
+          <Flex align='center' gap={3}>
             {responses.map((resp) => (
               <button
                 key={resp.status}
@@ -38,9 +38,9 @@ export function ApiResponsePanel({ responses }: ApiResponsePanelProps) {
                 {resp.status}
               </button>
             ))}
-          </div>
+          </Flex>
           <CopyButton text={displayJson} size={3} />
-        </div>
+        </Flex>
         <div className={styles.body}>
           <CodeBlock hideLineNumbers className={styles.codeBlock}>
             <CodeBlock.Content>
@@ -48,7 +48,7 @@ export function ApiResponsePanel({ responses }: ApiResponsePanelProps) {
             </CodeBlock.Content>
           </CodeBlock>
         </div>
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   )
 }

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { OpenAPIV3 } from 'openapi-types'
-import { Button, Menu, CopyButton, Separator } from '@raystack/apsara'
+import { Flex, Button, Menu, CopyButton, Separator } from '@raystack/apsara'
 import { ChevronDownIcon } from '@radix-ui/react-icons'
 import { MethodBadge } from '@/components/api/method-badge'
 import { ApiCodeSnippet } from './api-code-snippet'
@@ -45,26 +45,26 @@ export function ApiOverview({ method, path, operation, auth }: ApiOverviewProps)
     queryFields.length > 0 || (body && body.fields.length > 0) || responses.length > 0
 
   return (
-    <div className={styles.layout}>
-      <div className={styles.left}>
-        <div className={styles.titleBlock}>
-          <div className={styles.titleText}>
+    <Flex className={styles.layout}>
+      <Flex direction='column' gap={10} className={styles.left}>
+        <Flex direction='column' gap={7}>
+          <Flex direction='column' gap={4}>
             {operation.summary && (
               <h1 className={styles.title}>{operation.summary}</h1>
             )}
             {operation.description && (
               <p className={styles.description}>{operation.description}</p>
             )}
-          </div>
-          <div className={styles.methodBar}>
+          </Flex>
+          <Flex align='center' gap={3} className={styles.methodBar}>
             <MethodBadge method={method} />
             <span className={styles.path}>{path}</span>
             <CopyButton text={path} size={2} />
-          </div>
-        </div>
+          </Flex>
+        </Flex>
 
         {hasSections && (
-          <div className={styles.sections}>
+          <Flex direction='column' gap={6}>
             {authFields.length > 0 && (
               <ApiFieldSection title="Authorisations" fields={authFields} />
             )}
@@ -100,11 +100,11 @@ export function ApiOverview({ method, path, operation, auth }: ApiOverviewProps)
             {responses.length > 0 && (
               <ResponseSection responses={responses} />
             )}
-          </div>
+          </Flex>
         )}
-      </div>
+      </Flex>
 
-      <div className={styles.right}>
+      <Flex direction='column' gap={8} className={styles.right}>
         <ApiCodeSnippet
           title={operation.summary ?? `${method.toUpperCase()} ${path}`}
           method={method}
@@ -113,8 +113,8 @@ export function ApiOverview({ method, path, operation, auth }: ApiOverviewProps)
           body={body ? body.jsonExample : undefined}
         />
         <ApiResponsePanel responses={responses} />
-      </div>
-    </div>
+      </Flex>
+    </Flex>
   )
 }
 

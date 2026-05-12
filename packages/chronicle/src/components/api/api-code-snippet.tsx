@@ -1,7 +1,7 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { CodeBlock } from '@raystack/apsara'
+import { CodeBlock, Flex } from '@raystack/apsara'
 import {
   generateCurl,
   generatePython,
@@ -42,7 +42,7 @@ export function ApiCodeSnippet({ title, method, url, headers, body }: ApiCodeSni
     >
       <CodeBlock.Header className={styles.header}>
         <CodeBlock.Label className={styles.title}>{title}</CodeBlock.Label>
-        <div className={styles.actions}>
+        <Flex align='center' gap={4}>
           <CodeBlock.LanguageSelect>
             <CodeBlock.LanguageSelectTrigger />
             <CodeBlock.LanguageSelectContent>
@@ -54,7 +54,7 @@ export function ApiCodeSnippet({ title, method, url, headers, body }: ApiCodeSni
             </CodeBlock.LanguageSelectContent>
           </CodeBlock.LanguageSelect>
           <CodeBlock.CopyButton />
-        </div>
+        </Flex>
       </CodeBlock.Header>
       <CodeBlock.Content className={styles.body}>
         <CodeBlock.Code value={selected} language={current.lang}>{code}</CodeBlock.Code>

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, type ReactNode } from 'react'
-import { Badge, Flex, IconButton } from '@raystack/apsara'
+import { Badge, Flex } from '@raystack/apsara'
 import { ChevronRightIcon, ChevronDownIcon } from '@radix-ui/react-icons'
 import type { SchemaField } from '@/lib/schema'
 import styles from './api-field-list.module.css'
@@ -40,18 +40,16 @@ function FieldItem({ field }: { field: SchemaField }) {
   const hasChildren = field.children && field.children.length > 0
 
   return (
-    <div className={styles.fieldItem}>
+    <Flex direction="column" gap={4} className={styles.fieldItem}>
       <Flex align="center" gap={3}>
         <Badge variant="neutral" size="micro">{field.name}</Badge>
         <span className={styles.fieldType}>{field.type}</span>
       </Flex>
       {field.description && (
-        <Flex>
-          <span className={styles.fieldDescription}>{field.description}</span>
-        </Flex>
+        <span className={styles.fieldDescription}>{field.description}</span>
       )}
       {hasChildren && <ExpandableChildren field={field} />}
-    </div>
+    </Flex>
   )
 }
 
@@ -60,10 +58,13 @@ function ExpandableChildren({ field }: { field: SchemaField }) {
 
   return (
     <Flex direction="column">
-      <button
-        type="button"
+      <Flex
+        align="center"
+        justify="between"
         className={styles.expandButton}
         onClick={() => setExpanded(!expanded)}
+        role="button"
+        tabIndex={0}
       >
         <span className={styles.expandLabel}>
           {expanded ? 'Hide' : 'Show'} child attributes
@@ -73,13 +74,13 @@ function ExpandableChildren({ field }: { field: SchemaField }) {
         ) : (
           <ChevronRightIcon width={16} height={16} />
         )}
-      </button>
+      </Flex>
       {expanded && (
-        <div className={styles.childFields}>
+        <Flex direction="column" gap={5} className={styles.childFields}>
           {field.children!.map((child) => (
             <FieldItem key={child.name} field={child} />
           ))}
-        </div>
+        </Flex>
       )}
     </Flex>
   )
