@@ -182,6 +182,12 @@
   padding: var(--rs-space-2) var(--rs-space-5) var(--rs-space-2) var(--rs-space-8);
 }
 
+.jsonEditorWrap {
+  flex: 1;
+  min-height: 150px;
+  border-bottom: 0.5px solid var(--rs-color-border-base-primary);
+}
+
 .responseHeader {
   display: flex;
   align-items: center;
@@ -258,6 +264,38 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: var(--rs-space-5);
+}
+
+.headersArea {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--rs-space-3) 0;
+}
+
+.headerRow {
+  display: flex;
+  align-items: baseline;
+  gap: var(--rs-space-3);
+  padding: var(--rs-space-2) var(--rs-space-5);
+  border-bottom: 0.5px solid var(--rs-color-border-base-primary);
+}
+
+.headerKey {
+  font-family: var(--rs-font-mono);
+  font-size: var(--rs-font-size-mono-small);
+  line-height: 18px;
+  color: var(--rs-color-foreground-base-primary);
+  font-weight: var(--rs-font-weight-medium);
+  white-space: nowrap;
+}
+
+.headerValue {
+  font-family: var(--rs-font-mono);
+  font-size: var(--rs-font-size-mono-small);
+  line-height: 18px;
+  color: var(--rs-color-foreground-base-secondary);
+  word-break: break-all;
 }
 
 .emptyResponse {

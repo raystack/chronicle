@@ -2,12 +2,13 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import type { OpenAPIV3 } from 'openapi-types'
-import { Dialog, Button, Badge, IconButton, InputField, CopyButton, Select } from '@raystack/apsara'
+import { Dialog, Button, Badge, IconButton, InputField, CopyButton, Select, Menu } from '@raystack/apsara'
 import { Cross2Icon, ChevronDownIcon, ChevronUpIcon, PlayIcon, PlusIcon } from '@radix-ui/react-icons'
 import { CounterClockwiseClockIcon, CodeIcon } from '@radix-ui/react-icons'
 import { MethodBadge } from '@/components/api/method-badge'
 import { flattenSchema, generateExampleJson, type SchemaField } from '@/lib/schema'
 import { generateCurl } from '@/lib/snippet-generators'
+import { JsonEditor } from '@/components/api/json-editor'
 import styles from './playground-dialog.module.css'
 
 type AuthScheme = {
@@ -75,6 +76,7 @@ export function PlaygroundDialog({
   const [headerValues, setHeaderValues] = useState<Record<string, string>>({})
   const [pathValues, setPathValues] = useState<Record<string, string>>({})
   const [queryValues, setQueryValues] = useState<Record<string, string>>({})
+  const [jsonMode, setJsonMode] = useState(false)
   const [bodyValues, setBodyValues] = useState<Record<string, unknown>>(() => {
     if (!body) return {}
     const init: Record<string, unknown> = {}
@@ -85,10 +87,12 @@ export function PlaygroundDialog({
     }
     return init
   })
+  const [bodyJsonStr, setBodyJsonStr] = useState(() => body ? body.jsonExample : '{}')
 
   const [responseData, setResponseData] = useState<{
-    status: number; statusText: string; body: unknown; time: number
+    status: number; statusText: string; body: unknown; headers?: Record<string, string>; time: number
   } | null>(null)
+  const [responseView, setResponseView] = useState<'body' | 'headers'>('body')
   const [loading, setLoading] = useState(false)
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({})
 
@@ -153,7 +157,11 @@ export function PlaygroundDialog({
     let reqBody: unknown = undefined
     if (body) {
       reqHeaders['Content-Type'] = body.contentType ?? 'application/json'
-      reqBody = bodyValues
+      if (jsonMode) {
+        try { reqBody = JSON.parse(bodyJsonStr) } catch { reqBody = bodyValues }
+      } else {
+        reqBody = bodyValues
+      }
     }
 
     try {
@@ -335,7 +343,14 @@ export function PlaygroundDialog({
                   <div className={styles.sectionHeader}>
                     <span className={styles.sectionLabel}>Body</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--rs-space-3)' }}>
-                      <IconButton size={2}>
+                      <IconButton size={2} onClick={() => {
+                        if (!jsonMode) {
+                          setBodyJsonStr(JSON.stringify(bodyValues, null, 2))
+                        } else {
+                          try { setBodyValues(JSON.parse(bodyJsonStr)) } catch { /* ignore */ }
+                        }
+                        setJsonMode(!jsonMode)
+                      }}>
                         <CodeIcon />
                       </IconButton>
                       <IconButton size={2} onClick={() => toggleCollapse('body')}>
@@ -343,14 +358,25 @@ export function PlaygroundDialog({
                       </IconButton>
                     </div>
                   </div>
-                  {!collapsed.body && body.fields.map((f) => (
-                    <BodyFieldRow
-                      key={f.name}
-                      field={f}
-                      value={bodyValues[f.name]}
-                      onChange={(val) => setBodyValues({ ...bodyValues, [f.name]: val })}
-                    />
-                  ))}
+                  {!collapsed.body && (
+                    jsonMode ? (
+                      <div className={styles.jsonEditorWrap}>
+                        <JsonEditor
+                          value={bodyJsonStr}
+                          onChange={(val) => setBodyJsonStr(val)}
+                        />
+                      </div>
+                    ) : (
+                      body.fields.map((f) => (
+                        <BodyFieldRow
+                          key={f.name}
+                          field={f}
+                          value={bodyValues[f.name]}
+                          onChange={(val) => setBodyValues({ ...bodyValues, [f.name]: val })}
+                        />
+                      ))
+                    )
+                  )}
                 </>
               )}
             </div>
@@ -360,6 +386,17 @@ export function PlaygroundDialog({
           <div className={styles.rightPanel}>
             <div className={styles.responseHeader}>
               <span className={styles.panelTitle}>Response</span>
+              {responseData && (
+                <Menu>
+                  <Menu.Trigger render={<Button variant="text" color="neutral" size="small" trailingIcon={<ChevronDownIcon />} />}>
+                    {responseView === 'body' ? 'Body' : 'Headers'}
+                  </Menu.Trigger>
+                  <Menu.Content>
+                    <Menu.Item onClick={() => setResponseView('body')}>Body</Menu.Item>
+                    <Menu.Item onClick={() => setResponseView('headers')}>Headers</Menu.Item>
+                  </Menu.Content>
+                </Menu>
+              )}
             </div>
 
             {responseData ? (
@@ -373,14 +410,29 @@ export function PlaygroundDialog({
                     Time : <span className={styles.statusValue}>{responseData.time} ms</span>
                   </span>
                 </div>
-                <div className={styles.codeArea}>
-                  <div className={styles.lineNumbers}>
-                    {responseLines.map((_, i) => (
-                      <div key={i}>{i + 1}</div>
-                    ))}
+                {responseView === 'body' ? (
+                  <div className={styles.codeArea}>
+                    <div className={styles.lineNumbers}>
+                      {responseLines.map((_, i) => (
+                        <div key={i}>{i + 1}</div>
+                      ))}
+                    </div>
+                    <pre className={styles.responseCode}>{responseJson}</pre>
                   </div>
-                  <pre className={styles.responseCode}>{responseJson}</pre>
-                </div>
+                ) : (
+                  <div className={styles.headersArea}>
+                    {responseData.headers ? (
+                      Object.entries(responseData.headers).map(([k, v]) => (
+                        <div key={k} className={styles.headerRow}>
+                          <span className={styles.headerKey}>{k}</span>
+                          <span className={styles.headerValue}>{v}</span>
+                        </div>
+                      ))
+                    ) : (
+                      <div className={styles.emptyResponse}>No headers available</div>
+                    )}
+                  </div>
+                )}
               </>
             ) : (
               <div className={styles.emptyResponse}>

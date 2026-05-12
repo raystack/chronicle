@@ -51,10 +51,14 @@ export default defineHandler(async event => {
       ? await response.json()
       : await response.text();
 
+    const responseHeaders: Record<string, string> = {};
+    response.headers.forEach((v, k) => { responseHeaders[k] = v; });
+
     return Response.json({
       status: response.status,
       statusText: response.statusText,
-      body: responseBody
+      body: responseBody,
+      headers: responseHeaders
     });
   } catch (error) {
     const message =
