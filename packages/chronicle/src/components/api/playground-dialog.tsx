@@ -2,14 +2,13 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import type { OpenAPIV3 } from 'openapi-types'
-import { Dialog, Flex, Button, Badge, IconButton, InputField, CopyButton, Select, Menu } from '@raystack/apsara'
+import { Dialog, Button, Badge, IconButton, InputField, CopyButton, Select, Menu } from '@raystack/apsara'
 import { Cross2Icon, ChevronDownIcon, ChevronUpIcon, PlayIcon, PlusIcon } from '@radix-ui/react-icons'
 import { CounterClockwiseClockIcon, CodeIcon } from '@radix-ui/react-icons'
 import { MethodBadge } from '@/components/api/method-badge'
-import { flattenSchema, generateExampleJson, type SchemaField } from '@/lib/schema'
+import { flattenSchema, generateExampleJson, toKind, type SchemaField } from '@/lib/schema'
 import { generateCurl } from '@/lib/snippet-generators'
 import { JsonEditor } from '@/components/api/json-editor'
-import { toKind } from '@/lib/schema'
 import styles from './playground-dialog.module.css'
 
 type AuthScheme = {
@@ -202,41 +201,41 @@ export function PlaygroundDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <Dialog.Content className={styles.dialog} showCloseButton={false}>
         {/* Action Nav */}
-        <Flex align='center' justify='between' className={styles.actionNav}>
+        <div className={styles.actionNav}>
           <span className={styles.actionNavTitle}>{operation.summary ?? `${method} ${path}`}</span>
-          <Flex align='center' gap={3}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--rs-space-3)' }}>
             <IconButton size={2} onClick={handleReset} aria-label="Reset">
               <CounterClockwiseClockIcon />
             </IconButton>
             <IconButton size={2} onClick={() => onOpenChange(false)} aria-label="Close">
               <Cross2Icon />
             </IconButton>
-          </Flex>
-        </Flex>
+          </div>
+        </div>
 
         {/* Split Panel */}
-        <Flex className={styles.splitPanel}>
+        <div className={styles.splitPanel}>
           {/* Left Panel */}
-          <Flex direction='column' className={styles.leftPanel}>
-            <Flex align='center' className={styles.panelHeader}>
+          <div className={styles.leftPanel}>
+            <div className={styles.panelHeader}>
               <span className={styles.panelTitle}>Test request</span>
-            </Flex>
+            </div>
 
             {/* Fields */}
             <div className={styles.fieldsScroll}>
               {/* Auth Section */}
               {(
                 <>
-                  <Flex align='center' gap={3} className={styles.sectionHeader}>
+                  <div className={styles.sectionHeader}>
                     <span className={styles.sectionLabel}>Authorization</span>
                     <IconButton size={2} onClick={() => toggleCollapse('auth')}>
                       {collapsed.auth ? <ChevronDownIcon /> : <ChevronUpIcon />}
                     </IconButton>
-                  </Flex>
+                  </div>
                   {!collapsed.auth && (
                     <>
                       {authSchemes.length > 2 && (
-                        <Flex align='center' gap={3} className={styles.fieldRow}>
+                        <div className={styles.fieldRow}>
                           <span className={styles.fieldLabel}>Type</span>
                           <div className={styles.fieldInput}>
                             <Select value={selectedScheme} onValueChange={setSelectedScheme}>
@@ -254,13 +253,13 @@ export function PlaygroundDialog({
                       )}
                       {currentScheme.type === 'basic' ? (
                         <>
-                          <Flex align='center' gap={3} className={styles.fieldRow}>
+                          <div className={styles.fieldRow}>
                             <span className={styles.fieldLabel}>Username</span>
                             <div className={styles.fieldInput}>
                               <InputField size="small" placeholder="Enter username" value={basicUser} onChange={(e) => setBasicUser(e.target.value)} />
                             </div>
                           </div>
-                          <Flex align='center' gap={3} className={styles.fieldRow}>
+                          <div className={styles.fieldRow}>
                             <span className={styles.fieldLabel}>Password</span>
                             <div className={styles.fieldInput}>
                               <InputField size="small" type="password" placeholder="Enter password" value={basicPass} onChange={(e) => setBasicPass(e.target.value)} />
@@ -268,7 +267,7 @@ export function PlaygroundDialog({
                           </div>
                         </>
                       ) : currentScheme.type !== 'none' ? (
-                        <Flex align='center' gap={3} className={styles.fieldRow}>
+                        <div className={styles.fieldRow}>
                           <span className={styles.fieldLabel}>{currentScheme.headerName}</span>
                           <div className={styles.fieldInput}>
                             <InputField size="small" placeholder={currentScheme.placeholder} value={authToken} onChange={(e) => setAuthToken(e.target.value)} />
@@ -291,12 +290,12 @@ export function PlaygroundDialog({
               {/* Path Params */}
               {pathFields.length > 0 && (
                 <>
-                  <Flex align='center' gap={3} className={styles.sectionHeader}>
+                  <div className={styles.sectionHeader}>
                     <span className={styles.sectionLabel}>Path Parameters</span>
                     <IconButton size={2} onClick={() => toggleCollapse('path')}>
                       {collapsed.path ? <ChevronDownIcon /> : <ChevronUpIcon />}
                     </IconButton>
-                  </Flex>
+                  </div>
                   {!collapsed.path && pathFields.map((f) => (
                     <div key={f.name} className={styles.fieldRow}>
                       <span className={styles.fieldLabel}>{f.name}</span>
@@ -316,12 +315,12 @@ export function PlaygroundDialog({
               {/* Query Params */}
               {queryFields.length > 0 && (
                 <>
-                  <Flex align='center' gap={3} className={styles.sectionHeader}>
+                  <div className={styles.sectionHeader}>
                     <span className={styles.sectionLabel}>Query Parameters</span>
                     <IconButton size={2} onClick={() => toggleCollapse('query')}>
                       {collapsed.query ? <ChevronDownIcon /> : <ChevronUpIcon />}
                     </IconButton>
-                  </Flex>
+                  </div>
                   {!collapsed.query && queryFields.map((f) => (
                     <div key={f.name} className={styles.fieldRow}>
                       <span className={styles.fieldLabel}>{f.name}</span>
@@ -341,7 +340,7 @@ export function PlaygroundDialog({
               {/* Body Section */}
               {body && (
                 <>
-                  <Flex align='center' gap={3} className={styles.sectionHeader}>
+                  <div className={styles.sectionHeader}>
                     <span className={styles.sectionLabel}>Body</span>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--rs-space-3)' }}>
                       <IconButton size={2} onClick={() => {
@@ -358,7 +357,7 @@ export function PlaygroundDialog({
                         {collapsed.body ? <ChevronDownIcon /> : <ChevronUpIcon />}
                       </IconButton>
                     </div>
-                  </Flex>
+                  </div>
                   {!collapsed.body && (
                     jsonMode ? (
                       <div className={styles.jsonEditorWrap}>
