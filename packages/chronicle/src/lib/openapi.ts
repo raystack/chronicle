@@ -141,7 +141,14 @@ function convertV2SecurityDefs(defs: Record<string, OpenAPIV2.SecuritySchemeObje
     } else if (def.type === 'basic') {
       result[name] = { type: 'http', scheme: 'basic' } as OpenAPIV3.HttpSecurityScheme
     } else if (def.type === 'oauth2') {
-      result[name] = { type: 'oauth2', flows: {} } as OpenAPIV3.OAuth2SecurityScheme
+      const v2 = def as unknown as { flow?: string; authorizationUrl?: string; tokenUrl?: string; scopes?: Record<string, string> }
+      const flow = { authorizationUrl: v2.authorizationUrl ?? '', tokenUrl: v2.tokenUrl ?? '', scopes: v2.scopes ?? {} }
+      const flows: OpenAPIV3.OAuth2SecurityScheme['flows'] = {}
+      if (v2.flow === 'implicit') flows.implicit = { authorizationUrl: flow.authorizationUrl, scopes: flow.scopes }
+      else if (v2.flow === 'password') flows.password = { tokenUrl: flow.tokenUrl, scopes: flow.scopes }
+      else if (v2.flow === 'application') flows.clientCredentials = { tokenUrl: flow.tokenUrl, scopes: flow.scopes }
+      else if (v2.flow === 'accessCode') flows.authorizationCode = { authorizationUrl: flow.authorizationUrl, tokenUrl: flow.tokenUrl, scopes: flow.scopes }
+      result[name] = { type: 'oauth2', flows } as OpenAPIV3.OAuth2SecurityScheme
     }
   }
   return result

@@ -158,7 +158,13 @@ export function PlaygroundDialog({
     if (body) {
       reqHeaders['Content-Type'] = body.contentType ?? 'application/json'
       if (jsonMode) {
-        try { reqBody = JSON.parse(bodyJsonStr) } catch { reqBody = bodyValues }
+        try {
+          reqBody = JSON.parse(bodyJsonStr)
+        } catch {
+          setResponseData({ status: 0, statusText: 'Error', body: 'Invalid JSON in request body', time: 0 })
+          setLoading(false)
+          return
+        }
       } else {
         reqBody = bodyValues
       }
@@ -193,8 +199,9 @@ export function PlaygroundDialog({
   const curlSnippet = useMemo(() => {
     const headers: Record<string, string> = { ...getAuthHeaders(), ...headerValues }
     if (body) headers['Content-Type'] = body.contentType ?? 'application/json'
-    return generateCurl({ method, url: serverUrl + path, headers, body: body ? JSON.stringify(bodyValues) : undefined })
-  }, [method, path, serverUrl, getAuthHeaders, headerValues, bodyValues, body])
+    const bodyStr = body ? (jsonMode ? bodyJsonStr : JSON.stringify(bodyValues)) : undefined
+    return generateCurl({ method, url: serverUrl + path, headers, body: bodyStr })
+  }, [method, path, serverUrl, getAuthHeaders, headerValues, bodyValues, bodyJsonStr, jsonMode, body])
 
 
   return (

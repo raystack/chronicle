@@ -8,7 +8,8 @@ export function getSpecSlug(spec: ApiSpec): string {
 }
 
 function deriveOperationId(method: string, path: string): string {
-  return `${method}_${path.replace(/[/{}\-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')}`
+  const slug = path.replace(/[/{}\-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')
+  return `${method}_${slug || 'root'}`
 }
 
 function getOperationId(op: OpenAPIV3.OperationObject, method: string, path: string): string {
