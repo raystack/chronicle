@@ -1,6 +1,6 @@
 import { Flex, Headline, Text } from '@raystack/apsara';
 import type { OpenAPIV3 } from 'openapi-types';
-import { ApiOverview } from '@/components/api-v2';
+import { ApiOverview } from '@/components/api';
 import { findApiOperation } from '@/lib/api-routes';
 import { Head } from '@/lib/head';
 import type { ApiSpec } from '@/lib/openapi';

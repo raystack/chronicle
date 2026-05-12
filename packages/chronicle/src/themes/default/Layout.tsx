@@ -14,7 +14,7 @@ import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
 import type { OpenAPIV3 } from 'openapi-types';
 import { MethodBadge } from '@/components/api/method-badge';
 import { useApiOperation } from '@/lib/use-api-operation';
-import { PlaygroundDialog } from '@/components/api-v2/playground-dialog';
+import { PlaygroundDialog } from '@/components/api/playground-dialog';
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
 import { Search } from '@/components/ui/search';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
@@ -300,9 +300,9 @@ function ApiSidebarNode({ item, pathname }: { item: Node; pathname: string }) {
 
   if (item.type === 'folder') {
     return (
-      <div className={styles.apiGroup}>
+      <Flex direction='column' gap='small' className={styles.apiGroup}>
         <span className={styles.apiGroupLabel}>{item.name?.toString()}</span>
-        <div className={styles.apiGroupItems}>
+        <Flex direction='column'>
           {item.children.map((child, i) => (
             <ApiSidebarNode
               key={child.type === 'page' ? child.url : (child.name?.toString() ?? i)}
@@ -310,8 +310,8 @@ function ApiSidebarNode({ item, pathname }: { item: Node; pathname: string }) {
               pathname={pathname}
             />
           ))}
-        </div>
-      </div>
+        </Flex>
+      </Flex>
     );
   }
 
@@ -322,14 +322,19 @@ function ApiSidebarNode({ item, pathname }: { item: Node; pathname: string }) {
   const methodColor = methodColorMap[iconKey];
 
   return (
-    <RouterLink to={href} className={`${styles.apiItem} ${isActive ? styles.apiItemActive : ''}`}>
+    <Flex
+      align='center'
+      gap='small'
+      className={`${styles.apiItem} ${isActive ? styles.apiItemActive : ''}`}
+      render={<RouterLink to={href} />}
+    >
       <span className={styles.apiItemName}>{item.name}</span>
       {methodLabel && (
         <span className={styles.apiMethodText} style={{ color: methodColor }}>
           {methodLabel}
         </span>
       )}
-    </RouterLink>
+    </Flex>
   );
 }
 

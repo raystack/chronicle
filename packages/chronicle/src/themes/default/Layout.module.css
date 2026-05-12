@@ -228,9 +228,6 @@
 }
 
 .apiGroup {
-  display: flex;
-  flex-direction: column;
-  gap: var(--rs-space-3);
   margin-top: var(--rs-space-8);
   width: 100%;
 }
@@ -248,15 +245,7 @@
   padding: 0 var(--rs-space-3);
 }
 
-.apiGroupItems {
-  display: flex;
-  flex-direction: column;
-}
-
 .apiItem {
-  display: flex;
-  align-items: center;
-  gap: var(--rs-space-3);
   padding: var(--rs-space-3);
   border-radius: var(--rs-radius-2);
   text-decoration: none;
