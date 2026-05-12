@@ -120,13 +120,31 @@ function convertV2toV3(doc: OpenAPIV2.Document): OpenAPIV3.Document {
     v3Paths[pathStr] = v3PathItem
   }
 
+  const securitySchemes = convertV2SecurityDefs(resolved.securityDefinitions as Record<string, OpenAPIV2.SecuritySchemeObject> | undefined)
+
   return {
     openapi: '3.0.0',
     info: resolved.info as unknown as OpenAPIV3.InfoObject,
     paths: v3Paths,
     tags: (resolved.tags ?? []) as unknown as OpenAPIV3.TagObject[],
     ...(resolved.externalDocs ? { externalDocs: resolved.externalDocs as unknown as OpenAPIV3.ExternalDocumentationObject } : {}),
+    ...(Object.keys(securitySchemes).length > 0 ? { components: { securitySchemes } } : {}),
   }
+}
+
+function convertV2SecurityDefs(defs: Record<string, OpenAPIV2.SecuritySchemeObject> | undefined): Record<string, OpenAPIV3.SecuritySchemeObject> {
+  if (!defs) return {}
+  const result: Record<string, OpenAPIV3.SecuritySchemeObject> = {}
+  for (const [name, def] of Object.entries(defs)) {
+    if (def.type === 'apiKey') {
+      result[name] = { type: 'apiKey', name: (def as JsonObject).name as string, in: def.in as string } as OpenAPIV3.ApiKeySecurityScheme
+    } else if (def.type === 'basic') {
+      result[name] = { type: 'http', scheme: 'basic' } as OpenAPIV3.HttpSecurityScheme
+    } else if (def.type === 'oauth2') {
+      result[name] = { type: 'oauth2', flows: {} } as OpenAPIV3.OAuth2SecurityScheme
+    }
+  }
+  return result
 }
 
 function convertV2Operation(op: OpenAPIV2.OperationObject): OpenAPIV3.OperationObject {

@@ -7,12 +7,14 @@ import {
   Squares2X2Icon
 } from '@heroicons/react/24/outline';
 import { Flex, IconButton, Button, Sidebar } from '@raystack/apsara';
+import { PlayIcon } from '@radix-ui/react-icons';
 import { cx } from 'class-variance-authority';
-import { useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
 import type { OpenAPIV3 } from 'openapi-types';
 import { MethodBadge } from '@/components/api/method-badge';
 import { useApiOperation } from '@/lib/use-api-operation';
+import { PlaygroundDialog } from '@/components/api-v2/playground-dialog';
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
 import { Search } from '@/components/ui/search';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
@@ -193,6 +195,7 @@ export function Layout({
                   {!isApiRoute && <Breadcrumbs slug={slug} tree={tree} />}
                 </Flex>
                 <Flex align='center' gap='small'>
+                  {isApiRoute && <TestRequestButton />}
                   {isApiRoute && <ViewDocsButton />}
                   <OpenInAI />
                 </Flex>
@@ -265,6 +268,37 @@ function SidebarNode({
     >
       {item.name}
     </Sidebar.Item>
+  );
+}
+
+function TestRequestButton() {
+  const match = useApiOperation();
+  const [open, setOpen] = useState(false);
+  if (!match) return null;
+
+  return (
+    <>
+      <Button
+        variant='outline'
+        color='neutral'
+        size='small'
+        leadingIcon={<PlayIcon width={12} height={12} />}
+        onClick={() => setOpen(true)}
+      >
+        Test request
+      </Button>
+      <PlaygroundDialog
+        open={open}
+        onOpenChange={setOpen}
+        method={match.method}
+        path={match.path}
+        operation={match.operation}
+        serverUrl={match.spec.server.url}
+        specName={match.spec.name}
+        auth={match.spec.auth}
+        document={match.spec.document}
+      />
+    </>
   );
 }
 
