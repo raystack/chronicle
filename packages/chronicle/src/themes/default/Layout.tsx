@@ -155,11 +155,19 @@ export function Layout({
                 </div>
               ) : null}
               {tree.children.map((item, i) => (
-                <SidebarNode
-                  key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
-                  item={item}
-                  pathname={pathname}
-                />
+                isApiRoute ? (
+                  <ApiSidebarNode
+                    key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
+                    item={item}
+                    pathname={pathname}
+                  />
+                ) : (
+                  <SidebarNode
+                    key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
+                    item={item}
+                    pathname={pathname}
+                  />
+                )
               ))}
             </Sidebar.Main>
             {config.versions?.length ? (
@@ -268,6 +276,60 @@ function SidebarNode({
     >
       {item.name}
     </Sidebar.Item>
+  );
+}
+
+const methodColorMap: Record<string, string> = {
+  'method-get': 'var(--rs-color-foreground-success-primary)',
+  'method-post': 'var(--rs-color-foreground-accent-primary)',
+  'method-put': 'var(--rs-color-foreground-attention-primary)',
+  'method-delete': 'var(--rs-color-foreground-danger-primary)',
+  'method-patch': 'var(--rs-color-foreground-base-secondary)',
+};
+
+const methodLabelMap: Record<string, string> = {
+  'method-get': 'GET',
+  'method-post': 'POST',
+  'method-put': 'PUT',
+  'method-delete': 'DEL',
+  'method-patch': 'PATCH',
+};
+
+function ApiSidebarNode({ item, pathname }: { item: Node; pathname: string }) {
+  if (item.type === 'separator') return null;
+
+  if (item.type === 'folder') {
+    return (
+      <div className={styles.apiGroup}>
+        <span className={styles.apiGroupLabel}>{item.name?.toString()}</span>
+        <div className={styles.apiGroupItems}>
+          {item.children.map((child, i) => (
+            <ApiSidebarNode
+              key={child.type === 'page' ? child.url : (child.name?.toString() ?? i)}
+              item={child}
+              pathname={pathname}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  const isActive = pathname === item.url;
+  const href = item.url ?? '#';
+  const iconKey = typeof item.icon === 'string' ? item.icon : '';
+  const methodLabel = methodLabelMap[iconKey];
+  const methodColor = methodColorMap[iconKey];
+
+  return (
+    <RouterLink to={href} className={`${styles.apiItem} ${isActive ? styles.apiItemActive : ''}`}>
+      <span className={styles.apiItemName}>{item.name}</span>
+      {methodLabel && (
+        <span className={styles.apiMethodText} style={{ color: methodColor }}>
+          {methodLabel}
+        </span>
+      )}
+    </RouterLink>
   );
 }
 

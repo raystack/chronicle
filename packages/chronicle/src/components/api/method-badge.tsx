@@ -6,8 +6,8 @@ import styles from './method-badge.module.css'
 type BadgeVariant = 'accent' | 'danger' | 'success' | 'neutral' | 'warning' | 'gradient'
 
 const methodVariants: Record<string, BadgeVariant> = {
-  GET: 'accent',
-  POST: 'success',
+  GET: 'success',
+  POST: 'accent',
   PUT: 'warning',
   DELETE: 'danger',
   PATCH: 'neutral',
