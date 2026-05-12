@@ -288,6 +288,7 @@ function TestRequestButton() {
         Test request
       </Button>
       <PlaygroundDialog
+        key={`${match.spec.name}-${match.path}-${match.method}`}
         open={open}
         onOpenChange={setOpen}
         method={match.method}

@@ -30,7 +30,7 @@ export function ApiOverview({ method, path, operation, auth }: ApiOverviewProps)
   const responses = getResponseSections(operation.responses as Record<string, OpenAPIV3.ResponseObject>)
 
   const authFields: SchemaField[] = auth
-    ? [{ name: auth.header, type: 'String', required: false }]
+    ? [{ name: auth.header, type: 'String', kind: 'string' as const, required: false }]
     : headerFields.length > 0
       ? headerFields
       : []
@@ -161,6 +161,7 @@ function paramsToFields(params: OpenAPIV3.ParameterObject[]): SchemaField[] {
     return {
       name: p.name,
       type: schema.type ? String(schema.type) : 'string',
+      kind: (schema.type as SchemaField['kind']) ?? 'string',
       required: p.required ?? false,
       description: p.description,
       default: schema.default,

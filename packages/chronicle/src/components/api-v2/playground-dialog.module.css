@@ -3,10 +3,10 @@
   border: 1px solid var(--rs-color-border-base-primary);
   border-radius: var(--rs-radius-2);
   overflow: hidden;
-  height: 75vh;
-  max-height: 700px;
-  width: 75vw;
-  max-width: 1200px;
+  height: 70vh;
+  max-height: 600px;
+  width: 70vw;
+  max-width: 900px;
   display: flex;
   flex-direction: column;
 }
@@ -113,6 +113,7 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  padding-bottom: var(--rs-space-5);
 }
 
 .sectionHeader {
@@ -160,6 +161,25 @@
 .fieldInput input {
   height: 24px;
   font-size: var(--rs-font-size-small);
+}
+
+.arrayField {
+  display: flex;
+  flex-direction: column;
+}
+
+.nestedFields {
+  padding-left: var(--rs-space-5);
+  border-left: 1px dashed var(--rs-color-border-base-primary);
+  margin-left: var(--rs-space-5);
+}
+
+.arrayItemRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--rs-space-3);
+  padding: var(--rs-space-2) var(--rs-space-5) var(--rs-space-2) var(--rs-space-8);
 }
 
 .responseHeader {

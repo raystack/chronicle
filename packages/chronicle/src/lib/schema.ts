@@ -1,8 +1,11 @@
 import type { OpenAPIV3 } from 'openapi-types'
 
+export type SchemaFieldKind = 'string' | 'integer' | 'number' | 'boolean' | 'array' | 'object'
+
 export interface SchemaField {
   name: string
   type: string
+  kind: SchemaFieldKind
   required: boolean
   description?: string
   default?: unknown
@@ -10,10 +13,33 @@ export interface SchemaField {
   children?: SchemaField[]
 }
 
+function mergeAllOf(schema: OpenAPIV3.SchemaObject): OpenAPIV3.SchemaObject {
+  const composed = schema.allOf ?? schema.oneOf ?? schema.anyOf
+  if (!composed) return schema
+  const merged: OpenAPIV3.SchemaObject = { ...schema }
+  delete merged.allOf
+  delete merged.oneOf
+  delete merged.anyOf
+  for (const sub of composed as OpenAPIV3.SchemaObject[]) {
+    if (sub.type) merged.type = sub.type
+    if (sub.properties) {
+      merged.properties = { ...(merged.properties ?? {}), ...sub.properties }
+    }
+    if (sub.required) {
+      merged.required = [...(merged.required ?? []), ...sub.required]
+    }
+    if (sub.description && !merged.description) merged.description = sub.description
+  }
+  return merged
+}
+
 export function flattenSchema(
   schema: OpenAPIV3.SchemaObject,
   requiredFields: string[] = [],
 ): SchemaField[] {
+  const resolved = mergeAllOf(schema)
+  if (resolved !== schema) return flattenSchema(resolved, requiredFields)
+
   if (schema.type === 'array' && schema.items) {
     const items = schema.items as OpenAPIV3.SchemaObject
     const itemType = inferType(items)
@@ -26,6 +52,7 @@ export function flattenSchema(
     return [{
       name: 'items',
       type: `${itemType}[]`,
+      kind: 'array' as SchemaFieldKind,
       required: true,
       description: items.description,
       children: children?.length ? children : undefined,
@@ -36,7 +63,8 @@ export function flattenSchema(
     const properties = (schema.properties ?? {}) as Record<string, OpenAPIV3.SchemaObject>
     const required = schema.required ?? requiredFields
 
-    return Object.entries(properties).map(([name, prop]) => {
+    return Object.entries(properties).map(([name, rawProp]) => {
+      const prop = mergeAllOf(rawProp)
       const fieldType = inferType(prop)
       const children =
         fieldType === 'object' || prop.properties
@@ -48,8 +76,9 @@ export function flattenSchema(
       return {
         name,
         type: fieldType,
+        kind: (prop.type as SchemaFieldKind) ?? 'object',
         required: required.includes(name),
-        description: prop.description,
+        description: rawProp.description ?? prop.description,
         default: prop.default,
         enum: prop.enum,
         children: children?.length ? children : undefined,
@@ -87,7 +116,8 @@ export function generateExampleJson(schema: OpenAPIV3.SchemaObject): unknown {
   return defaults[schema.type as string] ?? null
 }
 
-function inferType(schema: OpenAPIV3.SchemaObject): string {
+function inferType(rawSchema: OpenAPIV3.SchemaObject): string {
+  const schema = mergeAllOf(rawSchema)
   if (schema.type === 'array') {
     const items = schema.items as OpenAPIV3.SchemaObject | undefined
     const itemType = items ? inferType(items) : 'unknown'

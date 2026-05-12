@@ -27,7 +27,7 @@ export function ApiFieldSection({ title, fields, headerRight, description }: Api
         )}
       </Flex>
       {description && <span className={styles.statusDescription}>{description}</span>}
-      <Flex direction="column">
+      <Flex direction="column" gap={5}>
         {fields.map((field) => (
           <FieldItem key={field.name} field={field} />
         ))}

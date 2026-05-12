@@ -7,6 +7,14 @@ export function getSpecSlug(spec: ApiSpec): string {
   return slugify(spec.name, { lower: true, strict: true })
 }
 
+function deriveOperationId(method: string, path: string): string {
+  return `${method}_${path.replace(/[/{}\-]/g, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')}`
+}
+
+function getOperationId(op: OpenAPIV3.OperationObject, method: string, path: string): string {
+  return op.operationId || deriveOperationId(method, path)
+}
+
 
 export function buildApiRoutes(specs: ApiSpec[]): { slug: string[] }[] {
   const routes: { slug: string[] }[] = []
@@ -15,12 +23,13 @@ export function buildApiRoutes(specs: ApiSpec[]): { slug: string[] }[] {
     const specSlug = getSpecSlug(spec)
     const paths = spec.document.paths ?? {}
 
-    for (const [, pathItem] of Object.entries(paths)) {
+    for (const [pathStr, pathItem] of Object.entries(paths)) {
       if (!pathItem) continue
       for (const method of ['get', 'post', 'put', 'delete', 'patch'] as const) {
         const op = pathItem[method]
-        if (!op?.operationId) continue
-        routes.push({ slug: [specSlug, encodeURIComponent(op.operationId)] })
+        if (!op) continue
+        const opId = getOperationId(op, method, pathStr)
+        routes.push({ slug: [specSlug, encodeURIComponent(opId)] })
       }
     }
   }
@@ -47,7 +56,9 @@ export function findApiOperation(specs: ApiSpec[], slug: string[]): ApiRouteMatc
     if (!pathItem) continue
     for (const method of ['get', 'post', 'put', 'delete', 'patch'] as const) {
       const op = pathItem[method]
-      if (op?.operationId && encodeURIComponent(op.operationId) === operationId) {
+      if (!op) continue
+      const opId = getOperationId(op, method, pathStr)
+      if (encodeURIComponent(opId) === operationId) {
         return { spec, operation: op, method: method.toUpperCase(), path: pathStr }
       }
     }
@@ -67,12 +78,13 @@ export function buildApiPageTree(specs: ApiSpec[]): Root {
     const opsByTag = new Map<string, Item[]>()
     const tagDisplayName = new Map<string, string>()
 
-    for (const [, pathItem] of Object.entries(paths)) {
+    for (const [pathStr, pathItem] of Object.entries(paths)) {
       if (!pathItem) continue
       for (const method of ['get', 'post', 'put', 'delete', 'patch'] as const) {
         const op = pathItem[method]
-        if (!op?.operationId) continue
+        if (!op) continue
 
+        const opId = getOperationId(op, method, pathStr)
         const rawTag = op.tags?.[0] ?? 'default'
         const tagKey = rawTag.toLowerCase()
         if (!opsByTag.has(tagKey)) {
@@ -82,8 +94,8 @@ export function buildApiPageTree(specs: ApiSpec[]): Root {
 
         opsByTag.get(tagKey)!.push({
           type: 'page',
-          name: op.summary ?? op.operationId,
-          url: `/apis/${specSlug}/${encodeURIComponent(op.operationId)}`,
+          name: op.summary ?? opId,
+          url: `/apis/${specSlug}/${encodeURIComponent(opId)}`,
           icon: `method-${method}`,
         })
       }

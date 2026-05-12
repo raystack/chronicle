@@ -3,7 +3,7 @@
 import { useState, useCallback, useMemo } from 'react'
 import type { OpenAPIV3 } from 'openapi-types'
 import { Dialog, Button, Badge, IconButton, InputField, CopyButton, Select } from '@raystack/apsara'
-import { Cross2Icon, ChevronDownIcon, ChevronUpIcon, PlayIcon } from '@radix-ui/react-icons'
+import { Cross2Icon, ChevronDownIcon, ChevronUpIcon, PlayIcon, PlusIcon } from '@radix-ui/react-icons'
 import { CounterClockwiseClockIcon, CodeIcon } from '@radix-ui/react-icons'
 import { MethodBadge } from '@/components/api/method-badge'
 import { flattenSchema, generateExampleJson, type SchemaField } from '@/lib/schema'
@@ -75,10 +75,14 @@ export function PlaygroundDialog({
   const [headerValues, setHeaderValues] = useState<Record<string, string>>({})
   const [pathValues, setPathValues] = useState<Record<string, string>>({})
   const [queryValues, setQueryValues] = useState<Record<string, string>>({})
-  const [bodyValues, setBodyValues] = useState<Record<string, string>>(() => {
+  const [bodyValues, setBodyValues] = useState<Record<string, unknown>>(() => {
     if (!body) return {}
-    const init: Record<string, string> = {}
-    for (const f of body.fields) init[f.name] = ''
+    const init: Record<string, unknown> = {}
+    for (const f of body.fields) {
+      if (f.kind === 'array') init[f.name] = []
+      else if (f.kind === 'object' || f.children) init[f.name] = {}
+      else init[f.name] = ''
+    }
     return init
   })
 
@@ -116,8 +120,12 @@ export function PlaygroundDialog({
     setQueryValues({})
     setBodyValues(() => {
       if (!body) return {}
-      const init: Record<string, string> = {}
-      for (const f of body.fields) init[f.name] = ''
+      const init: Record<string, unknown> = {}
+      for (const f of body.fields) {
+        if (f.type.endsWith('[]')) init[f.name] = []
+        else if (f.children) init[f.name] = {}
+        else init[f.name] = ''
+      }
       return init
     })
     setResponseData(null)
@@ -145,11 +153,7 @@ export function PlaygroundDialog({
     let reqBody: unknown = undefined
     if (body) {
       reqHeaders['Content-Type'] = body.contentType ?? 'application/json'
-      const parsed: Record<string, unknown> = {}
-      for (const [k, v] of Object.entries(bodyValues)) {
-        if (v) parsed[k] = v
-      }
-      reqBody = parsed
+      reqBody = bodyValues
     }
 
     try {
@@ -340,17 +344,12 @@ export function PlaygroundDialog({
                     </div>
                   </div>
                   {!collapsed.body && body.fields.map((f) => (
-                    <div key={f.name} className={styles.fieldRow}>
-                      <span className={styles.fieldLabel}>{f.name}</span>
-                      <div className={styles.fieldInput}>
-                        <InputField
-                          size="small"
-                          placeholder={f.description ?? 'Enter value'}
-                          value={bodyValues[f.name] ?? ''}
-                          onChange={(e) => setBodyValues({ ...bodyValues, [f.name]: e.target.value })}
-                        />
-                      </div>
-                    </div>
+                    <BodyFieldRow
+                      key={f.name}
+                      field={f}
+                      value={bodyValues[f.name]}
+                      onChange={(val) => setBodyValues({ ...bodyValues, [f.name]: val })}
+                    />
                   ))}
                 </>
               )}
@@ -416,12 +415,89 @@ export function PlaygroundDialog({
   )
 }
 
+function BodyFieldRow({ field, value, onChange }: {
+  field: SchemaField
+  value: unknown
+  onChange: (val: unknown) => void
+}) {
+  const hasChildren = field.children && field.children.length > 0
+
+  if (field.kind === 'array' && !hasChildren) {
+    const items = Array.isArray(value) ? value as string[] : []
+    return (
+      <div className={styles.arrayField}>
+        <div className={styles.fieldRow}>
+          <span className={styles.fieldLabel}>{field.name}</span>
+          <IconButton size={2} onClick={() => onChange([...items, ''])} aria-label="Add item">
+            <PlusIcon />
+          </IconButton>
+        </div>
+        {items.map((item, i) => (
+          <div key={i} className={styles.arrayItemRow}>
+            <div className={styles.fieldInput}>
+              <InputField
+                size="small"
+                placeholder={`${field.name}[${i}]`}
+                value={String(item)}
+                onChange={(e) => {
+                  const updated = [...items]
+                  updated[i] = e.target.value
+                  onChange(updated)
+                }}
+              />
+            </div>
+            <IconButton size={2} onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label="Remove item">
+              <Cross2Icon />
+            </IconButton>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  if (hasChildren) {
+    const objValue = (typeof value === 'object' && value !== null ? value : {}) as Record<string, unknown>
+    return (
+      <div className={styles.arrayField}>
+        <div className={styles.sectionHeader}>
+          <span className={styles.sectionLabel}>{field.name}</span>
+        </div>
+        <div className={styles.nestedFields}>
+        {field.children!.map((child) => (
+          <BodyFieldRow
+            key={child.name}
+            field={child}
+            value={objValue[child.name]}
+            onChange={(val) => onChange({ ...objValue, [child.name]: val })}
+          />
+        ))}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className={styles.fieldRow}>
+      <span className={styles.fieldLabel}>{field.name}</span>
+      <div className={styles.fieldInput}>
+        <InputField
+          size="small"
+          placeholder={field.description ?? 'Enter value'}
+          value={String(value ?? '')}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      </div>
+    </div>
+  )
+}
+
 function paramsToFields(params: OpenAPIV3.ParameterObject[]): SchemaField[] {
   return params.map((p) => {
     const schema = (p.schema ?? {}) as OpenAPIV3.SchemaObject
     return {
       name: p.name,
       type: schema.type ? String(schema.type) : 'string',
+      kind: (schema.type as SchemaField['kind']) ?? 'string',
       required: p.required ?? false,
       description: p.description,
     }
