@@ -1,6 +1,6 @@
 import { Flex, Headline, Text } from '@raystack/apsara';
 import type { OpenAPIV3 } from 'openapi-types';
-import { EndpointPage } from '@/components/api';
+import { ApiOverview } from '@/components/api';
 import { findApiOperation } from '@/lib/api-routes';
 import { Head } from '@/lib/head';
 import type { ApiSpec } from '@/lib/openapi';
@@ -36,7 +36,7 @@ export function ApiPage({ slug }: ApiPageProps) {
   return (
     <>
       <Head title={title} description={operation.description} config={config} />
-      <EndpointPage
+      <ApiOverview
         method={match.method}
         path={match.path}
         operation={match.operation}

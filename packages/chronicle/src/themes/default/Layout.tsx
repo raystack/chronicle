@@ -6,11 +6,15 @@ import {
   DocumentTextIcon,
   Squares2X2Icon
 } from '@heroicons/react/24/outline';
-import { Flex, IconButton, Sidebar } from '@raystack/apsara';
+import { Flex, IconButton, Button, Sidebar } from '@raystack/apsara';
+import { PlayIcon } from '@radix-ui/react-icons';
 import { cx } from 'class-variance-authority';
-import { useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
+import type { OpenAPIV3 } from 'openapi-types';
 import { MethodBadge } from '@/components/api/method-badge';
+import { useApiOperation } from '@/lib/use-api-operation';
+import { PlaygroundDialog } from '@/components/api/playground-dialog';
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
 import { Search } from '@/components/ui/search';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
@@ -151,11 +155,19 @@ export function Layout({
                 </div>
               ) : null}
               {tree.children.map((item, i) => (
-                <SidebarNode
-                  key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
-                  item={item}
-                  pathname={pathname}
-                />
+                isApiRoute ? (
+                  <ApiSidebarNode
+                    key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
+                    item={item}
+                    pathname={pathname}
+                  />
+                ) : (
+                  <SidebarNode
+                    key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
+                    item={item}
+                    pathname={pathname}
+                  />
+                )
               ))}
             </Sidebar.Main>
             {config.versions?.length ? (
@@ -190,7 +202,11 @@ export function Layout({
                   </Flex>
                   {!isApiRoute && <Breadcrumbs slug={slug} tree={tree} />}
                 </Flex>
-                <OpenInAI />
+                <Flex align='center' gap='small'>
+                  {isApiRoute && <TestRequestButton />}
+                  {isApiRoute && <ViewDocsButton />}
+                  <OpenInAI />
+                </Flex>
               </nav>
               <main className={cx(styles.content, classNames?.content)}>
                 {children}
@@ -260,5 +276,117 @@ function SidebarNode({
     >
       {item.name}
     </Sidebar.Item>
+  );
+}
+
+const methodColorMap: Record<string, string> = {
+  'method-get': 'var(--rs-color-foreground-success-primary)',
+  'method-post': 'var(--rs-color-foreground-accent-primary)',
+  'method-put': 'var(--rs-color-foreground-attention-primary)',
+  'method-delete': 'var(--rs-color-foreground-danger-primary)',
+  'method-patch': 'var(--rs-color-foreground-base-secondary)',
+};
+
+const methodLabelMap: Record<string, string> = {
+  'method-get': 'GET',
+  'method-post': 'POST',
+  'method-put': 'PUT',
+  'method-delete': 'DEL',
+  'method-patch': 'PATCH',
+};
+
+function ApiSidebarNode({ item, pathname }: { item: Node; pathname: string }) {
+  if (item.type === 'separator') return null;
+
+  if (item.type === 'folder') {
+    return (
+      <Flex direction='column' gap='small' className={styles.apiGroup}>
+        <span className={styles.apiGroupLabel}>{item.name?.toString()}</span>
+        <Flex direction='column'>
+          {item.children.map((child, i) => (
+            <ApiSidebarNode
+              key={child.type === 'page' ? child.url : (child.name?.toString() ?? i)}
+              item={child}
+              pathname={pathname}
+            />
+          ))}
+        </Flex>
+      </Flex>
+    );
+  }
+
+  const isActive = pathname === item.url;
+  const href = item.url ?? '#';
+  const iconKey = typeof item.icon === 'string' ? item.icon : '';
+  const methodLabel = methodLabelMap[iconKey];
+  const methodColor = methodColorMap[iconKey];
+
+  return (
+    <Flex
+      align='center'
+      gap='small'
+      className={`${styles.apiItem} ${isActive ? styles.apiItemActive : ''}`}
+      render={<RouterLink to={href} />}
+    >
+      <span className={styles.apiItemName}>{item.name}</span>
+      {methodLabel && (
+        <span className={styles.apiMethodText} style={{ color: methodColor }}>
+          {methodLabel}
+        </span>
+      )}
+    </Flex>
+  );
+}
+
+function TestRequestButton() {
+  const match = useApiOperation();
+  const [open, setOpen] = useState(false);
+  if (!match) return null;
+
+  return (
+    <>
+      <Button
+        variant='outline'
+        color='neutral'
+        size='small'
+        leadingIcon={<PlayIcon width={12} height={12} />}
+        onClick={() => setOpen(true)}
+      >
+        Test request
+      </Button>
+      <PlaygroundDialog
+        key={`${match.spec.name}-${match.path}-${match.method}`}
+        open={open}
+        onOpenChange={setOpen}
+        method={match.method}
+        path={match.path}
+        operation={match.operation}
+        serverUrl={match.spec.server.url}
+        specName={match.spec.name}
+        auth={match.spec.auth}
+        document={match.spec.document}
+      />
+    </>
+  );
+}
+
+function ViewDocsButton() {
+  const match = useApiOperation();
+  if (!match) return null;
+
+  const operation = match.operation as OpenAPIV3.OperationObject;
+  const docsUrl = operation.externalDocs?.url ?? match.spec.document.externalDocs?.url;
+  if (!docsUrl) return null;
+
+  return (
+    <Button
+      variant='outline'
+      color='neutral'
+      size='small'
+      leadingIcon={<DocumentTextIcon width={12} height={12} />}
+      onClick={() => window.open(docsUrl, '_blank', 'noopener,noreferrer')}
+    >
+      View documentation
+    </Button>
   );
 }

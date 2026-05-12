@@ -1,0 +1,65 @@
+.layout {
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-left: var(--rs-space-9);
+  padding-right: var(--rs-space-9);
+  width: 100%;
+}
+
+.left {
+  min-width: 0;
+  flex: 0 1 545px;
+}
+
+.right {
+  min-width: 376px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.title {
+  font-family: var(--rs-font-title);
+  font-size: var(--rs-font-size-t3);
+  font-weight: var(--rs-font-weight-medium);
+  line-height: var(--rs-line-height-t3);
+  letter-spacing: var(--rs-letter-spacing-t3);
+  color: var(--rs-color-foreground-base-primary);
+  margin: 0;
+}
+
+.description {
+  font-size: var(--rs-font-size-regular);
+  line-height: var(--rs-line-height-regular);
+  letter-spacing: var(--rs-letter-spacing-regular);
+  color: var(--rs-color-foreground-base-secondary);
+  margin: 0;
+}
+
+.methodBar {
+  padding: var(--rs-space-3) 0;
+  border-radius: var(--rs-radius-2);
+}
+
+.path {
+  font-family: var(--rs-font-mono);
+  font-size: var(--rs-font-size-mono-regular);
+  line-height: var(--rs-line-height-regular);
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.divider {
+  padding: 0;
+  margin: var(--rs-space-2) 0;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    flex-direction: column;
+    gap: var(--rs-space-9);
+  }
+
+  .left,
+  .right {
+    width: 100%;
+  }
+}

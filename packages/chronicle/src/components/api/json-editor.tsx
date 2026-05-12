@@ -17,9 +17,11 @@ interface JsonEditorProps {
 export function JsonEditor({ value, onChange, readOnly }: JsonEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
+  const onChangeRef = useRef(onChange)
   const { theme } = useTheme()
 
   const isDark = theme === 'dark'
+  onChangeRef.current = onChange
 
   useEffect(() => {
     if (!containerRef.current) return
@@ -30,13 +32,11 @@ export function JsonEditor({ value, onChange, readOnly }: JsonEditorProps) {
       EditorView.lineWrapping,
       ...(isDark ? [oneDark] : []),
       ...(readOnly ? [EditorState.readOnly.of(true)] : []),
-      ...(onChange
-        ? [EditorView.updateListener.of((update) => {
-            if (update.docChanged) {
-              onChange(update.state.doc.toString())
-            }
-          })]
-        : []),
+      EditorView.updateListener.of((update) => {
+        if (update.docChanged && onChangeRef.current) {
+          onChangeRef.current(update.state.doc.toString())
+        }
+      }),
     ]
 
     const state = EditorState.create({ doc: value, extensions })
@@ -44,7 +44,7 @@ export function JsonEditor({ value, onChange, readOnly }: JsonEditorProps) {
     viewRef.current = view
 
     return () => view.destroy()
-  }, [isDark, readOnly, onChange])
+  }, [isDark, readOnly])
 
   useEffect(() => {
     const view = viewRef.current
