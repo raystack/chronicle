@@ -120,8 +120,8 @@ export function ApiOverview({ method, path, operation, auth }: ApiOverviewProps)
 }
 
 function ResponseSection({ responses }: { responses: ResponseSectionData[] }) {
+  const [selectedStatus, setSelectedStatus] = useState(responses[0]?.status ?? '200')
   if (responses.length === 0) return null
-  const [selectedStatus, setSelectedStatus] = useState(responses[0].status)
   const active = responses.find((r) => r.status === selectedStatus) ?? responses[0]
 
   return (
