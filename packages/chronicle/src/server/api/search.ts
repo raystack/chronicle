@@ -1,7 +1,7 @@
 import { defineHandler, HTTPError } from 'nitro';
 import { useDatabase } from 'nitro/database';
 import type { OpenAPIV3 } from 'openapi-types';
-import { getSpecSlug, getFirstApiUrl } from '@/lib/api-routes';
+import { getSpecSlug } from '@/lib/api-routes';
 import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { extractFrontmatter, getPageSearchContent, getPagesForVersion } from '@/lib/source';
@@ -30,6 +30,7 @@ function versionKey(ctx: VersionContext): string {
   return ctx.dir ?? '__latest__';
 }
 
+// biome-ignore lint/suspicious/noEmptyBlockStatements: intentional no-op catch
 fs.unlink(LOCK_FILE).catch(() => {});
 
 export function isSearchReady(): boolean {
@@ -47,6 +48,7 @@ export async function ensureIndex(ctx: VersionContext) {
 }
 
 async function buildIndex(ctx: VersionContext, key: string) {
+  // biome-ignore lint/correctness/useHookAtTopLevel: useDatabase is a Nitro DI accessor, not a React hook
   const db = useDatabase();
 
   await db.exec('DROP TABLE IF EXISTS search_fts');
@@ -176,6 +178,7 @@ export default defineHandler(async event => {
   const ctx = resolveCtx(tag);
 
   await ensureIndex(ctx);
+  // biome-ignore lint/correctness/useHookAtTopLevel: useDatabase is a Nitro DI accessor, not a React hook
   const db = useDatabase();
   const key = versionKey(ctx);
 
