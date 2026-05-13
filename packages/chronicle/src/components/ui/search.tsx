@@ -16,6 +16,8 @@ interface SearchResult {
   url: string;
   type: string;
   content: string;
+  match?: 'title' | 'heading' | 'body';
+  snippet?: string;
 }
 
 interface SearchProps {
@@ -121,7 +123,7 @@ export function Search({ classNames }: SearchProps) {
 
       <Command.Dialog open={open} onOpenChange={setOpen}>
         <Command.DialogContent className={styles.dialogContent}>
-          <Command>
+          <Command items={displayResults}>
             <Command.Input
               placeholder='Search'
               leadingIcon={<MagnifyingGlassIcon width={16} height={16} />}
@@ -171,23 +173,17 @@ export function Search({ classNames }: SearchProps) {
                     <div className={styles.itemContent}>
                       {getResultIcon(result)}
                       <div className={styles.resultText}>
-                        {result.type === 'heading' ? (
-                          <>
-                            <Text className={styles.headingText}>
-                              <HighlightedText
-                                html={stripMethod(result.content)}
-                              />
-                            </Text>
-                            <Text className={styles.separator}>-</Text>
-                            <Text className={styles.pageText}>
-                              {getPageTitle(result.url)}
-                            </Text>
-                          </>
-                        ) : (
-                          <Text className={styles.pageText}>
-                            <HighlightedText
-                              html={stripMethod(result.content)}
-                            />
+                        <Text className={styles.pageText}>
+                          <HighlightQuery text={stripMethod(result.content)} query={search} />
+                        </Text>
+                        {result.snippet && result.match === 'heading' && (
+                          <Text className={styles.snippetText}>
+                            # <HighlightQuery text={result.snippet} query={search} />
+                          </Text>
+                        )}
+                        {result.snippet && result.match === 'body' && (
+                          <Text className={styles.snippetText}>
+                            <HighlightQuery text={result.snippet} query={search} />
                           </Text>
                         )}
                       </div>
@@ -233,6 +229,19 @@ function HighlightedText({
 }) {
   return (
     <span className={className} dangerouslySetInnerHTML={{ __html: html }} />
+  );
+}
+
+function HighlightQuery({ text, query }: { text: string; query: string }) {
+  if (!query) return <>{text}</>;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx < 0) return <>{text}</>;
+  return (
+    <>
+      {text.slice(0, idx)}
+      <span className={styles.matchHighlight}>{text.slice(idx, idx + query.length)}</span>
+      {text.slice(idx + query.length)}
+    </>
   );
 }
 

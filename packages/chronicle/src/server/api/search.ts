@@ -16,22 +16,43 @@ interface SearchDocument {
   type: 'page' | 'api';
 }
 
-const indexedVersions = new Set<string>();
+import fs from 'node:fs/promises';
+import { existsSync } from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+
+const LOCK_FILE = path.join(os.tmpdir(), 'chronicle-search-ready');
+
+export const indexedVersions = new Set<string>();
+let indexPromise: Promise<void> | null = null;
 
 function versionKey(ctx: VersionContext): string {
   return ctx.dir ?? '__latest__';
 }
 
-async function ensureIndex(ctx: VersionContext) {
+fs.unlink(LOCK_FILE).catch(() => {});
+
+export function isSearchReady(): boolean {
+  return existsSync(LOCK_FILE);
+}
+
+export async function ensureIndex(ctx: VersionContext) {
   const key = versionKey(ctx);
   if (indexedVersions.has(key)) return;
+  if (indexPromise) return indexPromise;
+  indexPromise = buildIndex(ctx, key);
+  await indexPromise;
+  indexPromise = null;
+  await fs.writeFile(LOCK_FILE, new Date().toISOString());
+}
 
+async function buildIndex(ctx: VersionContext, key: string) {
   const db = useDatabase();
 
-  await db.sql`DROP TABLE IF EXISTS search_docs`;
-  await db.sql`DROP TABLE IF EXISTS search_fts`;
+  await db.exec('DROP TABLE IF EXISTS search_fts');
+  await db.exec('DROP TABLE IF EXISTS search_docs');
 
-  await db.sql`CREATE TABLE IF NOT EXISTS search_docs (
+  await db.exec(`CREATE TABLE IF NOT EXISTS search_docs (
     id TEXT PRIMARY KEY,
     url TEXT NOT NULL,
     title TEXT NOT NULL,
@@ -39,15 +60,15 @@ async function ensureIndex(ctx: VersionContext) {
     body TEXT NOT NULL,
     type TEXT NOT NULL,
     version TEXT NOT NULL
-  )`;
+  )`);
 
-  await db.sql`CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(
+  await db.exec(`CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(
     title,
     headings,
     body,
     content=search_docs,
     content_rowid=rowid
-  )`;
+  )`);
 
   const docs = await buildDocs(ctx);
   for (const doc of docs) {
@@ -187,7 +208,7 @@ export default defineHandler(async event => {
       id: r.id,
       url: r.url,
       type: r.type,
-      title: r.title,
+      content: r.title,
       match,
       snippet,
     };
