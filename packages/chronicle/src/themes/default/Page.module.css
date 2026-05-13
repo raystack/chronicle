@@ -11,6 +11,10 @@
   max-width: 768px;
 }
 
+.title {
+  margin: 0 0 var(--rs-space-8) 0;
+}
+
 .content {
   line-height: 1.7;
 }
