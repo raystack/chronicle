@@ -17,6 +17,22 @@ function getOperationId(op: OpenAPIV3.OperationObject, method: string, path: str
 }
 
 
+export function getFirstApiUrl(specs: ApiSpec[]): string | null {
+  for (const spec of specs) {
+    const specSlug = getSpecSlug(spec)
+    const paths = spec.document.paths ?? {}
+    for (const [pathStr, pathItem] of Object.entries(paths)) {
+      if (!pathItem) continue
+      for (const method of ['get', 'post', 'put', 'delete', 'patch'] as const) {
+        const op = pathItem[method]
+        if (!op) continue
+        return `/apis/${specSlug}/${encodeURIComponent(getOperationId(op, method, pathStr))}`
+      }
+    }
+  }
+  return null
+}
+
 export function buildApiRoutes(specs: ApiSpec[]): { slug: string[] }[] {
   const routes: { slug: string[] }[] = []
 

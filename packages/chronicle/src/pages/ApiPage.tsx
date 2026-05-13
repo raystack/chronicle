@@ -1,9 +1,8 @@
-import { Flex, Headline, Text } from '@raystack/apsara';
 import type { OpenAPIV3 } from 'openapi-types';
+import { Navigate } from 'react-router';
 import { ApiOverview } from '@/components/api';
-import { findApiOperation } from '@/lib/api-routes';
+import { findApiOperation, getFirstApiUrl } from '@/lib/api-routes';
 import { Head } from '@/lib/head';
-import type { ApiSpec } from '@/lib/openapi';
 import { usePageContext } from '@/lib/page-context';
 
 interface ApiPageProps {
@@ -14,16 +13,9 @@ export function ApiPage({ slug }: ApiPageProps) {
   const { config, apiSpecs } = usePageContext();
 
   if (slug.length === 0) {
-    return (
-      <>
-        <Head
-          title='API Reference'
-          description={`API documentation for ${config.site.title}`}
-          config={config}
-        />
-        <ApiLanding specs={apiSpecs} />
-      </>
-    );
+    const firstUrl = getFirstApiUrl(apiSpecs);
+    if (firstUrl) return <Navigate to={firstUrl} replace />;
+    return null;
   }
 
   const match = findApiOperation(apiSpecs, slug);
@@ -48,26 +40,3 @@ export function ApiPage({ slug }: ApiPageProps) {
   );
 }
 
-function ApiLanding({ specs }: { specs: ApiSpec[] }) {
-  return (
-    <Flex
-      direction='column'
-      gap='large'
-      style={{ padding: 'var(--rs-space-7)' }}
-    >
-      <Headline size='medium' as='h1'>
-        API Reference
-      </Headline>
-      {specs.map(spec => (
-        <Flex key={spec.name} direction='column' gap='small'>
-          <Headline size='small' as='h2'>
-            {spec.name}
-          </Headline>
-          {spec.document.info.description && (
-            <Text size={3}>{spec.document.info.description}</Text>
-          )}
-        </Flex>
-      ))}
-    </Flex>
-  );
-}
