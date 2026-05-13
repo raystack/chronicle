@@ -118,41 +118,60 @@ export function invalidate() {
   cachedNavMap = null;
 }
 
-function getOrder(node: Node, orderMap: Map<string, number>): number | undefined {
-  if (node.type === 'page') return orderMap.get(node.url);
-  if (node.type === 'folder' && node.index) return orderMap.get(node.index.url);
+function getOrder(node: Node, pageOrderMap: Map<string, number>, folderOrderMap: Map<string, number>): number | undefined {
+  if (node.type === 'page') return pageOrderMap.get(node.url);
+  if (node.type === 'folder') {
+    if (node.index) {
+      const fromMeta = folderOrderMap.get(node.index.url);
+      if (fromMeta !== undefined) return fromMeta;
+      return pageOrderMap.get(node.index.url);
+    }
+  }
   return undefined;
 }
 
-function sortNodes(nodes: Node[], orderMap: Map<string, number>): Node[] {
+function sortNodes(nodes: Node[], pageOrderMap: Map<string, number>, folderOrderMap: Map<string, number>): Node[] {
   return [...nodes]
     .map(n =>
       n.type === 'folder'
-        ? ({ ...n, children: sortNodes(n.children, orderMap) } as Folder)
+        ? ({ ...n, children: sortNodes(n.children, pageOrderMap, folderOrderMap) } as Folder)
         : n
     )
     .sort(
       (a, b) =>
-        (getOrder(a, orderMap) ?? Number.MAX_SAFE_INTEGER) -
-        (getOrder(b, orderMap) ?? Number.MAX_SAFE_INTEGER)
+        (getOrder(a, pageOrderMap, folderOrderMap) ?? Number.MAX_SAFE_INTEGER) -
+        (getOrder(b, pageOrderMap, folderOrderMap) ?? Number.MAX_SAFE_INTEGER)
     );
 }
 
-function sortTreeByOrder(tree: Root, pages: { url: string; data: unknown }[]): Root {
-  const orderMap = new Map<string, number>();
+function buildFolderOrderMap(metaFiles: { path: string; data: Record<string, unknown> }[]): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const meta of metaFiles) {
+    const order = meta.data.order as number | undefined;
+    if (order === undefined) continue;
+    const folderUrl = '/' + meta.path.replace(/\/meta\.json$/, '');
+    map.set(folderUrl, order);
+  }
+  return map;
+}
+
+function sortTreeByOrder(tree: Root, pages: { url: string; data: unknown }[], metaFiles: { path: string; data: Record<string, unknown> }[]): Root {
+  const pageOrderMap = new Map<string, number>();
   for (const page of pages) {
     const d = page.data as Record<string, unknown>;
     const order = d.order as number | undefined;
-    if (order !== undefined) orderMap.set(page.url, order);
-    if (page.url === '/') orderMap.set('/', order ?? 0);
+    if (order !== undefined) pageOrderMap.set(page.url, order);
+    if (page.url === '/') pageOrderMap.set('/', order ?? 0);
   }
-  return { ...tree, children: sortNodes(tree.children, orderMap) };
+  const folderOrderMap = buildFolderOrderMap(metaFiles);
+  return { ...tree, children: sortNodes(tree.children, pageOrderMap, folderOrderMap) };
 }
 
 export async function getPageTree(): Promise<Root> {
   if (cachedTree) return cachedTree;
   const s = await getSource();
-  cachedTree = sortTreeByOrder(s.pageTree as Root, s.getPages());
+  const metaFiles = buildFiles().filter(f => f.type === 'meta') as { path: string; data: Record<string, unknown> }[];
+  cachedTree = sortTreeByOrder(s.pageTree as Root, s.getPages(), metaFiles);
   return cachedTree;
 }
 
