@@ -1,0 +1,187 @@
+---
+title: Deployment
+description: Deploy Chronicle to production
+order: 3
+---
+
+# Deployment
+
+Chronicle builds to a standalone Node.js server that can be deployed anywhere.
+
+## Build
+
+```bash
+bunx chronicle build
+```
+
+This outputs a production build to `.output/`.
+
+## Start
+
+```bash
+bunx chronicle start
+```
+
+Starts the production server on port 3000.
+
+## Environment Variables
+
+| Variable | Description | Default |
+|---|---|---|
+| `PORT` | Server port | `3000` |
+| `HOST` | Server host | `0.0.0.0` |
+
+## Docker
+
+```dockerfile
+FROM oven/bun:latest AS builder
+WORKDIR /app
+COPY . .
+RUN bun install
+RUN bunx chronicle build
+
+FROM node:20-slim
+WORKDIR /app
+COPY --from=builder /app/.output .output
+EXPOSE 3000
+CMD ["node", ".output/server/index.mjs"]
+```
+
+Build and run:
+
+```bash
+docker build -t my-docs .
+docker run -p 3000:3000 my-docs
+```
+
+## Docker Compose
+
+```yaml
+version: '3.8'
+services:
+  docs:
+    build: .
+    ports:
+      - '3000:3000'
+    restart: unless-stopped
+```
+
+## Kubernetes
+
+### Deployment
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: chronicle-docs
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: chronicle-docs
+  template:
+    metadata:
+      labels:
+        app: chronicle-docs
+    spec:
+      containers:
+        - name: docs
+          image: my-docs:latest
+          ports:
+            - containerPort: 3000
+          livenessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /api/ready
+              port: 3000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+```
+
+### Service
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: chronicle-docs
+spec:
+  selector:
+    app: chronicle-docs
+  ports:
+    - port: 80
+      targetPort: 3000
+  type: ClusterIP
+```
+
+### Ingress
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: chronicle-docs
+spec:
+  rules:
+    - host: docs.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: chronicle-docs
+                port:
+                  number: 80
+```
+
+### Health Endpoints
+
+| Endpoint | Purpose | Response |
+|---|---|---|
+| `GET /api/health` | Liveness probe | `200 {"status":"ok"}` always |
+| `GET /api/ready` | Readiness probe | `200 {"status":"ready"}` when search index built, `503` otherwise |
+
+The readiness probe returns `503` until the search FTS index is built. On pod restart or redeploy, the index rebuilds automatically on first request. Kubernetes will not route traffic to the pod until it reports ready.
+
+## Vercel
+
+Add `vercel.json`:
+
+```json
+{
+  "buildCommand": "bunx chronicle build",
+  "outputDirectory": ".output/public",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/api/server" }
+  ]
+}
+```
+
+## Netlify
+
+Add `netlify.toml`:
+
+```toml
+[build]
+  command = "bunx chronicle build"
+  publish = ".output/public"
+
+[[redirects]]
+  from = "/*"
+  to = "/.netlify/functions/server"
+  status = 200
+```
