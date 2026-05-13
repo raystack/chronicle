@@ -47,7 +47,7 @@ export function ApiOverview({ method, path, operation, auth }: ApiOverviewProps)
 
   return (
     <Flex className={styles.layout}>
-      <Flex direction='column' gap={10} className={styles.left}>
+      <Flex direction='column' gap={9} className={styles.left}>
         <Flex direction='column' gap={7}>
           <Flex direction='column' gap={4}>
             {operation.summary && (

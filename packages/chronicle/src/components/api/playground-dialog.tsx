@@ -486,7 +486,7 @@ function BodyFieldRow({ field, value, onChange }: {
     return (
       <div className={styles.arrayField}>
         <div className={styles.fieldRow}>
-          <span className={styles.fieldLabel}>{field.name}</span>
+          <span className={styles.fieldLabel}>{field.name} {field.required && <Badge variant="danger" size="micro">required</Badge>}</span>
           <IconButton size={2} onClick={() => onChange([...items, ''])} aria-label="Add item">
             <PlusIcon />
           </IconButton>
@@ -537,7 +537,7 @@ function BodyFieldRow({ field, value, onChange }: {
 
   return (
     <div className={styles.fieldRow}>
-      <span className={styles.fieldLabel}>{field.name}</span>
+      <span className={styles.fieldLabel}>{field.name} {field.required && <Badge variant="danger" size="micro">required</Badge>}</span>
       <div className={styles.fieldInput}>
         <InputField
           size="small"
