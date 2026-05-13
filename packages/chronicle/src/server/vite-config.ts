@@ -136,6 +136,15 @@ export async function createViteConfig(
       output: {
         dir: resolveOutputDir(projectRoot, preset),
       },
+      experimental: {
+        database: true,
+      },
+      database: {
+        default: {
+          connector: 'sqlite',
+          options: { name: 'chronicle-search' },
+        },
+      },
     },
   };
 }
