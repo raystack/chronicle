@@ -86,6 +86,7 @@ const contentEntrySchema = z.object({
   label: z.string().min(1),
   description: z.string().optional(),
   icon: z.string().optional(),
+  index_page: z.string().optional(),
 })
 
 // Variants map to Apsara Badge color prop.

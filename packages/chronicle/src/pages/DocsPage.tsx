@@ -16,6 +16,18 @@ function getFirstPageUrl(nodes: Node[]): string | null {
   return null;
 }
 
+function findFolderFirstPage(nodes: Node[], pathname: string): string | null {
+  for (const node of nodes) {
+    if (node.type === 'folder') {
+      const folderUrl = node.index?.url;
+      if (folderUrl === pathname) return getFirstPageUrl(node.children);
+      const found = findFolderFirstPage(node.children, pathname);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
 interface DocsPageProps {
   slug: string[];
 }
@@ -24,11 +36,18 @@ export function DocsPage({ slug }: DocsPageProps) {
   const { config, tree, page, isLoading, errorStatus } = usePageContext();
 
   if (errorStatus === 404) {
-    const isContentRoot = config.content?.some(c => slug.length === 1 && slug[0] === c.dir);
+    const pathname = `/${slug.join('/')}`;
+    const contentConfig = config.content?.find(c => c.dir === slug[0]);
+    const isContentRoot = slug.length === 1 && slug[0] === contentConfig?.dir;
+    if (contentConfig?.index_page) {
+      return <Navigate to={`/${contentConfig.dir}/${contentConfig.index_page}`} replace />;
+    }
     if (isContentRoot) {
       const firstUrl = getFirstPageUrl(tree.children);
       if (firstUrl) return <Navigate to={firstUrl} replace />;
     }
+    const folderFirstUrl = findFolderFirstPage(tree.children, pathname);
+    if (folderFirstUrl) return <Navigate to={folderFirstUrl} replace />;
     return <NotFound />;
   }
   if (errorStatus) return <NotFound />;
