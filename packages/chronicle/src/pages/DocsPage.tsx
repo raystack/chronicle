@@ -24,7 +24,11 @@ export function DocsPage({ slug }: DocsPageProps) {
   const { config, tree, page, isLoading, errorStatus } = usePageContext();
 
   if (errorStatus === 404) {
-    const isContentRoot = config.content?.some(c => slug.length === 1 && slug[0] === c.dir);
+    const contentEntry = config.content?.find(c => slug.length === 1 && slug[0] === c.dir);
+    const isContentRoot = !!contentEntry;
+    if (contentEntry?.index_page) {
+      return <Navigate to={`/${contentEntry.dir}/${contentEntry.index_page}`} replace />;
+    }
     if (isContentRoot) {
       const firstUrl = getFirstPageUrl(tree.children);
       if (firstUrl) return <Navigate to={firstUrl} replace />;
