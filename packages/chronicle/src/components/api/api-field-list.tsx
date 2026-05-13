@@ -44,9 +44,13 @@ function FieldItem({ field }: { field: SchemaField }) {
       <Flex align="center" gap={3}>
         <Badge variant="neutral" size="micro">{field.name}</Badge>
         <span className={styles.fieldType}>{field.type}</span>
+        {field.required && <Badge variant="danger" size="micro">required</Badge>}
       </Flex>
       {field.description && (
         <span className={styles.fieldDescription}>{field.description}</span>
+      )}
+      {field.example !== undefined && (
+        <span className={styles.fieldExample}>Example: <code>{JSON.stringify(field.example)}</code></span>
       )}
       {hasChildren && <ExpandableChildren field={field} />}
     </Flex>
