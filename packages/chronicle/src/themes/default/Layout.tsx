@@ -21,7 +21,7 @@ import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir } from '@/lib/navigation';
 import { usePageContext } from '@/lib/page-context';
-import type { Node } from 'fumadocs-core/page-tree';
+import type { Node, Root } from 'fumadocs-core/page-tree';
 import type { ThemeLayoutProps } from '@/types';
 import styles from './Layout.module.css';
 import { OpenInAI } from './OpenInAI';
@@ -71,7 +71,12 @@ export function Layout({
   const isApiRoute = pathname === '/apis' || pathname.startsWith('/apis/');
   const isApiBase = (basePath: string) =>
     pathname === basePath || pathname.startsWith(`${basePath}/`);
-  const { prev, next } = page ?? { prev: null, next: null };
+  const docNav = page ?? { prev: null, next: null };
+  const apiNav = useMemo(() => {
+    if (!isApiRoute) return { prev: null, next: null };
+    return getApiPrevNext(pathname, tree);
+  }, [isApiRoute, pathname, tree]);
+  const { prev, next } = isApiRoute ? apiNav : docNav;
 
   const contentEntries = getLandingEntries(config, version.dir);
   const activeContentDir = getActiveContentDir(pathname, config);
@@ -200,7 +205,7 @@ export function Layout({
                       <ArrowRightIcon width={14} height={14} />
                     </IconButton>
                   </Flex>
-                  {!isApiRoute && <Breadcrumbs slug={slug} tree={tree} />}
+                  <Breadcrumbs slug={slug} tree={tree} />
                 </Flex>
                 <Flex align='center' gap='small'>
                   {isApiRoute && <TestRequestButton />}
@@ -389,4 +394,22 @@ function ViewDocsButton() {
       View documentation
     </Button>
   );
+}
+
+function getApiPrevNext(pathname: string, tree: Root): { prev: { url: string; title: string } | null; next: { url: string; title: string } | null } {
+  const pages: { url: string; title: string }[] = [];
+  function collect(node: Node) {
+    if (node.type === 'page') {
+      pages.push({ url: node.url, title: node.name?.toString() ?? '' });
+    } else if (node.type === 'folder') {
+      for (const child of node.children) collect(child);
+    }
+  }
+  for (const child of tree.children) collect(child);
+
+  const idx = pages.findIndex(p => p.url === pathname);
+  return {
+    prev: idx > 0 ? pages[idx - 1] : null,
+    next: idx >= 0 && idx < pages.length - 1 ? pages[idx + 1] : null,
+  };
 }
