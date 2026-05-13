@@ -7,6 +7,7 @@ import { safePath } from '@/server/utils/safe-path';
 export default defineHandler(async event => {
   const pathname = event.path || event.req.url?.split('?')[0] || '';
   if (!pathname.endsWith('.md')) return;
+  if (pathname.startsWith('/apis/')) return;
 
   const stripped = pathname.replace(/\.md$/, '');
   const parts = stripped === '/index' || stripped === '/'
