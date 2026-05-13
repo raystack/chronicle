@@ -108,6 +108,34 @@ async function buildDocs(ctx: VersionContext): Promise<SearchDocument[]> {
   return docs;
 }
 
+function findMatch(
+  query: string,
+  title: string,
+  headings: string,
+  body: string,
+): { match: 'title' | 'heading' | 'body'; snippet: string } {
+  if (title.toLowerCase().includes(query)) {
+    return { match: 'title', snippet: title };
+  }
+
+  const headingList = headings.split('\n').filter(Boolean);
+  for (const h of headingList) {
+    if (h.toLowerCase().includes(query)) {
+      return { match: 'heading', snippet: h };
+    }
+  }
+
+  const idx = body.toLowerCase().indexOf(query);
+  if (idx >= 0) {
+    const start = Math.max(0, idx - 40);
+    const end = Math.min(body.length, idx + query.length + 80);
+    const snippet = (start > 0 ? '...' : '') + body.slice(start, end).trim() + (end < body.length ? '...' : '');
+    return { match: 'body', snippet };
+  }
+
+  return { match: 'title', snippet: title };
+}
+
 function resolveCtx(tag: string | null): VersionContext {
   if (!tag) return LATEST_CONTEXT;
   const config = loadConfig();
@@ -143,7 +171,7 @@ export default defineHandler(async event => {
   }
 
   const searchTerm = query.split(/\s+/).map(t => `"${t}"*`).join(' ');
-  const result = await db.sql`SELECT s.id, s.url, s.title, s.type,
+  const result = await db.sql`SELECT s.id, s.url, s.title, s.headings, s.body, s.type,
       bm25(search_fts, 10.0, 5.0, 1.0) AS score
     FROM search_fts f
     JOIN search_docs s ON s.rowid = f.rowid
@@ -152,10 +180,16 @@ export default defineHandler(async event => {
     ORDER BY score
     LIMIT 20`;
 
-  return Response.json((result.rows ?? []).map(r => ({
-    id: r.id,
-    url: r.url,
-    type: r.type,
-    content: r.title,
-  })));
+  const queryLower = query.toLowerCase();
+  return Response.json((result.rows ?? []).map(r => {
+    const { match, snippet } = findMatch(queryLower, r.title as string, r.headings as string, r.body as string);
+    return {
+      id: r.id,
+      url: r.url,
+      type: r.type,
+      title: r.title,
+      match,
+      snippet,
+    };
+  }));
 });

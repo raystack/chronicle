@@ -265,7 +265,7 @@ export async function getPageSearchContent(page: { data: unknown }): Promise<{ h
         if (cleaned) lines.push(cleaned);
       }
     }
-    return { headings: headings.join(' '), body: lines.join(' ') };
+    return { headings: headings.join('\n'), body: lines.join(' ') };
   } catch {
     return { headings: '', body: '' };
   }
