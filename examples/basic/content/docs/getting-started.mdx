@@ -1,7 +1,7 @@
 ---
 title: Getting Started
 description: Quick start guide for Chronicle
-order: 2
+order: 1
 ---
 
 # Getting Started
@@ -10,30 +10,123 @@ Get up and running with Chronicle in minutes.
 
 ## Prerequisites
 
-- Node.js 18+
-- pnpm or npm
+- [Bun](https://bun.sh) (recommended) or Node.js 20+
 
 ## Installation
 
 ```bash
-npm install @raystack/chronicle
+bun add @raystack/chronicle
 ```
 
-## Create Your First Doc
+## Project Structure
 
-Create a `chronicle.yaml` file:
+Create the following structure:
+
+```
+my-docs/
+├── chronicle.yaml       # Configuration
+├── content/
+│   └── docs/
+│       ├── meta.json    # Sidebar title & order
+│       ├── index.mdx    # Landing page
+│       └── guide.mdx    # A doc page
+└── petstore.json        # OpenAPI spec (optional)
+```
+
+## Configuration
+
+Create `chronicle.yaml`:
 
 ```yaml
-title: My Documentation
-contentDir: .
+site:
+  title: My Documentation
+  description: Documentation powered by Chronicle
+
+content:
+  - dir: docs
+    label: Docs
+
 theme:
   name: default
+
+search:
+  enabled: true
+```
+
+## Write Your First Page
+
+Create `content/docs/index.mdx`:
+
+```mdx
+---
+title: Welcome
+description: Welcome to my documentation
+order: 1
+---
+
+# Welcome
+
+This is my documentation site powered by Chronicle.
+```
+
+## Add Folder Metadata
+
+Create `content/docs/meta.json` to control sidebar title and ordering:
+
+```json
+{
+  "title": "Documentation",
+  "order": 1
+}
 ```
 
 ## Run Development Server
 
 ```bash
-npx chronicle dev
+bunx chronicle dev
 ```
 
-Visit http://localhost:3000 to see your docs.
+Visit [http://localhost:3000](http://localhost:3000) to see your docs.
+
+## Add API Reference
+
+Add an OpenAPI spec to your project and update `chronicle.yaml`:
+
+```yaml
+api:
+  - name: Petstore
+    spec: ./petstore.json
+    basePath: /apis
+    server:
+      url: https://petstore.swagger.io/v2
+    auth:
+      type: apiKey
+      header: api_key
+      placeholder: "Enter your API key"
+```
+
+Restart the dev server — API reference pages are auto-generated at `/apis`.
+
+## Build for Production
+
+```bash
+bunx chronicle build
+bunx chronicle start
+```
+
+## Docker
+
+```dockerfile
+FROM oven/bun:latest
+WORKDIR /app
+COPY . .
+RUN bun install
+RUN bunx chronicle build
+CMD ["bunx", "chronicle", "start"]
+```
+
+## Next Steps
+
+- [Features](/docs/features) — full feature overview
+- [Configuration](/docs/guides/configuration) — chronicle.yaml reference
+- [Installation](/docs/guides/installation) — detailed setup guide

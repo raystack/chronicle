@@ -1,0 +1,188 @@
+---
+title: Features
+description: Overview of Chronicle features
+order: 2
+---
+
+# Features
+
+Chronicle is a self-hosted documentation platform built with Vite + Nitro. Here's what it offers.
+
+## Content
+
+- **MDX support** — write documentation in MDX with React component embedding
+- **Frontmatter** — `title`, `description`, `order`, `icon`, `lastModified`
+- **Directory metadata** — `meta.json` for folder titles, ordering, and sidebar config
+- **Remark plugins** — directives, admonitions, image resolution, link resolution, mermaid, reading time
+- **Syntax highlighting** — powered by Shiki via Apsara CodeBlock
+- **Versioning** — multiple documentation versions with URL-based routing
+
+## API Reference
+
+- **OpenAPI / Swagger support** — auto-generates API reference pages from specs (OpenAPI 3.x and Swagger 2.0)
+- **Read-only overview** — field names, types, required badges, examples, response schemas
+- **Playground dialog** — test requests with editable fields, JSON body editor, auth switching
+- **Auth types** — API Key, Bearer Token, Basic Auth (auto-detected from spec `securitySchemes`)
+- **Code snippets** — cURL, Python, Go, TypeScript with language switcher
+- **Response panel** — status code tabs with JSON syntax highlighting
+- **`.md` export** — every API endpoint has a `.md` URL with full documentation
+
+## Navigation
+
+- **Sidebar** — auto-generated from file structure, configurable via `meta.json`
+- **Breadcrumbs** — shows path hierarchy for docs and API pages
+- **Prev/Next** — arrow navigation between pages and API endpoints
+- **Search** — keyword search across all documentation
+- **Folder sorting** — via `order` in `meta.json` or frontmatter
+
+## Themes
+
+- **Default theme** — sidebar + content layout with sub-navigation bar
+- **Paper theme** — book-style single-column with reading progress
+- **Dark/light mode** — system preference or manual toggle
+
+## SEO & AI
+
+- **Meta tags** — auto-generated title, description, Open Graph, Twitter Card
+- **Sitemap** — auto-generated `sitemap.xml`
+- **robots.txt** — auto-generated
+- **llms.txt** — AI-discoverable documentation index
+- **`.md` URLs** — every page (docs and API) has a markdown URL for AI tools
+- **Open in AI** — copy as markdown, open in ChatGPT or Claude
+
+## Developer Experience
+
+- **CLI** — `chronicle dev`, `chronicle build`, `chronicle start`
+- **Hot reload** — instant updates during development
+- **Monorepo support** — works as a package in monorepos
+- **Docker support** — containerized deployment
+- **Zod-validated config** — `chronicle.yaml` with schema validation
+
+---
+
+## Configuration
+
+### chronicle.yaml
+
+```yaml
+site:
+  title: My Documentation
+  description: Documentation powered by Chronicle
+
+content:
+  - dir: docs
+    label: Docs
+    index_page: getting-started  # redirect /docs to this page
+
+theme:
+  name: default
+
+search:
+  enabled: true
+
+api:
+  - name: Petstore
+    spec: ./petstore.json
+    basePath: /apis
+    server:
+      url: https://petstore.swagger.io/v2
+    auth:
+      type: apiKey
+      header: api_key
+      placeholder: "Enter your API key"
+```
+
+### meta.json
+
+Place `meta.json` in any folder to control sidebar behavior:
+
+```json
+{
+  "title": "Getting Started",
+  "order": 1,
+  "pages": ["introduction", "installation", "quick-start"],
+  "defaultOpen": true
+}
+```
+
+| Field | Description |
+|---|---|
+| `title` | Folder display name in sidebar and breadcrumbs |
+| `order` | Sort order (lower = first) |
+| `pages` | Explicit page ordering within folder |
+| `root` | Mark as content root boundary |
+| `defaultOpen` | Sidebar folder open by default |
+| `icon` | Folder icon |
+
+### Page Frontmatter
+
+```mdx
+---
+title: My Page
+description: Page description for SEO
+order: 1
+icon: book
+lastModified: 2024-01-15
+---
+```
+
+---
+
+## Markdown URLs
+
+Every page has a `.md` URL that returns raw markdown:
+
+- **Docs pages**: `/{slug}.md` — returns the raw MDX content
+- **API endpoints**: `/apis/{spec}/{operationId}.md` — generates markdown with:
+  - Authorization headers
+  - Path, query, body parameters with types and descriptions
+  - Request body example JSON
+  - Response schemas per status code
+  - cURL example
+
+### Usage
+
+```bash
+# Get markdown for a docs page
+curl https://docs.example.com/docs/getting-started.md
+
+# Get markdown for an API endpoint
+curl https://docs.example.com/apis/petstore/findPetsByStatus.md
+```
+
+The "Open in AI" dropdown in the navbar uses these URLs to:
+- **Copy as MD** — copies markdown to clipboard
+- **View MD** — opens markdown in new tab
+- **Open in ChatGPT** — sends the `.md` URL to ChatGPT
+- **Open in Claude** — sends the `.md` URL to Claude
+
+---
+
+## API Reference Page
+
+### Overview Page
+
+The API overview shows:
+- Endpoint title and description
+- HTTP method badge + path with copy button
+- **Authorisations** — auth header fields
+- **Path/Query Parameters** — field name, type, required badge, description, example
+- **Request Body** — fields with nested object support
+- **Response** — status code selector, field definitions, "Show child attributes" for nested objects
+
+Right column:
+- Code snippet with language selector (cURL, Python, Go, TypeScript)
+- Response JSON panel with status code tabs
+
+### Playground Dialog
+
+Click **Test request** in the navbar to open the playground:
+- **Auth switching** — select between API Key, Bearer Token, Basic Auth
+- **Editable fields** — fill path, query, header, body parameters
+- **JSON editor** — toggle between form fields and raw JSON editor
+- **Send** — sends request via proxy, shows response with status + time
+- **Response headers** — switch between Body and Headers view
+
+### View Documentation
+
+If the OpenAPI spec has `externalDocs`, a **View documentation** button appears in the navbar linking to external docs.
