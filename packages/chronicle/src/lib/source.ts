@@ -1,3 +1,5 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { loader } from 'fumadocs-core/source';
 import { flattenTree } from 'fumadocs-core/page-tree';
 import type { Root, Node, Folder } from 'fumadocs-core/page-tree';
@@ -238,6 +240,35 @@ export function getRelativePath(page: { data: unknown }): string {
 
 export function getOriginalPath(page: { data: unknown }): string {
   return ((page.data as Record<string, unknown>)._originalPath as string) ?? '';
+}
+
+export async function getPageSearchContent(page: { data: unknown }): Promise<{ headings: string; body: string }> {
+  const originalPath = getOriginalPath(page);
+  if (!originalPath) return { headings: '', body: '' };
+  try {
+    const contentDir = typeof __CHRONICLE_CONTENT_DIR__ !== 'undefined' ? __CHRONICLE_CONTENT_DIR__ : process.cwd();
+    const filePath = path.resolve(contentDir, originalPath);
+    const raw = await fs.readFile(filePath, 'utf-8');
+    const withoutFrontmatter = raw.replace(/^---[\s\S]*?---/m, '');
+    const headings: string[] = [];
+    const lines: string[] = [];
+    for (const line of withoutFrontmatter.split('\n')) {
+      const headingMatch = line.match(/^#{1,6}\s+(.+)/);
+      if (headingMatch) {
+        headings.push(headingMatch[1]);
+      } else if (!line.startsWith('import ') && !line.startsWith('export ') && !line.startsWith('```')) {
+        const cleaned = line
+          .replace(/<[^>]+>/g, '')
+          .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+          .replace(/[*_~`]+/g, '')
+          .trim();
+        if (cleaned) lines.push(cleaned);
+      }
+    }
+    return { headings: headings.join(' '), body: lines.join(' ') };
+  } catch {
+    return { headings: '', body: '' };
+  }
 }
 
 interface ReadingTime {
