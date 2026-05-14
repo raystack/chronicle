@@ -128,6 +128,72 @@ lastModified: 2024-01-15
 
 ---
 
+## Sorting Pages and Folders
+
+Control the order of pages and folders in the sidebar.
+
+### Sorting Pages
+
+Add `order` to page frontmatter. Lower numbers appear first. Pages without `order` appear at the end.
+
+```mdx
+---
+title: Introduction
+order: 1
+---
+```
+
+```mdx
+---
+title: Installation
+order: 2
+---
+```
+
+Alternatively, use the `pages` array in `meta.json` to explicitly order pages within a folder:
+
+```json
+{
+  "pages": ["introduction", "installation", "configuration"]
+}
+```
+
+### Sorting Folders
+
+Add `order` to the folder's `meta.json`. This works even for folders without an index page.
+
+```
+docs/
+├── getting-started/
+│   └── meta.json        ← {"title": "Getting Started", "order": 1}
+├── guides/
+│   └── meta.json        ← {"title": "Guides", "order": 2}
+└── api/
+    └── meta.json        ← {"title": "API Reference", "order": 3}
+```
+
+`getting-started/meta.json`:
+```json
+{
+  "title": "Getting Started",
+  "order": 1
+}
+```
+
+`guides/meta.json`:
+```json
+{
+  "title": "Guides",
+  "order": 2
+}
+```
+
+Folders without `order` appear after all ordered folders.
+
+If a folder has an index page (`readme.mdx` or `index.mdx`), you can also set `order` in the index page's frontmatter as a fallback. The `meta.json` `order` takes priority.
+
+---
+
 ## Markdown URLs
 
 Every page has a `.md` URL that returns raw markdown:
