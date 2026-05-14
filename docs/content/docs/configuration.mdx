@@ -99,6 +99,13 @@ api:
       header: Authorization
       placeholder: "Bearer token"
 
+redirects:
+  - from: /old-page
+    to: /docs/new-page
+  - from: /legacy/api
+    to: /apis
+    permanent: true
+
 analytics:
   enabled: true
   googleAnalytics:
@@ -318,6 +325,27 @@ api:
 | `auth.type` | `string` | Authentication type (e.g., `apiKey`, `bearer`) |
 | `auth.header` | `string` | Header name for auth token |
 | `auth.placeholder` | `string` | Placeholder text in auth input |
+
+### redirects
+
+URL redirects for migrating old routes to new ones. Checked before all other routes.
+
+```yaml
+redirects:
+  - from: /old-page
+    to: /docs/getting-started
+  - from: /legacy/api-docs
+    to: /apis
+    permanent: true
+```
+
+| Field | Type | Description | Default |
+|-------|------|-------------|---------|
+| `from` | `string` | Old URL path to redirect from | — |
+| `to` | `string` | New URL path to redirect to | — |
+| `permanent` | `boolean` | `true` for 308 (permanent), `false` for 307 (temporary) | `false` |
+
+Use `permanent: true` when the old URL should never be used again — search engines and browsers will cache the redirect.
 
 ### analytics
 
