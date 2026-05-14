@@ -116,7 +116,7 @@ export function PageProvider({
   const fetchPageData = useCallback(async (slug: string[]): Promise<PageData> => {
     const apiPath = slug.length === 0
       ? '/api/page'
-      : `/api/page?slug=${slug.join(',')}`;
+      : `/api/page?slug=${slug.map(s => encodeURIComponent(s)).join(',')}`;
     const res = await fetch(apiPath);
     if (!res.ok) throw new Error(String(res.status));
     return res.json();
