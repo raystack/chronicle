@@ -3,6 +3,13 @@ import path from 'node:path';
 import { loader } from 'fumadocs-core/source';
 import { flattenTree } from 'fumadocs-core/page-tree';
 import type { Root, Node, Folder } from 'fumadocs-core/page-tree';
+
+import { parentPath, getFolderPath } from './folder-utils';
+
+const NodeType = {
+  Page: 'page',
+  Folder: 'folder',
+} as const;
 import type { MDXContent } from 'mdx/types';
 import type { TableOfContents } from 'fumadocs-core/toc';
 import {
@@ -120,28 +127,10 @@ export function invalidate() {
   cachedNavMap = null;
 }
 
-function getFolderPath(node: Folder): string | null {
-  const firstPage = findFirstPage(node);
-  if (!firstPage) return null;
-  const parts = firstPage.url.split('/').filter(Boolean);
-  parts.pop();
-  return '/' + parts.join('/');
-}
-
-function findFirstPage(node: Folder): { url: string } | null {
-  for (const child of node.children) {
-    if (child.type === 'page') return child;
-    if (child.type === 'folder') {
-      const found = findFirstPage(child);
-      if (found) return found;
-    }
-  }
-  return node.index ?? null;
-}
 
 function getOrder(node: Node, pageOrderMap: Map<string, number>, folderOrderMap: Map<string, number>): number | undefined {
-  if (node.type === 'page') return pageOrderMap.get(node.url);
-  if (node.type === 'folder') {
+  if (node.type === NodeType.Page) return pageOrderMap.get(node.url);
+  if (node.type === NodeType.Folder) {
     const folderPath = getFolderPath(node);
     if (folderPath) return folderOrderMap.get(folderPath);
   }
