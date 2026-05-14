@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router';
+import { StatusCodes } from 'http-status-codes';
 import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
 import { resolveDocsRedirect } from '@/lib/tree-utils';
@@ -12,7 +13,7 @@ interface DocsPageProps {
 export function DocsPage({ slug }: DocsPageProps) {
   const { config, tree, page, isLoading, errorStatus } = usePageContext();
 
-  if (errorStatus === 404) {
+  if (errorStatus === StatusCodes.NOT_FOUND) {
     const contentConfig = config.content?.find(c => c.dir === slug[0]);
     const redirectUrl = resolveDocsRedirect(slug, tree, contentConfig);
     if (redirectUrl) return <Navigate to={redirectUrl} replace />;
