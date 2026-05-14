@@ -10,6 +10,9 @@ import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import { getPageTree, getPage, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
+import { getFirstApiUrl } from '@/lib/api-routes';
+import { StatusCodes } from 'http-status-codes';
+import { resolveDocsRedirect } from '@/lib/tree-utils';
 import { useNitroApp } from 'nitro/app';
 import { App } from './App';
 
@@ -45,6 +48,22 @@ export default {
       getPageTree(),
       route.type === RouteType.DocsPage ? getPage(route.slug) : Promise.resolve(null),
     ]);
+    // SSR redirects for index pages
+    if (route.type === RouteType.ApiIndex) {
+      const firstUrl = getFirstApiUrl(apiSpecs);
+      if (firstUrl) {
+        return new Response(null, { status: StatusCodes.TEMPORARY_REDIRECT, headers: { Location: firstUrl } });
+      }
+    }
+
+    if (route.type === RouteType.DocsPage && !page) {
+      const contentConfig = config.content?.find((c: { dir: string }) => c.dir === route.slug[0]);
+      const redirectUrl = resolveDocsRedirect(route.slug, tree, contentConfig);
+      if (redirectUrl) {
+        return new Response(null, { status: StatusCodes.TEMPORARY_REDIRECT, headers: { Location: redirectUrl } });
+      }
+    }
+
     const nav = page ? await getPageNav(pageSlug) : { prev: null, next: null };
 
     const relativePath = page ? getRelativePath(page) : null;

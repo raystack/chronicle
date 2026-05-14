@@ -59,6 +59,7 @@
     "glob": "^11.0.0",
     "gray-matter": "^4.0.3",
     "h3": "^2.0.1-rc.16",
+    "http-status-codes": "^2.3.0",
     "lodash-es": "^4.17.23",
     "mermaid": "^11.13.0",
     "nitro": "3.0.260311-beta",
