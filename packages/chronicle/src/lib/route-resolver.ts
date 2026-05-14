@@ -1,3 +1,4 @@
+import { StatusCodes } from 'http-status-codes'
 import type { ChronicleConfig } from '@/types'
 import { getLatestContentRoots, getVersionContentRoots } from './config'
 import { type VersionContext, resolveVersionFromUrl } from './version-source'
@@ -13,7 +14,7 @@ export const RouteType = {
 export type RouteType = (typeof RouteType)[keyof typeof RouteType]
 
 export type Route =
-  | { type: typeof RouteType.Redirect; to: string; status: 301 | 302 }
+  | { type: typeof RouteType.Redirect; to: string; status: StatusCodes.TEMPORARY_REDIRECT | StatusCodes.PERMANENT_REDIRECT }
   | { type: typeof RouteType.DocsIndex; version: VersionContext }
   | { type: typeof RouteType.DocsPage; version: VersionContext; slug: string[] }
   | { type: typeof RouteType.ApiIndex; version: VersionContext }
@@ -50,7 +51,7 @@ export function resolveRoute(
     return {
       type: RouteType.Redirect,
       to: redirect.to,
-      status: redirect.permanent ? 301 : 302,
+      status: redirect.permanent ? StatusCodes.PERMANENT_REDIRECT : StatusCodes.TEMPORARY_REDIRECT,
     }
   }
 
@@ -74,7 +75,7 @@ export function resolveRoute(
     return {
       type: RouteType.Redirect,
       to: `${version.urlPrefix}/${dirs[0]}`,
-      status: 302,
+      status: StatusCodes.TEMPORARY_REDIRECT,
     }
   }
 

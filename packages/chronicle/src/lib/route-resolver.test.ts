@@ -60,7 +60,7 @@ describe('resolveRoute — root', () => {
     expect(resolveRoute('/', singleContent())).toEqual({
       type: RouteType.Redirect,
       to: '/docs',
-      status: 302,
+      status: 307,
     })
   })
 
@@ -75,7 +75,7 @@ describe('resolveRoute — root', () => {
     expect(resolveRoute('/', multiContentNoLanding())).toEqual({
       type: RouteType.Redirect,
       to: '/docs',
-      status: 302,
+      status: 307,
     })
   })
 
@@ -83,7 +83,7 @@ describe('resolveRoute — root', () => {
     expect(resolveRoute('/v2', versioned())).toEqual({
       type: RouteType.Redirect,
       to: '/v2/docs',
-      status: 302,
+      status: 307,
     })
   })
 
