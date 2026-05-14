@@ -13,7 +13,7 @@ export const RouteType = {
 export type RouteType = (typeof RouteType)[keyof typeof RouteType]
 
 export type Route =
-  | { type: typeof RouteType.Redirect; to: string; status: 302 }
+  | { type: typeof RouteType.Redirect; to: string; status: 301 | 302 }
   | { type: typeof RouteType.DocsIndex; version: VersionContext }
   | { type: typeof RouteType.DocsPage; version: VersionContext; slug: string[] }
   | { type: typeof RouteType.ApiIndex; version: VersionContext }
@@ -45,6 +45,15 @@ export function resolveRoute(
   pathname: string,
   config: ChronicleConfig,
 ): Route {
+  const redirect = config.redirects?.find((r) => r.from === pathname)
+  if (redirect) {
+    return {
+      type: RouteType.Redirect,
+      to: redirect.to,
+      status: redirect.permanent ? 301 : 302,
+    }
+  }
+
   const parts = pathname.split('/').filter(Boolean)
   const version = resolveVersionFromUrl(pathname, config)
   const remainder =
