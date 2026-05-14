@@ -1,0 +1,57 @@
+import type { Node } from 'fumadocs-core/page-tree';
+
+export const NodeType = {
+  Page: 'page',
+  Folder: 'folder',
+  Separator: 'separator',
+} as const;
+
+export function getFirstPageUrl(nodes: Node[]): string | null {
+  for (const node of nodes) {
+    if (node.type === NodeType.Page) return node.url;
+    if (node.type === NodeType.Folder) {
+      const url = getFirstPageUrl(node.children);
+      if (url) return url;
+    }
+  }
+  return null;
+}
+
+function getFolderPath(node: Node): string | null {
+  if (node.type !== NodeType.Folder) return null;
+  if (node.index) return node.index.url;
+  const firstPage = getFirstPageUrl(node.children);
+  if (!firstPage) return null;
+  const parts = firstPage.split('/').filter(Boolean);
+  parts.pop();
+  return '/' + parts.join('/');
+}
+
+export function findFolderFirstPage(nodes: Node[], pathname: string): string | null {
+  for (const node of nodes) {
+    if (node.type === NodeType.Folder) {
+      const folderPath = getFolderPath(node);
+      if (folderPath === pathname) return getFirstPageUrl(node.children);
+      const found = findFolderFirstPage(node.children, pathname);
+      if (found) return found;
+    }
+  }
+  return null;
+}
+
+export function resolveDocsRedirect(
+  slug: string[],
+  tree: { children: Node[] },
+  contentConfig?: { dir: string; index_page?: string },
+): string | null {
+  const isContentRoot = slug.length === 1 && slug[0] === contentConfig?.dir;
+
+  if (isContentRoot) {
+    if (contentConfig?.index_page) {
+      return `/${contentConfig.dir}/${contentConfig.index_page}`;
+    }
+    return getFirstPageUrl(tree.children);
+  }
+
+  return findFolderFirstPage(tree.children, `/${slug.join('/')}`);
+}

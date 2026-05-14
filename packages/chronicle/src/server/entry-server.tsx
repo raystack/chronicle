@@ -10,6 +10,9 @@ import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import { getPageTree, getPage, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
+import { getFirstApiUrl } from '@/lib/api-routes';
+import { StatusCodes } from 'http-status-codes';
+import { resolveDocsRedirect } from '@/lib/tree-utils';
 import { useNitroApp } from 'nitro/app';
 import { App } from './App';
 
@@ -45,6 +48,30 @@ export default {
       getPageTree(),
       route.type === RouteType.DocsPage ? getPage(route.slug) : Promise.resolve(null),
     ]);
+    // SSR redirects for index pages
+    if (route.type === RouteType.ApiIndex) {
+      const firstUrl = getFirstApiUrl(apiSpecs);
+      if (firstUrl) {
+        return new Response(null, { status: StatusCodes.TEMPORARY_REDIRECT, headers: { Location: firstUrl } });
+      }
+    }
+
+    if (route.type === RouteType.DocsPage && !page) {
+      const versionPrefix = route.version.urlPrefix;
+      const slugWithoutVersion = versionPrefix && route.slug[0] === route.version.dir
+        ? route.slug.slice(1)
+        : route.slug;
+      const contentEntries = route.version.dir
+        ? config.versions?.find(v => v.dir === route.version.dir)?.content ?? config.content
+        : config.content;
+      const contentConfig = contentEntries?.find((c: { dir: string }) => c.dir === slugWithoutVersion[0]);
+      const redirectUrl = resolveDocsRedirect(slugWithoutVersion, tree, contentConfig);
+      if (redirectUrl) {
+        const fullUrl = versionPrefix ? `${versionPrefix}${redirectUrl}` : redirectUrl;
+        return new Response(null, { status: StatusCodes.TEMPORARY_REDIRECT, headers: { Location: fullUrl } });
+      }
+    }
+
     const nav = page ? await getPageNav(pageSlug) : { prev: null, next: null };
 
     const relativePath = page ? getRelativePath(page) : null;
@@ -120,7 +147,7 @@ export default {
 
     const renderDuration = performance.now() - renderStart;
 
-    const status = route.type === RouteType.DocsPage && !page ? 404 : 200;
+    const status = route.type === RouteType.DocsPage && !page ? StatusCodes.NOT_FOUND : StatusCodes.OK;
 
     // biome-ignore lint/correctness/useHookAtTopLevel: useNitroApp is a Nitro DI accessor, not a React hook
     useNitroApp().hooks.callHook('chronicle:ssr-rendered', pathname, status, renderDuration);
