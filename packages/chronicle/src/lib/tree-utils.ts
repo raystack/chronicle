@@ -46,11 +46,10 @@ export function resolveDocsRedirect(
 ): string | null {
   const isContentRoot = slug.length === 1 && slug[0] === contentConfig?.dir;
 
-  if (contentConfig?.index_page) {
-    return `/${contentConfig.dir}/${contentConfig.index_page}`;
-  }
-
   if (isContentRoot) {
+    if (contentConfig?.index_page) {
+      return `/${contentConfig.dir}/${contentConfig.index_page}`;
+    }
     return getFirstPageUrl(tree.children);
   }
 
