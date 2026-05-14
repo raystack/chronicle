@@ -1,4 +1,4 @@
-import uniqBy from 'lodash/uniqBy.js'
+import { uniqBy } from 'lodash-es'
 import { z } from 'zod'
 
 const logoSchema = z.object({

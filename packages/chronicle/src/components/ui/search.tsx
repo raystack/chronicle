@@ -4,7 +4,7 @@ import {
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { Command, IconButton, Text } from '@raystack/apsara';
-import debounce from 'lodash/debounce';
+import { debounce } from 'lodash-es';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
