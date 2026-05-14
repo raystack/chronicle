@@ -147,7 +147,7 @@ export default {
 
     const renderDuration = performance.now() - renderStart;
 
-    const status = route.type === RouteType.DocsPage && !page ? 404 : 200;
+    const status = route.type === RouteType.DocsPage && !page ? StatusCodes.NOT_FOUND : StatusCodes.OK;
 
     // biome-ignore lint/correctness/useHookAtTopLevel: useNitroApp is a Nitro DI accessor, not a React hook
     useNitroApp().hooks.callHook('chronicle:ssr-rendered', pathname, status, renderDuration);
