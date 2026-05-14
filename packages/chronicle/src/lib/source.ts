@@ -143,8 +143,7 @@ function getOrder(node: Node, pageOrderMap: Map<string, number>, folderOrderMap:
   if (node.type === 'page') return pageOrderMap.get(node.url);
   if (node.type === 'folder') {
     const folderPath = getFolderPath(node);
-    if (folderPath && folderOrderMap.has(folderPath)) return folderOrderMap.get(folderPath);
-    if (node.index) return pageOrderMap.get(node.index.url);
+    if (folderPath) return folderOrderMap.get(folderPath);
   }
   return undefined;
 }
