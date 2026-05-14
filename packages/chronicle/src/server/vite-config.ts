@@ -12,6 +12,19 @@ import remarkResolveLinks from '../lib/remark-resolve-links';
 import remarkReadingTime from 'remark-reading-time';
 import remarkUnusedDirectives from '../lib/remark-unused-directives';
 
+function getDatabaseConnector(preset?: string): { connector: string; options?: Record<string, unknown> } {
+  switch (preset) {
+    case 'bun':
+      return { connector: 'bun-sqlite', options: { name: 'chronicle-search' } };
+    case 'cloudflare':
+    case 'cloudflare-pages':
+    case 'cloudflare-module':
+      return { connector: 'cloudflare-d1', options: { bindingName: 'CHRONICLE_DB' } };
+    default:
+      return { connector: 'sqlite', options: { name: 'chronicle-search' } };
+  }
+}
+
 function resolveOutputDir(projectRoot: string, preset?: string): string {
   if (preset === 'vercel' || preset === 'vercel-static') return path.resolve(projectRoot, '.vercel/output');
   return path.resolve(projectRoot, '.output');
@@ -140,10 +153,7 @@ export async function createViteConfig(
         database: true,
       },
       database: {
-        default: {
-          connector: 'sqlite',
-          options: { name: 'chronicle-search' },
-        },
+        default: getDatabaseConnector(preset),
       },
     },
   };
