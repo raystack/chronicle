@@ -131,6 +131,12 @@ const RESERVED_ROUTE_SEGMENTS = [
   'sitemap.xml',
 ] as const
 
+const redirectSchema = z.object({
+  from: z.string(),
+  to: z.string(),
+  permanent: z.boolean().optional(),
+})
+
 export const chronicleConfigSchema = z
   .object({
     site: siteSchema,
@@ -144,6 +150,7 @@ export const chronicleConfigSchema = z
     navigation: navigationSchema.optional(),
     search: searchSchema.optional(),
     api: z.array(apiSchema).optional(),
+    redirects: z.array(redirectSchema).optional(),
     analytics: analyticsSchema.optional(),
     telemetry: telemetrySchema.optional(),
   })
@@ -225,6 +232,7 @@ export type SocialLink = z.infer<typeof socialLinkSchema>
 export type SearchConfig = z.infer<typeof searchSchema>
 export type ApiConfig = z.infer<typeof apiSchema>
 export type ApiServerConfig = z.infer<typeof apiServerSchema>
+export type RedirectConfig = z.infer<typeof redirectSchema>
 export type ApiAuthConfig = z.infer<typeof apiAuthSchema>
 export type AnalyticsConfig = z.infer<typeof analyticsSchema>
 export type GoogleAnalyticsConfig = z.infer<typeof googleAnalyticsSchema>

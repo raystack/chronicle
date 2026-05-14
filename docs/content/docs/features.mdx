@@ -1,0 +1,145 @@
+---
+title: Features
+description: Overview of Chronicle features
+order: 2
+---
+
+# Features
+
+Chronicle is a self-hosted documentation platform built with Vite + Nitro.
+
+## Content
+
+- **MDX support** — write documentation in MDX with React component embedding
+- **Frontmatter** — `title`, `description`, `order`, `icon`, `lastModified`
+- **Directory metadata** — `meta.json` for folder titles, ordering, and sidebar config
+- **Remark plugins** — directives, admonitions, image resolution, link resolution, mermaid, reading time
+- **Syntax highlighting** — powered by Shiki via Apsara CodeBlock
+- **Versioning** — multiple documentation versions with URL-based routing
+
+## API Reference
+
+- **OpenAPI / Swagger support** — auto-generates API reference pages from specs (OpenAPI 3.x and Swagger 2.0)
+- **Read-only overview** — field names, types, required badges, examples, response schemas
+- **Playground dialog** — test requests with editable fields, JSON body editor, auth switching
+- **Auth types** — API Key, Bearer Token, Basic Auth (auto-detected from spec `securitySchemes`)
+- **Code snippets** — cURL, Python, Go, TypeScript with language switcher
+- **Response panel** — status code tabs with JSON syntax highlighting
+- **`.md` export** — every API endpoint has a `.md` URL with full documentation
+
+## Navigation
+
+- **Sidebar** — auto-generated from file structure, configurable via `meta.json`
+- **Breadcrumbs** — shows path hierarchy for docs and API pages
+- **Prev/Next** — arrow navigation between pages and API endpoints
+- **Search** — full-text search with SQLite FTS5 across titles, headings, and body content
+- **Folder sorting** — via `order` in `meta.json`
+- **Page sorting** — via `order` in frontmatter or `pages` array in `meta.json`
+
+## Themes
+
+- **Default theme** — sidebar + content layout with sub-navigation bar
+- **Paper theme** — book-style single-column with reading progress
+- **Dark/light mode** — system preference or manual toggle
+
+## SEO & AI
+
+- **Meta tags** — auto-generated title, description, Open Graph, Twitter Card
+- **Sitemap** — auto-generated `sitemap.xml`
+- **robots.txt** — auto-generated
+- **llms.txt** — AI-discoverable documentation index
+- **`.md` URLs** — every page (docs and API) has a markdown URL for AI tools
+- **Open in AI** — copy as markdown, open in ChatGPT or Claude
+
+## Developer Experience
+
+- **CLI** — `chronicle dev`, `chronicle build`, `chronicle start`
+- **Hot reload** — instant updates during development
+- **Monorepo support** — works as a package in monorepos
+- **Docker support** — containerized deployment
+- **Zod-validated config** — `chronicle.yaml` with schema validation
+
+## Redirects
+
+Configure URL redirects in `chronicle.yaml` for migrating old routes.
+
+```yaml
+redirects:
+  - from: /old-page
+    to: /docs/getting-started
+  - from: /legacy/api
+    to: /apis
+    permanent: true
+```
+
+- `permanent: false` (default) — 307 temporary redirect
+- `permanent: true` — 308 permanent redirect
+
+See [Configuration](/docs/configuration#redirects) for full reference.
+
+## Sorting
+
+### Pages
+
+Add `order` to frontmatter. Lower numbers appear first.
+
+```mdx
+---
+title: Introduction
+order: 1
+---
+```
+
+Or use `pages` array in `meta.json`:
+
+```json
+{
+  "pages": ["introduction", "installation", "configuration"]
+}
+```
+
+### Folders
+
+Add `order` to the folder's `meta.json`:
+
+```json
+{
+  "title": "Getting Started",
+  "order": 1
+}
+```
+
+Folder sorting is controlled only by `meta.json` `order`. The index page frontmatter `order` does not affect folder position.
+
+## Markdown URLs
+
+Every page has a `.md` URL that returns raw markdown:
+
+- **Docs pages** — `/{slug}.md` returns the raw MDX content
+- **API endpoints** — `/apis/{spec}/{operationId}.md` generates markdown with parameters, examples, responses, and cURL
+
+```bash
+curl https://docs.example.com/docs/getting-started.md
+curl https://docs.example.com/apis/petstore/findPetsByStatus.md
+```
+
+The "Open in AI" dropdown uses these URLs to copy markdown, open in ChatGPT, or open in Claude.
+
+## API Reference Page
+
+### Overview
+
+The read-only overview shows endpoint title, method badge, path, authorisation fields, query/path parameters, request body, and response schemas. The right column has code snippets and response JSON.
+
+### Playground
+
+Click **Test request** in the navbar to open the playground dialog with editable fields, JSON body editor, auth type switching, and live response with status and timing.
+
+### View Documentation
+
+If the OpenAPI spec has `externalDocs`, a **View documentation** button appears in the navbar.
+
+## Health & Readiness
+
+- `GET /api/health` — liveness probe, always returns `200`
+- `GET /api/ready` — readiness probe, returns `200` when search index is built, `503` otherwise
