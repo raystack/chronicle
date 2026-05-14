@@ -117,7 +117,7 @@ export function Layout({
           >
             <Sidebar.Header className={styles.sidebarHeader}>
               <SidebarLogo config={config} />
-              <Flex gap='small' align='center'>
+              <Flex gap={3} align='center'>
                 {config.search?.enabled && <Search />}
                 <ClientThemeSwitcher size={16} />
               </Flex>
@@ -186,8 +186,8 @@ export function Layout({
           <div className={styles.cardWrapper}>
             <div className={styles.card}>
               <nav className={styles.subNav}>
-                <Flex align='center' gap='small' className={styles.subNavLeft}>
-                  <Flex align='center' gap='extra-small'>
+                <Flex align='center' gap={3} className={styles.subNavLeft}>
+                  <Flex align='center' gap={2}>
                     <IconButton
                       size={2}
                       disabled={!prev}
@@ -207,7 +207,7 @@ export function Layout({
                   </Flex>
                   <Breadcrumbs slug={slug} tree={tree} />
                 </Flex>
-                <Flex align='center' gap='small'>
+                <Flex align='center' gap={3}>
                   {isApiRoute && <TestRequestButton />}
                   {isApiRoute && <ViewDocsButton />}
                   <OpenInAI />
@@ -305,7 +305,7 @@ function ApiSidebarNode({ item, pathname }: { item: Node; pathname: string }) {
 
   if (item.type === 'folder') {
     return (
-      <Flex direction='column' gap='small' className={styles.apiGroup}>
+      <Flex direction='column' gap={3} className={styles.apiGroup}>
         <span className={styles.apiGroupLabel}>{item.name?.toString()}</span>
         <Flex direction='column'>
           {item.children.map((child, i) => (
@@ -329,7 +329,7 @@ function ApiSidebarNode({ item, pathname }: { item: Node; pathname: string }) {
   return (
     <Flex
       align='center'
-      gap='small'
+      gap={3}
       className={`${styles.apiItem} ${isActive ? styles.apiItemActive : ''}`}
       render={<RouterLink to={href} />}
     >
