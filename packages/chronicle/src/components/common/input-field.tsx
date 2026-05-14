@@ -1,3 +1,3 @@
 'use client'
 
-export { InputField } from '@raystack/apsara'
+export { Input } from '@raystack/apsara'

@@ -1,7 +1,7 @@
 export { Sidebar } from './sidebar'
 export { Table } from './table'
 export { Dialog } from './dialog'
-export { InputField } from './input-field'
+export { Input } from './input-field'
 export { Tabs } from './tabs'
 export { Breadcrumb } from './breadcrumb'
 export { Button } from './button'
