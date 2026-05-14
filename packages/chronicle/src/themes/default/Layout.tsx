@@ -22,6 +22,7 @@ import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir } from '@/lib/navigation';
 import { usePageContext } from '@/lib/page-context';
 import type { Node, Root } from 'fumadocs-core/page-tree';
+import { NodeType } from '@/lib/tree-utils';
 import type { ThemeLayoutProps } from '@/types';
 import styles from './Layout.module.css';
 import { OpenInAI } from './OpenInAI';
@@ -224,6 +225,15 @@ export function Layout({
   );
 }
 
+function hasActiveDescendant(node: Node, pathname: string): boolean {
+  if (node.type === NodeType.Page) return pathname === node.url;
+  if (node.type === NodeType.Folder) {
+    if (node.index && pathname === node.index.url) return true;
+    return node.children.some(child => hasActiveDescendant(child, pathname));
+  }
+  return false;
+}
+
 function SidebarNode({
   item,
   pathname,
@@ -240,6 +250,7 @@ function SidebarNode({
   if (item.type === 'folder') {
     if (depth > 1) return null;
     const icon = typeof item.icon === 'string' ? iconMap[item.icon] : item.icon;
+    const hasActiveChild = hasActiveDescendant(item, pathname);
     return (
       <Sidebar.Group
         className={styles.navGroup}
@@ -247,6 +258,7 @@ function SidebarNode({
         label={item.name?.toString() ?? ''}
         leadingIcon={icon ?? undefined}
         collapsible={depth === 1}
+        defaultOpen={hasActiveChild}
         classNames={{
           items: styles.groupItems,
           header: styles.navGroupHeader,
