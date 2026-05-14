@@ -57,10 +57,18 @@ export default {
     }
 
     if (route.type === RouteType.DocsPage && !page) {
-      const contentConfig = config.content?.find((c: { dir: string }) => c.dir === route.slug[0]);
-      const redirectUrl = resolveDocsRedirect(route.slug, tree, contentConfig);
+      const versionPrefix = route.version.urlPrefix;
+      const slugWithoutVersion = versionPrefix && route.slug[0] === route.version.dir
+        ? route.slug.slice(1)
+        : route.slug;
+      const contentEntries = route.version.dir
+        ? config.versions?.find(v => v.dir === route.version.dir)?.content ?? config.content
+        : config.content;
+      const contentConfig = contentEntries?.find((c: { dir: string }) => c.dir === slugWithoutVersion[0]);
+      const redirectUrl = resolveDocsRedirect(slugWithoutVersion, tree, contentConfig);
       if (redirectUrl) {
-        return new Response(null, { status: StatusCodes.TEMPORARY_REDIRECT, headers: { Location: redirectUrl } });
+        const fullUrl = versionPrefix ? `${versionPrefix}${redirectUrl}` : redirectUrl;
+        return new Response(null, { status: StatusCodes.TEMPORARY_REDIRECT, headers: { Location: fullUrl } });
       }
     }
 
