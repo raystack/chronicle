@@ -1,9 +1,15 @@
 import type { Node } from 'fumadocs-core/page-tree';
 
+export const NodeType = {
+  Page: 'page',
+  Folder: 'folder',
+  Separator: 'separator',
+} as const;
+
 export function getFirstPageUrl(nodes: Node[]): string | null {
   for (const node of nodes) {
-    if (node.type === 'page') return node.url;
-    if (node.type === 'folder') {
+    if (node.type === NodeType.Page) return node.url;
+    if (node.type === NodeType.Folder) {
       const url = getFirstPageUrl(node.children);
       if (url) return url;
     }
@@ -12,7 +18,7 @@ export function getFirstPageUrl(nodes: Node[]): string | null {
 }
 
 function getFolderPath(node: Node): string | null {
-  if (node.type !== 'folder') return null;
+  if (node.type !== NodeType.Folder) return null;
   if (node.index) return node.index.url;
   const firstPage = getFirstPageUrl(node.children);
   if (!firstPage) return null;
@@ -23,7 +29,7 @@ function getFolderPath(node: Node): string | null {
 
 export function findFolderFirstPage(nodes: Node[], pathname: string): string | null {
   for (const node of nodes) {
-    if (node.type === 'folder') {
+    if (node.type === NodeType.Folder) {
       const folderPath = getFolderPath(node);
       if (folderPath === pathname) return getFirstPageUrl(node.children);
       const found = findFolderFirstPage(node.children, pathname);
