@@ -120,14 +120,30 @@ export function invalidate() {
   cachedNavMap = null;
 }
 
+function getFolderPath(node: Folder): string | null {
+  const firstPage = findFirstPage(node);
+  if (!firstPage) return null;
+  const parts = firstPage.url.split('/').filter(Boolean);
+  parts.pop();
+  return '/' + parts.join('/');
+}
+
+function findFirstPage(node: Folder): { url: string } | null {
+  for (const child of node.children) {
+    if (child.type === 'page') return child;
+    if (child.type === 'folder') {
+      const found = findFirstPage(child);
+      if (found) return found;
+    }
+  }
+  return node.index ?? null;
+}
+
 function getOrder(node: Node, pageOrderMap: Map<string, number>, folderOrderMap: Map<string, number>): number | undefined {
   if (node.type === 'page') return pageOrderMap.get(node.url);
   if (node.type === 'folder') {
-    if (node.index) {
-      const fromMeta = folderOrderMap.get(node.index.url);
-      if (fromMeta !== undefined) return fromMeta;
-      return pageOrderMap.get(node.index.url);
-    }
+    const folderPath = getFolderPath(node);
+    if (folderPath) return folderOrderMap.get(folderPath);
   }
   return undefined;
 }
