@@ -29,10 +29,15 @@ export const devCommand = new Command('dev')
     await server.listen();
     server.printUrls();
 
+    let shuttingDown = false;
     const shutdown = async () => {
-      await server.close();
+      if (shuttingDown) return;
+      shuttingDown = true;
+      try {
+        await server.close();
+      } catch { /* ignore close errors */ }
       process.exit(0);
     };
-    process.on('SIGINT', shutdown);
-    process.on('SIGTERM', shutdown);
+    process.once('SIGINT', shutdown);
+    process.once('SIGTERM', shutdown);
   });

@@ -27,7 +27,15 @@ export const startCommand = new Command('start')
 
     server.printUrls();
 
-    const shutdown = () => process.exit(0);
-    process.on('SIGINT', shutdown);
-    process.on('SIGTERM', shutdown);
+    let shuttingDown = false;
+    const shutdown = async () => {
+      if (shuttingDown) return;
+      shuttingDown = true;
+      try {
+        await server.close();
+      } catch { /* ignore close errors */ }
+      process.exit(0);
+    };
+    process.once('SIGINT', shutdown);
+    process.once('SIGTERM', shutdown);
   });
