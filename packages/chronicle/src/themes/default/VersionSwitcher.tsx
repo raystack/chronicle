@@ -28,7 +28,7 @@ export function VersionSwitcher() {
           />
         }
       >
-        <Flex gap='small' align='center'>
+        <Flex gap={3} align='center'>
           {active?.label ?? 'Version'}
           {active?.badge ? (
             <Badge variant={active.badge.variant} size='micro'>
@@ -43,7 +43,7 @@ export function VersionSwitcher() {
             key={v.dir ?? '_latest'}
             onClick={() => navigate(getVersionHomeHref(config, v.dir))}
           >
-            <Flex gap='small' align='center'>
+            <Flex gap={3} align='center'>
               {v.label}
               {v.badge ? (
                 <Badge variant={v.badge.variant} size='micro'>

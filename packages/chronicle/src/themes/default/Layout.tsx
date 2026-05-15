@@ -22,6 +22,7 @@ import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir } from '@/lib/navigation';
 import { usePageContext } from '@/lib/page-context';
 import type { Node, Root } from 'fumadocs-core/page-tree';
+import { NodeType } from '@/lib/tree-utils';
 import type { ThemeLayoutProps } from '@/types';
 import styles from './Layout.module.css';
 import { OpenInAI } from './OpenInAI';
@@ -117,7 +118,7 @@ export function Layout({
           >
             <Sidebar.Header className={styles.sidebarHeader}>
               <SidebarLogo config={config} />
-              <Flex gap='small' align='center'>
+              <Flex gap={3} align='center'>
                 {config.search?.enabled && <Search />}
                 <ClientThemeSwitcher size={16} />
               </Flex>
@@ -186,8 +187,8 @@ export function Layout({
           <div className={styles.cardWrapper}>
             <div className={styles.card}>
               <nav className={styles.subNav}>
-                <Flex align='center' gap='small' className={styles.subNavLeft}>
-                  <Flex align='center' gap='extra-small'>
+                <Flex align='center' gap={3} className={styles.subNavLeft}>
+                  <Flex align='center' gap={2}>
                     <IconButton
                       size={2}
                       disabled={!prev}
@@ -207,7 +208,7 @@ export function Layout({
                   </Flex>
                   <Breadcrumbs slug={slug} tree={tree} />
                 </Flex>
-                <Flex align='center' gap='small'>
+                <Flex align='center' gap={3}>
                   {isApiRoute && <TestRequestButton />}
                   {isApiRoute && <ViewDocsButton />}
                   <OpenInAI />
@@ -222,6 +223,15 @@ export function Layout({
       </Flex>
     </Flex>
   );
+}
+
+function hasActiveDescendant(node: Node, pathname: string): boolean {
+  if (node.type === NodeType.Page) return pathname === node.url;
+  if (node.type === NodeType.Folder) {
+    if (node.index && pathname === node.index.url) return true;
+    return node.children.some(child => hasActiveDescendant(child, pathname));
+  }
+  return false;
 }
 
 function SidebarNode({
@@ -240,6 +250,7 @@ function SidebarNode({
   if (item.type === 'folder') {
     if (depth > 1) return null;
     const icon = typeof item.icon === 'string' ? iconMap[item.icon] : item.icon;
+    const hasActiveChild = hasActiveDescendant(item, pathname);
     return (
       <Sidebar.Group
         className={styles.navGroup}
@@ -247,6 +258,7 @@ function SidebarNode({
         label={item.name?.toString() ?? ''}
         leadingIcon={icon ?? undefined}
         collapsible={depth === 1}
+        defaultOpen={hasActiveChild}
         classNames={{
           items: styles.groupItems,
           header: styles.navGroupHeader,
@@ -305,7 +317,7 @@ function ApiSidebarNode({ item, pathname }: { item: Node; pathname: string }) {
 
   if (item.type === 'folder') {
     return (
-      <Flex direction='column' gap='small' className={styles.apiGroup}>
+      <Flex direction='column' gap={3} className={styles.apiGroup}>
         <span className={styles.apiGroupLabel}>{item.name?.toString()}</span>
         <Flex direction='column'>
           {item.children.map((child, i) => (
@@ -329,7 +341,7 @@ function ApiSidebarNode({ item, pathname }: { item: Node; pathname: string }) {
   return (
     <Flex
       align='center'
-      gap='small'
+      gap={3}
       className={`${styles.apiItem} ${isActive ? styles.apiItemActive : ''}`}
       render={<RouterLink to={href} />}
     >

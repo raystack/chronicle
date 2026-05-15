@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import type { OpenAPIV3 } from 'openapi-types'
-import { Dialog, Button, Badge, IconButton, InputField, CopyButton, Select, Menu } from '@raystack/apsara'
+import { Dialog, Button, Badge, IconButton, Input, CopyButton, Select, Menu } from '@raystack/apsara'
 import { Cross2Icon, ChevronDownIcon, ChevronUpIcon, PlayIcon, PlusIcon } from '@radix-ui/react-icons'
 import { CounterClockwiseClockIcon, CodeIcon } from '@radix-ui/react-icons'
 import { MethodBadge } from '@/components/api/method-badge'
@@ -263,13 +263,13 @@ export function PlaygroundDialog({
                           <div className={styles.fieldRow}>
                             <span className={styles.fieldLabel}>Username</span>
                             <div className={styles.fieldInput}>
-                              <InputField size="small" placeholder="Enter username" value={basicUser} onChange={(e) => setBasicUser(e.target.value)} />
+                              <Input size="small" placeholder="Enter username" value={basicUser} onValueChange={setBasicUser} />
                             </div>
                           </div>
                           <div className={styles.fieldRow}>
                             <span className={styles.fieldLabel}>Password</span>
                             <div className={styles.fieldInput}>
-                              <InputField size="small" type="password" placeholder="Enter password" value={basicPass} onChange={(e) => setBasicPass(e.target.value)} />
+                              <Input size="small" type="password" placeholder="Enter password" value={basicPass} onValueChange={setBasicPass} />
                             </div>
                           </div>
                         </>
@@ -277,7 +277,7 @@ export function PlaygroundDialog({
                         <div className={styles.fieldRow}>
                           <span className={styles.fieldLabel}>{currentScheme.headerName}</span>
                           <div className={styles.fieldInput}>
-                            <InputField size="small" placeholder={currentScheme.placeholder} value={authToken} onChange={(e) => setAuthToken(e.target.value)} />
+                            <Input size="small" placeholder={currentScheme.placeholder} value={authToken} onValueChange={setAuthToken} />
                           </div>
                         </div>
                       ) : null}
@@ -285,7 +285,7 @@ export function PlaygroundDialog({
                         <div key={f.name} className={styles.fieldRow}>
                           <span className={styles.fieldLabel}>{f.name}</span>
                           <div className={styles.fieldInput}>
-                            <InputField size="small" placeholder="Enter value" value={headerValues[f.name] ?? ''} onChange={(e) => setHeaderValues({ ...headerValues, [f.name]: e.target.value })} />
+                            <Input size="small" placeholder="Enter value" value={headerValues[f.name] ?? ''} onValueChange={(v) => setHeaderValues({ ...headerValues, [f.name]: v })} />
                           </div>
                         </div>
                       ))}
@@ -307,11 +307,11 @@ export function PlaygroundDialog({
                     <div key={f.name} className={styles.fieldRow}>
                       <span className={styles.fieldLabel}>{f.name}</span>
                       <div className={styles.fieldInput}>
-                        <InputField
+                        <Input
                           size="small"
                           placeholder="Enter value"
                           value={pathValues[f.name] ?? ''}
-                          onChange={(e) => setPathValues({ ...pathValues, [f.name]: e.target.value })}
+                          onValueChange={(v) => setPathValues({ ...pathValues, [f.name]: v })}
                         />
                       </div>
                     </div>
@@ -332,11 +332,11 @@ export function PlaygroundDialog({
                     <div key={f.name} className={styles.fieldRow}>
                       <span className={styles.fieldLabel}>{f.name}</span>
                       <div className={styles.fieldInput}>
-                        <InputField
+                        <Input
                           size="small"
                           placeholder={f.description ?? 'Enter value'}
                           value={queryValues[f.name] ?? ''}
-                          onChange={(e) => setQueryValues({ ...queryValues, [f.name]: e.target.value })}
+                          onValueChange={(v) => setQueryValues({ ...queryValues, [f.name]: v })}
                         />
                       </div>
                     </div>
@@ -494,13 +494,13 @@ function BodyFieldRow({ field, value, onChange }: {
         {items.map((item, i) => (
           <div key={i} className={styles.arrayItemRow}>
             <div className={styles.fieldInput}>
-              <InputField
+              <Input
                 size="small"
                 placeholder={`${field.name}[${i}]`}
                 value={String(item)}
-                onChange={(e) => {
+                onValueChange={(v) => {
                   const updated = [...items]
-                  updated[i] = e.target.value
+                  updated[i] = v
                   onChange(updated)
                 }}
               />
@@ -539,11 +539,11 @@ function BodyFieldRow({ field, value, onChange }: {
     <div className={styles.fieldRow}>
       <span className={styles.fieldLabel}>{field.name} {field.required && <Badge variant="danger" size="micro">required</Badge>}</span>
       <div className={styles.fieldInput}>
-        <InputField
+        <Input
           size="small"
           placeholder={field.description ?? 'Enter value'}
           value={String(value ?? '')}
-          onChange={(e) => onChange(e.target.value)}
+          onValueChange={(v) => onChange(v)}
         />
       </div>
     </div>

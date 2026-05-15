@@ -19,7 +19,7 @@ export function ContentDirButtons() {
   const { visible, overflow } = splitContentButtons(entries, MAX_VISIBLE);
 
   return (
-    <Flex gap='small' align='center'>
+    <Flex gap={3} align='center'>
       {visible.map(entry => (
         <RouterLink
           key={entry.href}

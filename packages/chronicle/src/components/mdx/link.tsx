@@ -1,12 +1,10 @@
 import { Link as ApsaraLink } from '@raystack/apsara';
-import type { ComponentProps, MouseEvent } from 'react';
-import { useNavigate } from 'react-router';
+import type { ComponentProps } from 'react';
+import { Link as RouterLink } from 'react-router';
 
 type LinkProps = ComponentProps<'a'>;
 
-export function Link({ href, children, onClick: onClickProp, ...props }: LinkProps) {
-  const navigate = useNavigate();
-
+export function Link({ href, children, ...props }: LinkProps) {
   if (!href) {
     return <span {...props}>{children}</span>;
   }
@@ -16,12 +14,7 @@ export function Link({ href, children, onClick: onClickProp, ...props }: LinkPro
 
   if (isExternal) {
     return (
-      <ApsaraLink
-        href={href}
-        target='_blank'
-        rel='noopener noreferrer'
-        {...props}
-      >
+      <ApsaraLink href={href} external {...props}>
         {children}
       </ApsaraLink>
     );
@@ -35,27 +28,8 @@ export function Link({ href, children, onClick: onClickProp, ...props }: LinkPro
     );
   }
 
-  const onClick = (e: MouseEvent<HTMLAnchorElement>) => {
-    if (
-      e.defaultPrevented ||
-      e.button !== 0 ||
-      e.metaKey ||
-      e.ctrlKey ||
-      e.shiftKey ||
-      e.altKey
-    ) {
-      return;
-    }
-
-    onClickProp?.(e);
-    if (e.defaultPrevented) return;
-
-    e.preventDefault();
-    navigate(href);
-  };
-
   return (
-    <ApsaraLink href={href} {...props} onClick={onClick}>
+    <ApsaraLink render={<RouterLink to={href} />} {...props}>
       {children}
     </ApsaraLink>
   );
