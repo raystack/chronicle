@@ -26,4 +26,16 @@ export const startCommand = new Command('start')
     });
 
     server.printUrls();
+
+    let shuttingDown = false;
+    const shutdown = async () => {
+      if (shuttingDown) return;
+      shuttingDown = true;
+      try {
+        await server.close();
+      } catch { /* ignore close errors */ }
+      process.exit(0);
+    };
+    process.once('SIGINT', shutdown);
+    process.once('SIGTERM', shutdown);
   });
