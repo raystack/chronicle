@@ -1,15 +1,12 @@
 import type { OpenAPIV3 } from 'openapi-types'
-import { defineHandler, HTTPError } from 'nitro'
+import { HTTPError } from 'nitro'
 import { loadConfig } from '@/lib/config'
 import { loadApiSpecs } from '@/lib/openapi'
 import { findApiOperation } from '@/lib/api-routes'
 import { flattenSchema, generateExampleJson, type SchemaField } from '@/lib/schema'
 import { generateCurl } from '@/lib/snippet-generators'
 
-export default defineHandler(async event => {
-  const pathname = event.path || event.req.url?.split('?')[0] || ''
-  if (!pathname.endsWith('.md')) return
-
+export async function handleApiMarkdown(pathname: string) {
   const stripped = pathname.replace(/\.md$/, '').replace(/^\/apis\//, '')
   const slug = stripped.split('/').filter(Boolean)
   if (slug.length < 2) {
@@ -26,7 +23,7 @@ export default defineHandler(async event => {
 
   const md = generateApiMarkdown(match.method, match.path, match.operation, match.spec.server.url, match.spec.auth)
   return new Response(md, { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } })
-})
+}
 
 function generateApiMarkdown(
   method: string,

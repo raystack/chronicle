@@ -3,11 +3,15 @@ import matter from 'gray-matter';
 import { defineHandler, HTTPError } from 'nitro';
 import { getPage, getOriginalPath } from '@/lib/source';
 import { safePath } from '@/server/utils/safe-path';
+import { handleApiMarkdown } from '@/server/utils/api-markdown';
 
 export default defineHandler(async event => {
   const pathname = event.path || event.req.url?.split('?')[0] || '';
   if (!pathname.endsWith('.md')) return;
-  if (pathname.startsWith('/apis/')) return;
+
+  if (pathname.startsWith('/apis/')) {
+    return handleApiMarkdown(pathname);
+  }
 
   const stripped = pathname.replace(/\.md$/, '');
   const parts = stripped === '/index' || stripped === '/'
