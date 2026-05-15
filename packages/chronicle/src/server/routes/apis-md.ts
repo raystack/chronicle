@@ -8,7 +8,7 @@ import { generateCurl } from '@/lib/snippet-generators'
 
 export default defineHandler(async event => {
   const pathname = event.path || event.req.url?.split('?')[0] || ''
-  if (!pathname.endsWith('.md')) return
+  if (!pathname.startsWith('/apis/') || !pathname.endsWith('.md')) return
 
   const stripped = pathname.replace(/\.md$/, '').replace(/^\/apis\//, '')
   const slug = stripped.split('/').filter(Boolean)
