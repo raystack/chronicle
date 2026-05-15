@@ -6,21 +6,11 @@ export function PageSkeleton() {
   return (
     <Flex className={styles.page}>
       <article className={styles.article}>
-        <Skeleton width="40%" height="32px" />
-        <Skeleton.Provider duration={2}>
-          <Skeleton width="100%" height="16px" />
-          <Skeleton width="95%" height="16px" />
-          <Skeleton width="80%" height="16px" />
-          <Skeleton width="100%" height="16px" />
-          <Skeleton width="60%" height="16px" />
-        </Skeleton.Provider>
-        <Skeleton width="30%" height="24px" />
-        <Skeleton.Provider duration={2}>
-          <Skeleton width="100%" height="16px" />
-          <Skeleton width="90%" height="16px" />
-          <Skeleton width="100%" height="16px" />
-          <Skeleton width="70%" height="16px" />
-        </Skeleton.Provider>
+        <Skeleton width="40%" height="var(--rs-line-height-t2)" containerClassName={styles.headerLoader} />
+        <Skeleton width="60%" height="var(--rs-line-height-regular)" containerClassName={styles.headerLoader} />
+        {[...new Array(20)].map((_, i) => (
+          <Skeleton key={i} width="100%" height="var(--rs-line-height-regular)" containerClassName={styles.loader} />
+        ))}
       </article>
     </Flex>
   );

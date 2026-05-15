@@ -125,3 +125,12 @@
 .content details > :not(summary) {
   padding: var(--rs-space-4) var(--rs-space-5);
 }
+
+.loader {
+  flex: 1;
+  margin-bottom: var(--rs-space-3);
+}
+
+.headerLoader {
+  margin-bottom: var(--rs-space-5);
+}
