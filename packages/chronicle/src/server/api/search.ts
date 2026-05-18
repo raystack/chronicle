@@ -89,12 +89,14 @@ async function buildIndex(ctx: VersionContext, key: string) {
 async function buildDocs(ctx: VersionContext): Promise<SearchDocument[]> {
   const docs: SearchDocument[] = [];
   const config = loadConfig();
-  const sectionMap = buildSectionMap(config);
+  const contentEntries = config.content ?? [];
 
   const pages = await getPagesForVersion(ctx);
   for (const p of pages) {
     const fm = extractFrontmatter(p);
     const { headings, body } = await getPageSearchContent(p);
+    const dir = p.url.replace(/^\//, '').split('/')[0];
+    const entry = contentEntries.find(c => c.dir === dir);
     docs.push({
       id: p.url,
       url: p.url,
@@ -102,7 +104,7 @@ async function buildDocs(ctx: VersionContext): Promise<SearchDocument[]> {
       headings,
       body: [fm.description ?? '', body].join(' '),
       type: 'page',
-      section: getSectionLabel(p.url, sectionMap) ?? '',
+      section: entry?.label ?? dir ?? '',
     });
   }
 
@@ -225,21 +227,3 @@ export default defineHandler(async event => {
   }));
 });
 
-function buildSectionMap(config: ReturnType<typeof loadConfig>): Map<string, string> {
-  const map = new Map<string, string>();
-  for (const entry of config.content ?? []) {
-    map.set(entry.dir, entry.label ?? entry.dir);
-  }
-  for (const api of config.api ?? []) {
-    const basePath = (api.basePath ?? '/apis').replace(/^\//, '');
-    map.set(basePath, api.name);
-  }
-  return map;
-}
-
-function getSectionLabel(url: string, sectionMap: Map<string, string>): string | null {
-  const segments = url.replace(/^\//, '').split('/');
-  const first = segments[0];
-  if (!first) return null;
-  return sectionMap.get(first) ?? null;
-}
