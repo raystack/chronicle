@@ -145,7 +145,7 @@ export function Layout({
                   ))}
                   {apiEntries.map(api => (
                     <Sidebar.Item
-                      key={api.basePath}
+                      key={`${api.basePath}-${api.name}`}
                       href={api.basePath}
                       active={isApiBase(api.basePath)}
                       leadingIcon={renderConfigIcon(
