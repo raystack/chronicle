@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { useLocation } from 'react-router';
+import { PrefetchProvider } from '@/components/ui/PrefetchProvider';
 import { usePageContext } from '@/lib/page-context';
 import { getActiveContentDir } from '@/lib/navigation';
 import {
@@ -27,13 +28,15 @@ export function DocsLayout({ children, hideSidebar }: DocsLayoutProps) {
   );
 
   return (
-    <Layout
-      config={config}
-      tree={scopedTree}
-      hideSidebar={hideSidebar}
-      classNames={{ layout: className }}
-    >
-      {children}
-    </Layout>
+    <PrefetchProvider>
+      <Layout
+        config={config}
+        tree={scopedTree}
+        hideSidebar={hideSidebar}
+        classNames={{ layout: className }}
+      >
+        {children}
+      </Layout>
+    </PrefetchProvider>
   );
 }
