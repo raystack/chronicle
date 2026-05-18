@@ -140,6 +140,7 @@ export function PlaygroundDialog({
     setAuthToken('')
     setBasicUser('')
     setBasicPass('')
+    try { sessionStorage.removeItem(storageKey) } catch { /* ignore */ }
     setHeaderValues({})
     setPathValues({})
     setQueryValues({})
