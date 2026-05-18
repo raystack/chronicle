@@ -13,6 +13,7 @@ import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import type { VersionContext } from '@/lib/version-source';
 import { LATEST_CONTEXT } from '@/lib/version-source';
 import type { ChronicleConfig, Frontmatter, Page, PageNavLink, Root, TableOfContents } from '@/types';
+import { queryClient } from '@/lib/preload';
 
 export type MdxLoader = (relativePath: string) => Promise<{ content: ReactNode; toc: TableOfContents }>;
 
@@ -114,12 +115,16 @@ export function PageProvider({
   }
 
   const fetchPageData = useCallback(async (slug: string[]): Promise<PageData> => {
-    const apiPath = slug.length === 0
-      ? '/api/page'
-      : `/api/page?slug=${slug.map(s => encodeURIComponent(s)).join(',')}`;
-    const res = await fetch(apiPath);
-    if (!res.ok) throw new Error(String(res.status));
-    return res.json();
+    const key = slug.length === 0 ? '' : slug.map(s => encodeURIComponent(s)).join(',');
+    const apiPath = key ? `/api/page?slug=${key}` : '/api/page';
+    return queryClient.fetchQuery({
+      queryKey: ['pageData', key],
+      queryFn: async () => {
+        const res = await fetch(apiPath);
+        if (!res.ok) throw new Error(String(res.status));
+        return res.json();
+      },
+    });
   }, []);
 
   const loadDocsPage = useCallback(async (slug: string[], cancelled: { current: boolean }) => {
