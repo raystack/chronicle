@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'
 import type { OpenAPIV3 } from 'openapi-types'
 import { Dialog, Button, Badge, IconButton, Input, CopyButton, Select, Menu } from '@raystack/apsara'
 import { Cross2Icon, ChevronDownIcon, ChevronUpIcon, PlayIcon, PlusIcon } from '@radix-ui/react-icons'
@@ -68,11 +68,21 @@ export function PlaygroundDialog({
 
   const authSchemes = useMemo(() => getAuthSchemes(document, auth), [document, auth])
   const defaultScheme = authSchemes.find((s) => s.type !== 'none') ?? authSchemes[0]
+  const storageKey = `chronicle:auth:${specName}`
+  const savedAuth = useMemo(() => {
+    try {
+      const raw = sessionStorage.getItem(storageKey)
+      return raw ? JSON.parse(raw) : null
+    } catch { return null }
+  }, [storageKey])
 
-  const [selectedScheme, setSelectedScheme] = useState(defaultScheme.name)
-  const [authToken, setAuthToken] = useState('')
-  const [basicUser, setBasicUser] = useState('')
-  const [basicPass, setBasicPass] = useState('')
+  const [selectedScheme, setSelectedScheme] = useState(() => {
+    if (savedAuth?.scheme && authSchemes.some((s) => s.name === savedAuth.scheme)) return savedAuth.scheme
+    return defaultScheme.name
+  })
+  const [authToken, setAuthToken] = useState(savedAuth?.token ?? '')
+  const [basicUser, setBasicUser] = useState(savedAuth?.basicUser ?? '')
+  const [basicPass, setBasicPass] = useState(savedAuth?.basicPass ?? '')
   const [headerValues, setHeaderValues] = useState<Record<string, string>>({})
   const [pathValues, setPathValues] = useState<Record<string, string>>({})
   const [queryValues, setQueryValues] = useState<Record<string, string>>({})
@@ -88,6 +98,17 @@ export function PlaygroundDialog({
     return init
   })
   const [bodyJsonStr, setBodyJsonStr] = useState(() => body ? body.jsonExample : '{}')
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(storageKey, JSON.stringify({
+        scheme: selectedScheme,
+        token: authToken,
+        basicUser,
+        basicPass,
+      }))
+    } catch { /* ignore */ }
+  }, [storageKey, selectedScheme, authToken, basicUser, basicPass])
 
   const [responseData, setResponseData] = useState<{
     status: number; statusText: string; body: unknown; headers?: Record<string, string>; time: number
@@ -119,6 +140,7 @@ export function PlaygroundDialog({
     setAuthToken('')
     setBasicUser('')
     setBasicPass('')
+    try { sessionStorage.removeItem(storageKey) } catch { /* ignore */ }
     setHeaderValues({})
     setPathValues({})
     setQueryValues({})
