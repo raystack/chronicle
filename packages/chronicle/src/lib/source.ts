@@ -174,17 +174,31 @@ function sortTreeByOrder(tree: Root, pages: { url: string; data: unknown }[], me
   return { ...tree, children: sortNodes(tree.children, pageOrderMap, folderOrderMap) };
 }
 
+function filterDraftsFromTree(tree: Root, draftUrls: Set<string>): Root {
+  function filterNodes(nodes: Node[]): Node[] {
+    return nodes
+      .filter(n => n.type !== NodeType.Page || !draftUrls.has(n.url))
+      .map(n => n.type === NodeType.Folder
+        ? { ...n, children: filterNodes(n.children) } as Folder
+        : n
+      );
+  }
+  return { ...tree, children: filterNodes(tree.children) };
+}
+
 export async function getPageTree(): Promise<Root> {
   if (cachedTree) return cachedTree;
   const s = await getSource();
   const metaFiles = buildFiles().filter(f => f.type === 'meta') as { path: string; data: Record<string, unknown> }[];
-  cachedTree = sortTreeByOrder(s.pageTree as Root, s.getPages(), metaFiles);
+  const sorted = sortTreeByOrder(s.pageTree as Root, s.getPages(), metaFiles);
+  const draftUrls = new Set(s.getPages().filter(p => isDraft(p)).map(p => p.url));
+  cachedTree = draftUrls.size > 0 ? filterDraftsFromTree(sorted, draftUrls) : sorted;
   return cachedTree;
 }
 
 export async function getPages() {
   const s = await getSource();
-  return s.getPages();
+  return s.getPages().filter(p => !isDraft(p));
 }
 
 export async function getPage(slugs?: string[]) {
@@ -254,8 +268,13 @@ export function extractFrontmatter(page: { data: unknown }, fallbackTitle?: stri
     order: d.order as number | undefined,
     icon: d.icon as string | undefined,
     lastModified: d.lastModified as string | undefined,
+    draft: d.draft as boolean | undefined,
     _readingTime: d._readingTime as number | undefined,
   };
+}
+
+export function isDraft(page: { data: unknown }): boolean {
+  return (page.data as Record<string, unknown>).draft === true;
 }
 
 export function getRelativePath(page: { data: unknown }): string {
