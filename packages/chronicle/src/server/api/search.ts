@@ -182,6 +182,9 @@ export default defineHandler(async event => {
   const db = useDatabase();
   const key = versionKey(ctx);
 
+  const config = loadConfig();
+  const sectionMap = buildSectionMap(config, ctx);
+
   if (!query) {
     const result = await db.sql`SELECT id, url, title, type FROM search_docs
       WHERE version = ${key} AND type = 'page'
@@ -191,6 +194,7 @@ export default defineHandler(async event => {
       url: r.url,
       type: r.type,
       content: r.title,
+      section: getSectionLabel(r.url as string, sectionMap),
     })));
   }
 
@@ -214,6 +218,26 @@ export default defineHandler(async event => {
       content: r.title,
       match,
       snippet,
+      section: getSectionLabel(r.url as string, sectionMap),
     };
   }));
 });
+
+function buildSectionMap(config: ReturnType<typeof loadConfig>, ctx: VersionContext): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const entry of config.content ?? []) {
+    map.set(entry.dir, entry.label ?? entry.dir);
+  }
+  for (const api of config.api ?? []) {
+    const basePath = (api.basePath ?? '/apis').replace(/^\//, '');
+    map.set(basePath, api.name);
+  }
+  return map;
+}
+
+function getSectionLabel(url: string, sectionMap: Map<string, string>): string | null {
+  const segments = url.replace(/^\//, '').split('/');
+  const first = segments[0];
+  if (!first) return null;
+  return sectionMap.get(first) ?? null;
+}
