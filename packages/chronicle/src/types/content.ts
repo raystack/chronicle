@@ -10,6 +10,7 @@ export interface Frontmatter {
   order?: number
   icon?: string
   lastModified?: string
+  draft?: boolean
   _readingTime?: number
 }
 
