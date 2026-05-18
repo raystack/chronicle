@@ -3,9 +3,12 @@ import React from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';
 import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
+import { QueryClientProvider } from '@tanstack/react-query';
 import { mdxComponents } from '@/components/mdx';
+import { PrefetchProvider } from '@/components/PrefetchProvider';
 import { getApiConfigsForVersion } from '@/lib/config';
 import { PageProvider } from '@/lib/page-context';
+import { queryClient } from '@/lib/preload';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import { resolveVersionFromUrl, type VersionContext } from '@/lib/version-source';
 import type { ChronicleConfig, Frontmatter, PageNavLink, Root, TableOfContents } from '@/types';
@@ -93,20 +96,24 @@ async function hydrate() {
 
     hydrateRoot(
       document.getElementById('root') as HTMLElement,
-      <BrowserRouter>
-        <ReactRouterProvider>
-          <PageProvider
-            initialConfig={config}
-            initialTree={tree}
-            initialPage={page}
-            initialApiSpecs={apiSpecs}
-            initialVersion={version}
-            loadMdx={loadMdxModule}
-          >
-            <App />
-          </PageProvider>
-        </ReactRouterProvider>
-      </BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <BrowserRouter>
+          <ReactRouterProvider>
+            <PageProvider
+              initialConfig={config}
+              initialTree={tree}
+              initialPage={page}
+              initialApiSpecs={apiSpecs}
+              initialVersion={version}
+              loadMdx={loadMdxModule}
+            >
+              <PrefetchProvider>
+                <App />
+              </PrefetchProvider>
+            </PageProvider>
+          </ReactRouterProvider>
+        </BrowserRouter>
+      </QueryClientProvider>
     );
   } catch (err) {
     console.error('Hydration failed:', err);
