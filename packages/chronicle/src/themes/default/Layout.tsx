@@ -9,12 +9,13 @@ import {
 import { Flex, IconButton, Button, Sidebar } from '@raystack/apsara';
 import { PlayIcon } from '@radix-ui/react-icons';
 import { cx } from 'class-variance-authority';
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
 import type { OpenAPIV3 } from 'openapi-types';
 import { MethodBadge } from '@/components/api/method-badge';
 import { useApiOperation } from '@/lib/use-api-operation';
-import { PlaygroundDialog } from '@/components/api/playground-dialog';
+
+const PlaygroundDialog = lazy(() => import('@/components/api/playground-dialog').then(m => ({ default: m.PlaygroundDialog })));
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
 import { Search } from '@/components/ui/search';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
@@ -144,7 +145,7 @@ export function Layout({
                   ))}
                   {apiEntries.map(api => (
                     <Sidebar.Item
-                      key={api.basePath}
+                      key={`${api.basePath}-${api.name}`}
                       href={api.basePath}
                       active={isApiBase(api.basePath)}
                       leadingIcon={renderConfigIcon(
@@ -371,18 +372,22 @@ function TestRequestButton() {
       >
         Test request
       </Button>
-      <PlaygroundDialog
-        key={`${match.spec.name}-${match.path}-${match.method}`}
-        open={open}
-        onOpenChange={setOpen}
-        method={match.method}
-        path={match.path}
-        operation={match.operation}
-        serverUrl={match.spec.server.url}
-        specName={match.spec.name}
-        auth={match.spec.auth}
-        document={match.spec.document}
-      />
+      {open && (
+        <Suspense fallback={null}>
+          <PlaygroundDialog
+            key={`${match.spec.name}-${match.path}-${match.method}`}
+            open={open}
+            onOpenChange={setOpen}
+            method={match.method}
+            path={match.path}
+            operation={match.operation}
+            serverUrl={match.spec.server.url}
+            specName={match.spec.name}
+            auth={match.spec.auth}
+            document={match.spec.document}
+          />
+        </Suspense>
+      )}
     </>
   );
 }

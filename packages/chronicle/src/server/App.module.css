@@ -1,0 +1,4 @@
+.fallback {
+  padding: var(--rs-space-8);
+  width: 80%;
+}

@@ -1,17 +1,20 @@
 import '@raystack/apsara/normalize.css';
 import '@raystack/apsara/style.css';
-import { ThemeProvider } from '@raystack/apsara';
+import { ThemeProvider, Skeleton, Flex } from '@raystack/apsara';
+import { lazy, Suspense } from 'react';
 import { Navigate, useLocation } from 'react-router';
 import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
-import { ApiLayout } from '@/pages/ApiLayout';
-import { ApiPage } from '@/pages/ApiPage';
-import { DocsLayout } from '@/pages/DocsLayout';
-import { DocsPage } from '@/pages/DocsPage';
-import { LandingPage } from '@/pages/LandingPage';
 import type { ChronicleConfig } from '@/types';
 import { getThemeConfig } from '@/themes/registry';
+import styles from './App.module.css';
+
+const ApiLayout = lazy(() => import('@/pages/ApiLayout').then(m => ({ default: m.ApiLayout })));
+const ApiPage = lazy(() => import('@/pages/ApiPage').then(m => ({ default: m.ApiPage })));
+const DocsLayout = lazy(() => import('@/pages/DocsLayout').then(m => ({ default: m.DocsLayout })));
+const DocsPage = lazy(() => import('@/pages/DocsPage').then(m => ({ default: m.DocsPage })));
+const LandingPage = lazy(() => import('@/pages/LandingPage').then(m => ({ default: m.LandingPage })));
 
 export function App() {
   const { pathname } = useLocation();
@@ -35,16 +38,30 @@ export function App() {
       forcedTheme={themeConfig.forcedTheme}
     >
       <RootHead config={config} />
-      {isApi ? (
-        <ApiLayout>
-          <ApiPage slug={apiSlug} />
-        </ApiLayout>
-      ) : (
-        <DocsLayout hideSidebar={isLanding}>
-          {isLanding ? <LandingPage /> : <DocsPage slug={docsSlug} />}
-        </DocsLayout>
-      )}
+      <Suspense fallback={<PageFallback />}>
+        {isApi ? (
+          <ApiLayout>
+            <ApiPage slug={apiSlug} />
+          </ApiLayout>
+        ) : (
+          <DocsLayout hideSidebar={isLanding}>
+            {isLanding ? <LandingPage /> : <DocsPage slug={docsSlug} />}
+          </DocsLayout>
+        )}
+      </Suspense>
     </ThemeProvider>
+  );
+}
+
+function PageFallback() {
+  return (
+    <Flex direction="column" gap={4} className={styles.fallback}>
+      <Skeleton width="40%" height="var(--rs-line-height-t2)" />
+      <Skeleton width="60%" height="var(--rs-line-height-regular)" />
+      {[...new Array(12)].map((_, i) => (
+        <Skeleton key={i} width="100%" height="var(--rs-line-height-regular)" />
+      ))}
+    </Flex>
   );
 }
 
