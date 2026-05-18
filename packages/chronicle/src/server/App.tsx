@@ -1,6 +1,6 @@
 import '@raystack/apsara/normalize.css';
 import '@raystack/apsara/style.css';
-import { ThemeProvider } from '@raystack/apsara';
+import { ThemeProvider, Skeleton, Flex } from '@raystack/apsara';
 import { lazy, Suspense } from 'react';
 import { Navigate, useLocation } from 'react-router';
 import { Head } from '@/lib/head';
@@ -8,8 +8,6 @@ import { usePageContext } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import type { ChronicleConfig } from '@/types';
 import { getThemeConfig } from '@/themes/registry';
-import { PageSkeleton as DefaultSkeleton } from '@/themes/default/Skeleton';
-import { PageSkeleton as PaperSkeleton } from '@/themes/paper/Skeleton';
 
 const ApiLayout = lazy(() => import('@/pages/ApiLayout').then(m => ({ default: m.ApiLayout })));
 const ApiPage = lazy(() => import('@/pages/ApiPage').then(m => ({ default: m.ApiPage })));
@@ -39,7 +37,7 @@ export function App() {
       forcedTheme={themeConfig.forcedTheme}
     >
       <RootHead config={config} />
-      <Suspense fallback={<ThemeSkeleton name={config.theme?.name} />}>
+      <Suspense fallback={<PageFallback />}>
         {isApi ? (
           <ApiLayout>
             <ApiPage slug={apiSlug} />
@@ -54,14 +52,16 @@ export function App() {
   );
 }
 
-const skeletons: Record<string, React.ComponentType> = {
-  default: DefaultSkeleton,
-  paper: PaperSkeleton,
-};
-
-function ThemeSkeleton({ name }: { name?: string }) {
-  const Component = skeletons[name ?? 'default'] ?? DefaultSkeleton;
-  return <Component />;
+function PageFallback() {
+  return (
+    <Flex direction="column" gap={4} style={{ padding: 'var(--rs-space-8)', maxWidth: 768 }}>
+      <Skeleton width="40%" height="var(--rs-line-height-t2)" />
+      <Skeleton width="60%" height="var(--rs-line-height-regular)" />
+      {[...new Array(12)].map((_, i) => (
+        <Skeleton key={i} width="100%" height="var(--rs-line-height-regular)" />
+      ))}
+    </Flex>
+  );
 }
 
 function RootHead({ config }: { config: ChronicleConfig }) {

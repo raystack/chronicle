@@ -1,9 +1,11 @@
 'use client';
 
 import { Flex, Headline } from '@raystack/apsara';
+import { lazy, Suspense } from 'react';
 import type { ThemePageProps } from '@/types';
 import styles from './Page.module.css';
-import { Toc } from './Toc';
+
+const Toc = lazy(() => import('./Toc').then(m => ({ default: m.Toc })));
 
 export function Page({ page }: ThemePageProps) {
   return (
@@ -16,7 +18,9 @@ export function Page({ page }: ThemePageProps) {
         )}
         <div className={styles.content}>{page.content}</div>
       </article>
-      <Toc items={page.toc} />
+      <Suspense fallback={null}>
+        <Toc items={page.toc} />
+      </Suspense>
     </Flex>
   );
 }
