@@ -14,6 +14,7 @@ interface SearchDocument {
   headings: string;
   body: string;
   type: 'page' | 'api';
+  section: string;
 }
 
 import fs from 'node:fs/promises';
@@ -61,7 +62,8 @@ async function buildIndex(ctx: VersionContext, key: string) {
     headings TEXT NOT NULL,
     body TEXT NOT NULL,
     type TEXT NOT NULL,
-    version TEXT NOT NULL
+    version TEXT NOT NULL,
+    section TEXT NOT NULL DEFAULT ''
   )`);
 
   await db.exec(`CREATE VIRTUAL TABLE IF NOT EXISTS search_fts USING fts5(
@@ -74,8 +76,8 @@ async function buildIndex(ctx: VersionContext, key: string) {
 
   const docs = await buildDocs(ctx);
   for (const doc of docs) {
-    await db.sql`INSERT INTO search_docs (id, url, title, headings, body, type, version)
-      VALUES (${doc.id}, ${doc.url}, ${doc.title}, ${doc.headings}, ${doc.body}, ${doc.type}, ${key})`;
+    await db.sql`INSERT INTO search_docs (id, url, title, headings, body, type, version, section)
+      VALUES (${doc.id}, ${doc.url}, ${doc.title}, ${doc.headings}, ${doc.body}, ${doc.type}, ${key}, ${doc.section})`;
   }
 
   await db.sql`INSERT INTO search_fts (rowid, title, headings, body)
@@ -86,11 +88,15 @@ async function buildIndex(ctx: VersionContext, key: string) {
 
 async function buildDocs(ctx: VersionContext): Promise<SearchDocument[]> {
   const docs: SearchDocument[] = [];
+  const config = loadConfig();
+  const contentEntries = config.content ?? [];
 
   const pages = await getPagesForVersion(ctx);
   for (const p of pages) {
     const fm = extractFrontmatter(p);
     const { headings, body } = await getPageSearchContent(p);
+    const dir = p.url.replace(/^\//, '').split('/')[0];
+    const entry = contentEntries.find(c => c.dir === dir);
     docs.push({
       id: p.url,
       url: p.url,
@@ -98,10 +104,10 @@ async function buildDocs(ctx: VersionContext): Promise<SearchDocument[]> {
       headings,
       body: [fm.description ?? '', body].join(' '),
       type: 'page',
+      section: entry?.label ?? dir ?? '',
     });
   }
 
-  const config = loadConfig();
   const apiConfigs = getApiConfigsForVersion(config, ctx.dir);
   if (apiConfigs.length) {
     const specs = await loadApiSpecs(apiConfigs);
@@ -122,6 +128,7 @@ async function buildDocs(ctx: VersionContext): Promise<SearchDocument[]> {
             headings: op.summary ?? opId,
             body: [op.description ?? '', pathStr, method.toUpperCase()].join(' '),
             type: 'api',
+            section: spec.name,
           });
         }
       }
@@ -183,7 +190,7 @@ export default defineHandler(async event => {
   const key = versionKey(ctx);
 
   if (!query) {
-    const result = await db.sql`SELECT id, url, title, type FROM search_docs
+    const result = await db.sql`SELECT id, url, title, type, section FROM search_docs
       WHERE version = ${key} AND type = 'page'
       LIMIT 8`;
     return Response.json((result.rows ?? []).map(r => ({
@@ -191,11 +198,12 @@ export default defineHandler(async event => {
       url: r.url,
       type: r.type,
       content: r.title,
+      section: r.section || null,
     })));
   }
 
   const searchTerm = query.split(/\s+/).map(t => `"${t}"*`).join(' ');
-  const result = await db.sql`SELECT s.id, s.url, s.title, s.headings, s.body, s.type,
+  const result = await db.sql`SELECT s.id, s.url, s.title, s.headings, s.body, s.type, s.section,
       bm25(search_fts, 10.0, 5.0, 1.0) AS score
     FROM search_fts f
     JOIN search_docs s ON s.rowid = f.rowid
@@ -214,6 +222,8 @@ export default defineHandler(async event => {
       content: r.title,
       match,
       snippet,
+      section: r.section || null,
     };
   }));
 });
+
