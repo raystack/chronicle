@@ -24,7 +24,12 @@ async function fetchPageDataByPathname(pathname: string) {
   return res.json();
 }
 
+function isApisRoute(pathname: string): boolean {
+  return pathname === '/apis' || pathname.startsWith('/apis/');
+}
+
 export function prefetchPageData(pathname: string) {
+  if (isApisRoute(pathname)) return;
   queryClient.prefetchQuery({
     queryKey: pageDataQueryKey(pathname),
     queryFn: () => fetchPageDataByPathname(pathname),
