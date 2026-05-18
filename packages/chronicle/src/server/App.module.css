@@ -1,0 +1,4 @@
+.fallback {
+  padding: var(--rs-space-8);
+  max-width: 768px;
+}

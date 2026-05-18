@@ -8,6 +8,7 @@ import { usePageContext } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import type { ChronicleConfig } from '@/types';
 import { getThemeConfig } from '@/themes/registry';
+import styles from './App.module.css';
 
 const ApiLayout = lazy(() => import('@/pages/ApiLayout').then(m => ({ default: m.ApiLayout })));
 const ApiPage = lazy(() => import('@/pages/ApiPage').then(m => ({ default: m.ApiPage })));
@@ -54,7 +55,7 @@ export function App() {
 
 function PageFallback() {
   return (
-    <Flex direction="column" gap={4} style={{ padding: 'var(--rs-space-8)', maxWidth: 768 }}>
+    <Flex direction="column" gap={4} className={styles.fallback}>
       <Skeleton width="40%" height="var(--rs-line-height-t2)" />
       <Skeleton width="60%" height="var(--rs-line-height-regular)" />
       {[...new Array(12)].map((_, i) => (
