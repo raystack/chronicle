@@ -1,8 +1,15 @@
 import { useEffect } from 'react';
 import { prefetchPageData } from '@/lib/preload';
 
-function isInternalLink(href: string | null): href is string {
-  return !!href && !href.startsWith('http') && !href.startsWith('#') && !href.startsWith('mailto:');
+function resolvePathname(href: string | null): string | null {
+  if (!href) return null;
+  try {
+    const url = new URL(href, location.href);
+    if (url.origin !== location.origin) return null;
+    return url.pathname;
+  } catch {
+    return null;
+  }
 }
 
 export function PrefetchProvider({ children }: { children: React.ReactNode }) {
@@ -10,15 +17,15 @@ export function PrefetchProvider({ children }: { children: React.ReactNode }) {
     const handleMouseOver = (e: MouseEvent) => {
       const anchor = (e.target as HTMLElement).closest?.('a[href]');
       if (!anchor) return;
-      const href = anchor.getAttribute('href');
-      if (isInternalLink(href)) prefetchPageData(href);
+      const pathname = resolvePathname(anchor.getAttribute('href'));
+      if (pathname) prefetchPageData(pathname);
     };
 
     const handleFocusIn = (e: FocusEvent) => {
       const anchor = (e.target as HTMLElement).closest?.('a[href]');
       if (!anchor) return;
-      const href = anchor.getAttribute('href');
-      if (isInternalLink(href)) prefetchPageData(href);
+      const pathname = resolvePathname(anchor.getAttribute('href'));
+      if (pathname) prefetchPageData(pathname);
     };
 
     document.addEventListener('mouseover', handleMouseOver);
@@ -28,8 +35,8 @@ export function PrefetchProvider({ children }: { children: React.ReactNode }) {
       (entries) => {
         for (const entry of entries) {
           if (entry.isIntersecting) {
-            const href = (entry.target as HTMLAnchorElement).getAttribute('href');
-            if (isInternalLink(href)) prefetchPageData(href);
+            const pathname = resolvePathname((entry.target as HTMLAnchorElement).getAttribute('href'));
+            if (pathname) prefetchPageData(pathname);
             observer.unobserve(entry.target);
           }
         }
@@ -39,8 +46,8 @@ export function PrefetchProvider({ children }: { children: React.ReactNode }) {
 
     const observeLinks = () => {
       document.querySelectorAll('a[href]:not([data-prefetch-observed])').forEach((link) => {
-        const href = link.getAttribute('href');
-        if (isInternalLink(href)) {
+        const pathname = resolvePathname(link.getAttribute('href'));
+        if (pathname) {
           link.setAttribute('data-prefetch-observed', '');
           observer.observe(link);
         }
