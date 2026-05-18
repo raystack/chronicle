@@ -21,7 +21,7 @@ interface ApiOverviewProps {
   auth?: { type: string; header: string; placeholder?: string }
 }
 
-export function ApiOverview({ method, path, operation, auth }: ApiOverviewProps) {
+export function ApiOverview({ method, path, operation, serverUrl, auth }: ApiOverviewProps) {
   const params = (operation.parameters ?? []) as OpenAPIV3.ParameterObject[]
   const body = getRequestBody(operation.requestBody as OpenAPIV3.RequestBodyObject | undefined)
 
@@ -36,7 +36,7 @@ export function ApiOverview({ method, path, operation, auth }: ApiOverviewProps)
       ? headerFields
       : []
 
-  const fullUrl = '{domain}' + path
+  const fullUrl = serverUrl + path
   const snippetHeaders: Record<string, string> = {}
   if (auth) snippetHeaders[auth.header] = auth.placeholder ?? 'YOUR_API_KEY'
   if (body) snippetHeaders['Content-Type'] = body.contentType ?? 'application/json'

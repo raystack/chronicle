@@ -3,6 +3,7 @@ import path from 'node:path'
 import { parse as parseYaml } from 'yaml'
 import type { OpenAPIV2, OpenAPIV3 } from 'openapi-types'
 import type { ApiConfig, ApiServerConfig, ApiAuthConfig } from '@/types/config'
+import { substituteEnvVars } from '@/lib/env'
 
 type JsonObject = Record<string, unknown>
 
@@ -41,7 +42,7 @@ export async function loadApiSpec(config: ApiConfig, projectRoot: string): Promi
   return {
     name: config.name,
     basePath: config.basePath,
-    server: config.server,
+    server: { ...config.server, url: substituteEnvVars(config.server.url) },
     auth: config.auth,
     document: v3Doc,
   }

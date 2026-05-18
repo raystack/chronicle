@@ -3,7 +3,6 @@ import { HTTPError } from 'nitro'
 import { loadConfig } from '@/lib/config'
 import { loadApiSpecs } from '@/lib/openapi'
 import { findApiOperation } from '@/lib/api-routes'
-import { substituteEnvVars } from '@/lib/env'
 import { flattenSchema, generateExampleJson, type SchemaField } from '@/lib/schema'
 import { generateCurl } from '@/lib/snippet-generators'
 
@@ -22,7 +21,7 @@ export async function handleApiMarkdown(pathname: string) {
     throw new HTTPError({ status: 404, message: 'Not Found' })
   }
 
-  const md = generateApiMarkdown(match.method, match.path, match.operation, substituteEnvVars(match.spec.server.url), match.spec.auth)
+  const md = generateApiMarkdown(match.method, match.path, match.operation, match.spec.server.url, match.spec.auth)
   return new Response(md, { headers: { 'Content-Type': 'text/markdown; charset=utf-8' } })
 }
 

@@ -1,6 +1,5 @@
 import { defineHandler, HTTPError } from 'nitro';
 import { loadConfig } from '@/lib/config';
-import { substituteEnvVars } from '@/lib/env';
 import { loadApiSpecs } from '@/lib/openapi';
 
 interface ProxyRequest {
@@ -38,7 +37,7 @@ export default defineHandler(async event => {
     throw new HTTPError({ status: 400, message: 'Invalid path' });
   }
 
-  const url = substituteEnvVars(spec.server.url) + path;
+  const url = spec.server.url + path;
 
   try {
     const response = await fetch(url, {
