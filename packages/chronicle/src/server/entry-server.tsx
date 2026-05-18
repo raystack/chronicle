@@ -9,7 +9,7 @@ import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
-import { getPageTree, getPage, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath } from '@/lib/source';
+import { getPageTree, getPage, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath, isDraft } from '@/lib/source';
 import { getFirstApiUrl } from '@/lib/api-routes';
 import { StatusCodes } from 'http-status-codes';
 import { resolveDocsRedirect } from '@/lib/tree-utils';
@@ -44,10 +44,12 @@ export default {
       : [];
     const apiSpecs = apiConfigs.length ? await loadApiSpecs(apiConfigs) : [];
 
-    const [tree, page] = await Promise.all([
+    const [tree, rawPage] = await Promise.all([
       getPageTree(),
       route.type === RouteType.DocsPage ? getPage(route.slug) : Promise.resolve(null),
     ]);
+    const page = rawPage && isDraft(rawPage) ? null : rawPage;
+
     // SSR redirects for index pages
     if (route.type === RouteType.ApiIndex) {
       const firstUrl = getFirstApiUrl(apiSpecs);
