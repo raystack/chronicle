@@ -4,6 +4,7 @@ import type { Plugin } from 'unified'
 import type { Image, Html } from 'mdast'
 import type { Element } from 'hast'
 import type { MdxJsxFlowElement, MdxJsxTextElement, MdxJsxAttribute } from 'mdast-util-mdx-jsx'
+import { MdxNodeType } from './mdx-utils'
 
 function resolveUrl(src: string, dir: string): string {
   if (/^[a-z][a-z0-9+\-.]*:/i.test(src)) return src
@@ -26,25 +27,40 @@ const remarkResolveImages: Plugin = () => {
     const relative = filePath.slice(contentIdx + '/content/'.length)
     const dir = path.posix.dirname(relative)
 
+    const seen = new Set<string>()
+    const images: string[] = []
+
+    function collect(src: string) {
+      if (!src || seen.has(src) || /^data:/i.test(src)) return
+      seen.add(src)
+      images.push(src)
+    }
+
     visit(tree, 'image', (node: Image) => {
       if (!node.url) return
       node.url = resolveUrl(node.url, dir)
+      collect(node.url)
     })
 
     visit(tree, 'html', (node: Html) => {
       node.value = node.value.replace(
         /(<img\b[^>]*\bsrc=["'])([^"']+)(["'])/gi,
-        (_, before, src, after) => `${before}${resolveUrl(src, dir)}${after}`
+        (_, before, src, after) => {
+          const resolved = resolveUrl(src, dir)
+          collect(resolved)
+          return `${before}${resolved}${after}`
+        }
       )
     })
 
     visit(tree, (node) => {
-      if (node.type !== 'mdxJsxFlowElement' && node.type !== 'mdxJsxTextElement') return
+      if (node.type !== MdxNodeType.JsxFlow && node.type !== MdxNodeType.JsxText) return
       const jsx = node as MdxJsxFlowElement | MdxJsxTextElement
       if (jsx.name !== 'img') return
       const srcAttr = jsx.attributes.find((a): a is MdxJsxAttribute => a.type === 'mdxJsxAttribute' && a.name === 'src')
       if (!srcAttr?.value || typeof srcAttr.value !== 'string') return
       srcAttr.value = resolveUrl(srcAttr.value, dir)
+      collect(srcAttr.value)
     })
 
     visit(tree, 'element', (node: Element) => {
@@ -52,7 +68,10 @@ const remarkResolveImages: Plugin = () => {
       const src = node.properties?.src
       if (typeof src !== 'string') return
       node.properties.src = resolveUrl(src, dir)
+      collect(node.properties.src as string)
     })
+
+    file.data.images = images
   }
 }
 

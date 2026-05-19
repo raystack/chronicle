@@ -37,6 +37,11 @@ const readingTimeGlob: Record<string, { text: string; minutes: number; words: nu
   { eager: true, import: 'readingTime' }
 );
 
+const imagesGlob: Record<string, string[] | undefined> = import.meta.glob(
+  '../../.content/**/*.{mdx,md}',
+  { eager: true, import: 'images' }
+);
+
 const metaGlob: Record<string, Record<string, unknown>> = import.meta.glob(
   '../../.content/**/meta.json',
   { eager: true }
@@ -54,10 +59,11 @@ function buildFiles() {
     const relativePath = originalPath.replace(/readme\.(mdx?)$/i, 'index.$1');
     const rt = readingTimeGlob[key];
     const _readingTime = rt?.minutes != null ? Math.max(1, Math.round(rt.minutes)) : undefined;
+    const _images = imagesGlob[key] ?? [];
     files.push({
       type: 'page',
       path: relativePath,
-      data: { ...data, _readingTime, _relativePath: relativePath, _originalPath: originalPath }
+      data: { ...data, _readingTime, _images, _relativePath: relativePath, _originalPath: originalPath }
     });
   }
 
@@ -283,6 +289,10 @@ export function getRelativePath(page: { data: unknown }): string {
 
 export function getOriginalPath(page: { data: unknown }): string {
   return ((page.data as Record<string, unknown>)._originalPath as string) ?? '';
+}
+
+export function getPageImages(page: { data: unknown }): string[] {
+  return ((page.data as Record<string, unknown>)._images as string[]) ?? [];
 }
 
 export async function getPageSearchContent(page: { data: unknown }): Promise<{ headings: string; body: string }> {

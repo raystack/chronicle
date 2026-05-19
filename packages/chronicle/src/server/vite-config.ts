@@ -72,7 +72,7 @@ export async function createViteConfig(
         default: defineFumadocsConfig({
           mdxOptions: {
             remarkImageOptions: false,
-            valueToExport: ['readingTime'],
+            valueToExport: ['readingTime', 'images'],
             remarkPlugins: [
               remarkDirective,
               [remarkDirectiveAdmonition, {

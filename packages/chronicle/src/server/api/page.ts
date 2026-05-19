@@ -1,5 +1,5 @@
 import { defineHandler, HTTPError } from 'nitro';
-import { getPage, getPageNav, extractFrontmatter, getRelativePath, getOriginalPath, isDraft } from '@/lib/source';
+import { getPage, getPageNav, extractFrontmatter, getRelativePath, getOriginalPath, getPageImages, isDraft } from '@/lib/source';
 
 export default defineHandler(async event => {
   const slugParam = event.url.searchParams.get('slug') ?? '';
@@ -16,6 +16,7 @@ export default defineHandler(async event => {
     frontmatter: extractFrontmatter(page, slug[slug.length - 1]),
     relativePath: getRelativePath(page),
     originalPath: getOriginalPath(page),
+    images: getPageImages(page),
     prev: nav.prev,
     next: nav.next,
   });
