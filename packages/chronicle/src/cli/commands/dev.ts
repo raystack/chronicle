@@ -9,6 +9,7 @@ export const devCommand = new Command('dev')
   .option('-p, --port <port>', 'Port number', '3000')
   .option('--config <path>', 'Path to chronicle.yaml')
   .option('--host <host>', 'Host address', 'localhost')
+  .option('--preset <preset>', 'Deploy preset (bun, node-server, etc.)')
   .action(async options => {
     const { config, projectRoot, configPath } = await loadCLIConfig(options.config);
     const port = parseInt(options.port, 10);
@@ -20,7 +21,7 @@ export const devCommand = new Command('dev')
     const { createServer } = await import('vite');
     const { createViteConfig } = await import('@/server/vite-config');
 
-    const viteConfig = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot, configPath });
+    const viteConfig = await createViteConfig({ packageRoot: PACKAGE_ROOT, projectRoot, configPath, preset: options.preset });
     const server = await createServer({
       ...viteConfig,
       server: { ...viteConfig.server, port, host: options.host }
