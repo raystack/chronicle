@@ -27,15 +27,29 @@ const remarkResolveImages: Plugin = () => {
     const relative = filePath.slice(contentIdx + '/content/'.length)
     const dir = path.posix.dirname(relative)
 
+    const seen = new Set<string>()
+    const images: string[] = []
+
+    function collect(src: string) {
+      if (!src || seen.has(src) || /^data:/i.test(src)) return
+      seen.add(src)
+      images.push(src)
+    }
+
     visit(tree, 'image', (node: Image) => {
       if (!node.url) return
       node.url = resolveUrl(node.url, dir)
+      collect(node.url)
     })
 
     visit(tree, 'html', (node: Html) => {
       node.value = node.value.replace(
         /(<img\b[^>]*\bsrc=["'])([^"']+)(["'])/gi,
-        (_, before, src, after) => `${before}${resolveUrl(src, dir)}${after}`
+        (_, before, src, after) => {
+          const resolved = resolveUrl(src, dir)
+          collect(resolved)
+          return `${before}${resolved}${after}`
+        }
       )
     })
 
@@ -46,6 +60,7 @@ const remarkResolveImages: Plugin = () => {
       const srcAttr = jsx.attributes.find((a): a is MdxJsxAttribute => a.type === 'mdxJsxAttribute' && a.name === 'src')
       if (!srcAttr?.value || typeof srcAttr.value !== 'string') return
       srcAttr.value = resolveUrl(srcAttr.value, dir)
+      collect(srcAttr.value)
     })
 
     visit(tree, 'element', (node: Element) => {
@@ -53,7 +68,10 @@ const remarkResolveImages: Plugin = () => {
       const src = node.properties?.src
       if (typeof src !== 'string') return
       node.properties.src = resolveUrl(src, dir)
+      collect(node.properties.src as string)
     })
+
+    file.data.images = images
   }
 }
 
