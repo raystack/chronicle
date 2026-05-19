@@ -28,8 +28,13 @@ function isApisRoute(pathname: string): boolean {
   return pathname === '/apis' || pathname.startsWith('/apis/');
 }
 
+function hasFileExtension(pathname: string): boolean {
+  const lastSegment = pathname.split('/').pop() ?? '';
+  return lastSegment.includes('.');
+}
+
 export function prefetchPageData(pathname: string) {
-  if (isApisRoute(pathname)) return;
+  if (isApisRoute(pathname) || hasFileExtension(pathname)) return;
   queryClient.prefetchQuery({
     queryKey: pageDataQueryKey(pathname),
     queryFn: () => fetchPageDataByPathname(pathname),

@@ -145,6 +145,7 @@ export async function createViteConfig(
     },
     nitro: {
       logLevel: 2,
+      errorHandler: path.resolve(packageRoot, 'src/server/error.ts'),
       publicAssets: [{ dir: path.resolve(projectRoot, 'public') }],
       output: {
         dir: resolveOutputDir(projectRoot, preset),
