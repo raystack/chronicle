@@ -9,7 +9,7 @@ import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
-import { getPageTree, getPage, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath, isDraft } from '@/lib/source';
+import { getPageTree, getPage, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath, getPageImages, isDraft } from '@/lib/source';
 import { getFirstApiUrl } from '@/lib/api-routes';
 import { StatusCodes } from 'http-status-codes';
 import { resolveDocsRedirect } from '@/lib/tree-utils';
@@ -79,7 +79,7 @@ export default {
     const relativePath = page ? getRelativePath(page) : null;
     const originalPath = page ? getOriginalPath(page) : null;
     const mdxModule = (originalPath || relativePath) ? await loadPageModule(originalPath || relativePath!) : null;
-    const pageImages = mdxModule?.images ?? [];
+    const pageImages = page ? getPageImages(page) : [];
 
     const pageData = page
       ? {

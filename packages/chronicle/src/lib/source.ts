@@ -331,21 +331,21 @@ interface ReadingTime {
   time: number;
 }
 
-const ssrModules = import.meta.glob<{ default?: MDXContent; toc?: TableOfContents; readingTime?: ReadingTime; images?: string[] }>(
+const ssrModules = import.meta.glob<{ default?: MDXContent; toc?: TableOfContents; readingTime?: ReadingTime }>(
   '../../.content/**/*.{mdx,md}'
 );
 
 export async function loadPageModule(
   relativePath: string
-): Promise<{ default: MDXContent | null; toc: TableOfContents; _readingTime?: number; images: string[] }> {
-  if (!relativePath || relativePath.includes('..')) return { default: null, toc: [], images: [] };
+): Promise<{ default: MDXContent | null; toc: TableOfContents; _readingTime?: number }> {
+  if (!relativePath || relativePath.includes('..')) return { default: null, toc: [] };
   const withoutExt = relativePath.replace(/\.(mdx|md)$/, '');
   const key = relativePath.endsWith('.md')
     ? `../../.content/${withoutExt}.md`
     : `../../.content/${withoutExt}.mdx`;
   const loader = ssrModules[key];
-  if (!loader) return { default: null, toc: [], images: [] };
+  if (!loader) return { default: null, toc: [] };
   const mod = await loader();
   const minutes = mod.readingTime?.minutes;
-  return { default: mod.default ?? null, toc: mod.toc ?? [], _readingTime: minutes != null ? Math.max(1, Math.round(minutes)) : undefined, images: mod.images ?? [] };
+  return { default: mod.default ?? null, toc: mod.toc ?? [], _readingTime: minutes != null ? Math.max(1, Math.round(minutes)) : undefined };
 }
