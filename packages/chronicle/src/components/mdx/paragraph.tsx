@@ -1,7 +1,7 @@
 import { Children, isValidElement, type ComponentProps } from 'react'
 import styles from './paragraph.module.css'
 
-const BLOCK_ELEMENTS = new Set(['summary', 'details', 'div', 'table', 'ul', 'ol'])
+const BLOCK_ELEMENTS = new Set(['summary', 'details', 'div', 'table', 'ul', 'ol', 'p'])
 
 function hasBlockChild(children: React.ReactNode): boolean {
   return Children.toArray(children).some(
