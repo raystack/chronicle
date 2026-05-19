@@ -47,7 +47,7 @@ export function PrefetchProvider({ children }: { children: React.ReactNode }) {
     );
 
     const observeLinks = () => {
-      document.querySelectorAll('a[href]:not([data-prefetch-observed]):not([${NO_PREFETCH_ATTR}])').forEach((link) => {
+      document.querySelectorAll(`a[href]:not([data-prefetch-observed]):not([${NO_PREFETCH_ATTR}])`).forEach((link) => {
         const pathname = resolvePathname(link.getAttribute('href'));
         if (pathname) {
           link.setAttribute('data-prefetch-observed', '');
