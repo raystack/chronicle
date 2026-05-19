@@ -8,6 +8,7 @@ import path from 'node:path';
 import remarkDirective from 'remark-directive';
 import { type InlineConfig } from 'vite';
 import remarkResolveImages from '../lib/remark-resolve-images';
+import remarkCollectImages from '../lib/remark-collect-images';
 import remarkResolveLinks from '../lib/remark-resolve-links';
 import remarkReadingTime from 'remark-reading-time';
 import remarkUnusedDirectives from '../lib/remark-unused-directives';
@@ -72,7 +73,7 @@ export async function createViteConfig(
         default: defineFumadocsConfig({
           mdxOptions: {
             remarkImageOptions: false,
-            valueToExport: ['readingTime'],
+            valueToExport: ['readingTime', 'images'],
             remarkPlugins: [
               remarkDirective,
               [remarkDirectiveAdmonition, {
@@ -95,6 +96,7 @@ export async function createViteConfig(
               remarkUnusedDirectives,
               remarkResolveLinks,
               remarkResolveImages,
+              remarkCollectImages,
               remarkMdxMermaid,
               remarkReadingTime,
             ],
