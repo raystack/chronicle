@@ -38,7 +38,7 @@ export function App() {
       enableSystem={themeConfig.enableSystem}
       forcedTheme={themeConfig.forcedTheme}
     >
-      <AnalyticsProvider config={config.analytics ?? {}}>
+      <AnalyticsProvider config={config.analytics ?? {}} appName={config.site.title}>
         <RootHead config={config} />
         <Suspense fallback={<PageFallback />}>
           {isApi ? (

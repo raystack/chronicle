@@ -18,9 +18,11 @@ function PageViewTracker() {
 
 export function AnalyticsProvider({
   config,
+  appName,
   children,
 }: {
   config: AnalyticsConfig
+  appName: string
   children: ReactNode
 }) {
   const [analytics, setAnalytics] = useState<AnalyticsInstance | null>(null)
@@ -37,7 +39,7 @@ export function AnalyticsProvider({
             })
           )
           import('analytics').then(({ default: Analytics }) => {
-            setAnalytics(Analytics({ app: 'chronicle', plugins }))
+            setAnalytics(Analytics({ app: appName, plugins }))
           })
         })
       }
