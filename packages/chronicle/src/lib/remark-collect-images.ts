@@ -3,6 +3,7 @@ import type { Plugin } from 'unified'
 import type { Image, Html } from 'mdast'
 import type { Element } from 'hast'
 import type { MdxJsxFlowElement, MdxJsxTextElement, MdxJsxAttribute } from 'mdast-util-mdx-jsx'
+import { MdxNodeType } from './mdx-utils'
 
 const remarkCollectImages: Plugin = () => {
   return (tree, file) => {
@@ -29,7 +30,7 @@ const remarkCollectImages: Plugin = () => {
     })
 
     visit(tree, (node) => {
-      if (node.type !== 'mdxJsxFlowElement' && node.type !== 'mdxJsxTextElement') return
+      if (node.type !== MdxNodeType.JsxFlow && node.type !== MdxNodeType.JsxText) return
       const jsx = node as MdxJsxFlowElement | MdxJsxTextElement
       if (jsx.name !== 'img') return
       const srcAttr = jsx.attributes.find(
