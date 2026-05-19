@@ -110,6 +110,7 @@ export function PageProvider({
     frontmatter: Frontmatter;
     relativePath: string;
     originalPath?: string;
+    images?: string[];
     prev?: PageNavLink | null;
     next?: PageNavLink | null;
   }
@@ -132,6 +133,12 @@ export function PageProvider({
     try {
       const data = await fetchPageData(slug);
       if (cancelled.current) return;
+      if (data.images?.length) {
+        for (const src of data.images) {
+          const img = new Image();
+          img.src = src;
+        }
+      }
       const { content, toc } = await loadMdx(data.originalPath || data.relativePath);
       if (cancelled.current) return;
       setErrorStatus(null);
