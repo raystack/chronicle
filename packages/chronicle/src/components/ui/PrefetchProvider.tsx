@@ -16,14 +16,14 @@ export function PrefetchProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleMouseOver = (e: MouseEvent) => {
       const anchor = (e.target as HTMLElement).closest?.('a[href]');
-      if (!anchor) return;
+      if (!anchor || anchor.hasAttribute('data-no-prefetch')) return;
       const pathname = resolvePathname(anchor.getAttribute('href'));
       if (pathname) prefetchPageData(pathname);
     };
 
     const handleFocusIn = (e: FocusEvent) => {
       const anchor = (e.target as HTMLElement).closest?.('a[href]');
-      if (!anchor) return;
+      if (!anchor || anchor.hasAttribute('data-no-prefetch')) return;
       const pathname = resolvePathname(anchor.getAttribute('href'));
       if (pathname) prefetchPageData(pathname);
     };
@@ -45,7 +45,7 @@ export function PrefetchProvider({ children }: { children: React.ReactNode }) {
     );
 
     const observeLinks = () => {
-      document.querySelectorAll('a[href]:not([data-prefetch-observed])').forEach((link) => {
+      document.querySelectorAll('a[href]:not([data-prefetch-observed]):not([data-no-prefetch])').forEach((link) => {
         const pathname = resolvePathname(link.getAttribute('href'));
         if (pathname) {
           link.setAttribute('data-prefetch-observed', '');

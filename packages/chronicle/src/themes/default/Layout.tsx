@@ -138,7 +138,7 @@ export function Layout({
                         <DocumentTextIcon width={16} height={16} />
                       )}
                       classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
-                      render={<RouterLink to={entry.href} />}
+                      render={<RouterLink to={entry.href} data-no-prefetch />}
                     >
                       {entry.label}
                     </Sidebar.Item>
@@ -154,7 +154,7 @@ export function Layout({
                         <CodeBracketSquareIcon width={16} height={16} />
                       )}
                       classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
-                      render={<RouterLink to={api.basePath} />}
+                      render={<RouterLink to={api.basePath} data-no-prefetch />}
                     >
                       {api.name} API
                     </Sidebar.Item>
