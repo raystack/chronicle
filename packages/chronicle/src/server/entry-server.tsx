@@ -79,6 +79,7 @@ export default {
     const relativePath = page ? getRelativePath(page) : null;
     const originalPath = page ? getOriginalPath(page) : null;
     const mdxModule = (originalPath || relativePath) ? await loadPageModule(originalPath || relativePath!) : null;
+    const pageImages = mdxModule?.images ?? [];
 
     const pageData = page
       ? {
@@ -124,6 +125,9 @@ export default {
           ))}
           {assets.js.map((attr: { href: string }) => (
             <link key={attr.href} rel="modulepreload" {...attr} />
+          ))}
+          {pageImages.map((src: string) => (
+            <link key={src} rel="preload" as="image" href={src} />
           ))}
           <script type="module" src={assets.entry} />
           <script dangerouslySetInnerHTML={{ __html: `window.__PAGE_DATA__ = ${safeJson}` }} />
