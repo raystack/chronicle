@@ -1,6 +1,8 @@
 import { useEffect } from 'react';
 import { prefetchPageData } from '@/lib/preload';
 
+const NO_PREFETCH_ATTR = 'data-no-prefetch';
+
 function resolvePathname(href: string | null): string | null {
   if (!href) return null;
   try {
@@ -16,14 +18,14 @@ export function PrefetchProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleMouseOver = (e: MouseEvent) => {
       const anchor = (e.target as HTMLElement).closest?.('a[href]');
-      if (!anchor) return;
+      if (!anchor || anchor.hasAttribute(NO_PREFETCH_ATTR)) return;
       const pathname = resolvePathname(anchor.getAttribute('href'));
       if (pathname) prefetchPageData(pathname);
     };
 
     const handleFocusIn = (e: FocusEvent) => {
       const anchor = (e.target as HTMLElement).closest?.('a[href]');
-      if (!anchor) return;
+      if (!anchor || anchor.hasAttribute(NO_PREFETCH_ATTR)) return;
       const pathname = resolvePathname(anchor.getAttribute('href'));
       if (pathname) prefetchPageData(pathname);
     };
@@ -45,7 +47,7 @@ export function PrefetchProvider({ children }: { children: React.ReactNode }) {
     );
 
     const observeLinks = () => {
-      document.querySelectorAll('a[href]:not([data-prefetch-observed])').forEach((link) => {
+      document.querySelectorAll(`a[href]:not([data-prefetch-observed]):not([${NO_PREFETCH_ATTR}])`).forEach((link) => {
         const pathname = resolvePathname(link.getAttribute('href'));
         if (pathname) {
           link.setAttribute('data-prefetch-observed', '');
