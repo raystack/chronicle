@@ -4,8 +4,9 @@ import {
   MagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
 import { Badge, Command, IconButton, Text } from '@raystack/apsara';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { usePageContext } from '@/lib/page-context';
@@ -36,57 +37,38 @@ function buildSearchUrl(query: string, tag?: string): string {
 export function Search({ classNames }: SearchProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const [results, setResults] = useState<SearchResult[]>([]);
-  const [suggestions, setSuggestions] = useState<SearchResult[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const navigate = useNavigate();
   const { version } = usePageContext();
   const tag = version.dir ?? undefined;
-  const abortRef = useRef<AbortController | null>(null);
 
-  const fetchResults = useCallback(async (query: string, signal?: AbortSignal) => {
-    setIsLoading(true);
-    try {
-      const res = await fetch(buildSearchUrl(query, tag), { signal });
-      if (!res.ok || signal?.aborted) return;
-      const data: SearchResult[] = await res.json();
-      if (signal?.aborted) return;
-      if (query) {
-        setResults(data);
-      } else {
-        setSuggestions(data);
-      }
-    } catch (err) {
-      if (err instanceof DOMException && err.name === 'AbortError') return;
-      console.error('Search fetch failed:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [tag]);
-
-  const debouncedSearch = useMemo(
-    () => debounce((query: string) => {
-      abortRef.current?.abort();
-      const controller = new AbortController();
-      abortRef.current = controller;
-      fetchResults(query, controller.signal);
-    }, 150),
-    [fetchResults]
+  const updateDebouncedSearch = useMemo(
+    () => debounce((value: string) => setDebouncedSearch(value), 150),
+    []
   );
+
+  useEffect(() => {
+    updateDebouncedSearch(search);
+    return () => updateDebouncedSearch.cancel();
+  }, [search, updateDebouncedSearch]);
 
   useEffect(() => {
     if (!open) {
       setSearch('');
-      setResults([]);
-      return;
+      setDebouncedSearch('');
     }
-    if (!search) {
-      fetchResults('');
-      return;
-    }
-    debouncedSearch(search);
-    return () => debouncedSearch.cancel();
-  }, [open, search, fetchResults, debouncedSearch]);
+  }, [open]);
+
+  const { data = [], isLoading } = useQuery<SearchResult[]>({
+    queryKey: ['search', debouncedSearch, tag],
+    queryFn: async ({ signal }) => {
+      const res = await fetch(buildSearchUrl(debouncedSearch, tag), { signal });
+      if (!res.ok) throw new Error(String(res.status));
+      return res.json();
+    },
+    enabled: open,
+    placeholderData: keepPreviousData,
+  });
 
   const onSelect = useCallback(
     (url: string) => {
@@ -108,7 +90,7 @@ export function Search({ classNames }: SearchProps) {
     return () => document.removeEventListener('keydown', down);
   }, []);
 
-  const displayResults = deduplicateByUrl(search ? results : suggestions);
+  const displayResults = deduplicateByUrl(data);
 
   return (
     <>
