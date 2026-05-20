@@ -28,23 +28,34 @@ export function AnalyticsProvider({
   const [analytics, setAnalytics] = useState<AnalyticsInstance | null>(null)
 
   useEffect(() => {
-    if (!config.enabled) return
-    try {
-      const plugins: unknown[] = []
-      if (config.googleAnalytics?.measurementId) {
-        import('@analytics/google-analytics').then(({ default: googleAnalytics }) => {
+    if (!config.enabled) {
+      setAnalytics(null)
+      return
+    }
+
+    let cancelled = false
+
+    const init = async () => {
+      try {
+        const plugins: unknown[] = []
+        if (config.googleAnalytics?.measurementId) {
+          const { default: googleAnalytics } = await import('@analytics/google-analytics')
           plugins.push(
             googleAnalytics({
-              measurementIds: [config.googleAnalytics!.measurementId],
+              measurementIds: [config.googleAnalytics.measurementId],
             })
           )
-          import('analytics').then(({ default: Analytics }) => {
-            setAnalytics(Analytics({ app: appName, plugins }))
-          })
-        })
+        }
+        const { default: Analytics } = await import('analytics')
+        if (!cancelled) setAnalytics(Analytics({ app: appName, plugins }))
+      } catch {
+        if (!cancelled) setAnalytics(null)
       }
-    } catch { /* noop */ }
-  }, [config])
+    }
+
+    void init()
+    return () => { cancelled = true }
+  }, [config.enabled, config.googleAnalytics?.measurementId, appName])
 
   if (!analytics) return <>{children}</>
 
