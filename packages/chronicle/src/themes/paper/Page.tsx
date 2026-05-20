@@ -41,7 +41,7 @@ export function Page({ page, tree }: ThemePageProps) {
 
   return (
     <>
-      <main className={`${styles.main} ${readerMode ? styles.readerMode : ''}`}>
+      <main className={styles.main}>
         <div className={styles.navbar}>
           <div className={styles.navLeft}>
             <div className={styles.arrows}>
