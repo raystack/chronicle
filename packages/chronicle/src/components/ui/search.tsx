@@ -6,7 +6,7 @@ import {
 import { Badge, Command, IconButton, Text } from '@raystack/apsara';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { usePageContext } from '@/lib/page-context';
@@ -47,17 +47,19 @@ export function Search({ classNames }: SearchProps) {
     []
   );
 
-  useEffect(() => {
-    updateDebouncedSearch(search);
-    return () => updateDebouncedSearch.cancel();
-  }, [search, updateDebouncedSearch]);
+  const onSearchChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearch(value);
+    updateDebouncedSearch(value);
+  }, [updateDebouncedSearch]);
 
   useEffect(() => {
     if (!open) {
       setSearch('');
       setDebouncedSearch('');
+      updateDebouncedSearch.cancel();
     }
-  }, [open]);
+  }, [open, updateDebouncedSearch]);
 
   const { data = [], isLoading } = useQuery<SearchResult[]>({
     queryKey: ['search', debouncedSearch, tag],
@@ -111,7 +113,7 @@ export function Search({ classNames }: SearchProps) {
               placeholder='Search'
               leadingIcon={<MagnifyingGlassIcon width={16} height={16} />}
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={onSearchChange}
               className={styles.input}
             />
 
