@@ -1,4 +1,7 @@
 import type { Node } from 'fumadocs-core/page-tree';
+import { getPage, getPageTree, isDraft } from './source';
+import { loadConfig } from './config';
+import { resolveVersionFromUrl } from './version-source';
 
 export const NodeType = {
   Page: 'page',
@@ -54,4 +57,30 @@ export function resolveDocsRedirect(
   }
 
   return findFolderFirstPage(tree.children, `/${slug.join('/')}`);
+}
+
+export async function resolvePageAndSlug(slug: string[]) {
+  const page = await getPage(slug);
+  if (page && !isDraft(page)) return { page, slug };
+
+  const config = loadConfig();
+  const version = resolveVersionFromUrl(`/${slug.join('/')}`, config);
+  const slugWithoutVersion = version.dir && slug[0] === version.dir
+    ? slug.slice(1)
+    : slug;
+
+  const tree = await getPageTree();
+  const contentEntries = version.dir
+    ? config.versions?.find((v: { dir: string }) => v.dir === version.dir)?.content ?? config.content
+    : config.content;
+  const contentConfig = contentEntries?.find((c: { dir: string }) => c.dir === slugWithoutVersion[0]);
+  const redirectUrl = resolveDocsRedirect(slugWithoutVersion, tree, contentConfig);
+  if (!redirectUrl) return null;
+
+  const fullUrl = version.urlPrefix ? `${version.urlPrefix}${redirectUrl}` : redirectUrl;
+  const resolvedSlug = fullUrl.split('/').filter(Boolean);
+  const resolvedPage = await getPage(resolvedSlug);
+  if (!resolvedPage || isDraft(resolvedPage)) return null;
+
+  return { page: resolvedPage, slug: resolvedSlug };
 }
