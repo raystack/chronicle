@@ -82,7 +82,7 @@ function LayoutInner({
             ) : null}
           </aside>
         ) : null}
-        <div className={cx(styles.content, classNames?.content)}>
+        <div className={cx(styles.content, classNames?.content, { [styles.contentFull]: !showSidebar })}>
           {config.search?.enabled && <Search classNames={{ trigger: styles.hiddenTrigger }} />}
           {children}
         </div>
