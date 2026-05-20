@@ -226,9 +226,10 @@ export default defineHandler(async event => {
   return Response.json((result.rows ?? []).map(r => {
     const { match, snippet, slug } = findMatch(queryLower, r.title as string, r.headings as string, r.body as string);
     const id = match === 'heading' && slug ? `${r.id}#${slug}` : r.id as string;
+    const url = match === 'heading' && slug ? `${r.url}#${slug}` : r.url as string;
     return {
       id,
-      url: id,
+      url,
       type: r.type,
       content: r.title,
       match,
