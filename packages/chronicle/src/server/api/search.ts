@@ -138,12 +138,21 @@ async function buildDocs(ctx: VersionContext): Promise<SearchDocument[]> {
   return docs;
 }
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 function findMatch(
   query: string,
   title: string,
   headings: string,
   body: string,
-): { match: 'title' | 'heading' | 'body'; snippet: string } {
+): { match: 'title' | 'heading' | 'body'; snippet: string; slug?: string } {
   if (title.toLowerCase().includes(query)) {
     return { match: 'title', snippet: title };
   }
@@ -151,7 +160,8 @@ function findMatch(
   const headingList = headings.split('\n').filter(Boolean);
   for (const h of headingList) {
     if (h.toLowerCase().includes(query)) {
-      return { match: 'heading', snippet: h };
+      const slug = slugify(h);
+      return { match: 'heading', snippet: h, slug };
     }
   }
 
@@ -214,10 +224,11 @@ export default defineHandler(async event => {
 
   const queryLower = query.toLowerCase();
   return Response.json((result.rows ?? []).map(r => {
-    const { match, snippet } = findMatch(queryLower, r.title as string, r.headings as string, r.body as string);
+    const { match, snippet, slug } = findMatch(queryLower, r.title as string, r.headings as string, r.body as string);
+    const url = match === 'heading' && slug ? `${r.url}#${slug}` : r.url;
     return {
-      id: r.id,
-      url: r.url,
+      id: match === 'heading' && slug ? `${r.id}#${slug}` : r.id,
+      url,
       type: r.type,
       content: r.title,
       match,
