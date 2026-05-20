@@ -81,8 +81,8 @@
 }
 
 .content table {
-  display: block;
-  max-width: 100%;
+  display: table;
+  width: 100%;
   overflow-x: auto;
   margin-bottom: var(--rs-space-5);
 }

@@ -198,7 +198,7 @@
 }
 
 .content table {
-  display: block;
+  display: table;
   width: 100%;
   overflow-x: auto;
   margin-bottom: var(--rs-space-5);
