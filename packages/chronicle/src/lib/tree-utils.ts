@@ -1,4 +1,6 @@
 import type { Node } from 'fumadocs-core/page-tree';
+import { loadConfig } from './config';
+import { resolveVersionFromUrl } from './version-source';
 
 export const NodeType = {
   Page: 'page',
@@ -59,8 +61,6 @@ export function resolveDocsRedirect(
 export async function resolvePageAndSlug(slug: string[]) {
   try {
     const { getPage, getPageTree, isDraft } = await import('./source');
-    const { loadConfig } = await import('./config');
-    const { resolveVersionFromUrl } = await import('./version-source');
 
     const page = await getPage(slug);
     if (page && !isDraft(page)) return { page, slug };
