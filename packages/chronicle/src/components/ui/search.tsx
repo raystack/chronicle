@@ -6,7 +6,7 @@ import {
 import { Badge, Command, IconButton, Text } from '@raystack/apsara';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { usePageContext } from '@/lib/page-context';
@@ -42,8 +42,8 @@ export function Search({ classNames }: SearchProps) {
   const { version } = usePageContext();
   const tag = version.dir ?? undefined;
 
-  const updateDebouncedSearch = useMemo(
-    () => debounce((value: string) => setDebouncedSearch(value), 150),
+  const updateDebouncedSearch = useCallback(
+    debounce((value: string) => setDebouncedSearch(value), 150),
     []
   );
 
