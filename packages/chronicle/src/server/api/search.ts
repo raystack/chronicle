@@ -1,3 +1,4 @@
+import GithubSlugger from 'github-slugger';
 import { defineHandler, HTTPError } from 'nitro';
 import { useDatabase } from 'nitro/database';
 import type { OpenAPIV3 } from 'openapi-types';
@@ -138,15 +139,6 @@ async function buildDocs(ctx: VersionContext): Promise<SearchDocument[]> {
   return docs;
 }
 
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
 function findMatch(
   query: string,
   title: string,
@@ -157,10 +149,11 @@ function findMatch(
     return { match: 'title', snippet: title };
   }
 
+  const slugger = new GithubSlugger();
   const headingList = headings.split('\n').filter(Boolean);
   for (const h of headingList) {
+    const slug = slugger.slug(h);
     if (h.toLowerCase().includes(query)) {
-      const slug = slugify(h);
       return { match: 'heading', snippet: h, slug };
     }
   }
