@@ -150,6 +150,7 @@ export async function createViteConfig(
       output: {
         dir: resolveOutputDir(projectRoot, preset),
       },
+      externals: ['sharp'],
       experimental: {
         database: true,
       },

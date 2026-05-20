@@ -13,6 +13,7 @@ import { getPageTree, getPage, getPageNav, loadPageModule, extractFrontmatter, g
 import { getFirstApiUrl } from '@/lib/api-routes';
 import { StatusCodes } from 'http-status-codes';
 import { resolveDocsRedirect } from '@/lib/tree-utils';
+import { isLocalImage, isSvg, buildOptimizedUrl } from '@/lib/image-utils';
 import { useNitroApp } from 'nitro/app';
 import { App } from './App';
 
@@ -126,9 +127,10 @@ export default {
           {assets.js.map((attr: { href: string }) => (
             <link key={attr.href} rel="modulepreload" {...attr} />
           ))}
-          {pageImages.map((src: string) => (
-            <link key={src} rel="preload" as="image" href={src} />
-          ))}
+          {[...new Set(pageImages)].map((src: string) => {
+            const href = isLocalImage(src) && !isSvg(src) ? buildOptimizedUrl(src, 1024) : src;
+            return <link key={src} rel="preload" as="image" href={href} />;
+          })}
           <script type="module" src={assets.entry} />
           <script dangerouslySetInnerHTML={{ __html: `window.__PAGE_DATA__ = ${safeJson}` }} />
         </head>
