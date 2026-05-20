@@ -104,6 +104,17 @@ chronicle dev
 | email   | string | Email address      |
 | active  | bool   | Account status     |
 
+### Wide Table
+
+| Name | Type | Default | Required | Description | Example | Notes |
+|------|------|---------|----------|-------------|---------|-------|
+| id | number | auto | yes | Unique identifier for the resource | 42 | Auto-incremented |
+| name | string | none | yes | Lorem ipsum dolor sit amet, consectetur adipiscing elit sed do eiusmod tempor | John Doe | Must be unique across all tenants in the system |
+| email | string | none | yes | Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip | john@example.com | Validated against RFC 5322 format specification |
+| role | string | viewer | no | Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat | admin | One of: admin, editor, viewer, guest, superadmin |
+| created_at | datetime | now | no | Excepteur sint occaecat cupidatat non proident sunt in culpa qui officia deserunt | 2024-01-15T10:30:00Z | ISO 8601 format with timezone offset required |
+| metadata | object | empty | no | Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque | key-value pairs | Max 10 keys allowed per resource entity |
+
 ## Horizontal Rule
 
 ---
