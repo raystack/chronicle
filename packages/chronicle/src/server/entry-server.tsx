@@ -9,7 +9,7 @@ import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
-import { getPageTree, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath, getPageImages } from '@/lib/source';
+import { getPage, getPageTree, isDraft, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath, getPageImages } from '@/lib/source';
 import { getFirstApiUrl } from '@/lib/api-routes';
 import { StatusCodes } from 'http-status-codes';
 import { resolvePageAndSlug } from '@/lib/tree-utils';
@@ -55,9 +55,10 @@ export default {
     }
 
     const resolved = route.type === RouteType.DocsPage
-      ? await resolvePageAndSlug(route.slug)
+      ? await resolvePageAndSlug(route.slug, { getPage, getPageTree, isDraft, config, version: route.version })
       : null;
     const page = resolved?.page ?? null;
+    const resolvedSlug = resolved?.slug ?? pageSlug;
 
     if (route.type === RouteType.DocsPage && resolved && resolved.slug.join('/') !== route.slug.join('/')) {
       return new Response(null, {
@@ -66,7 +67,7 @@ export default {
       });
     }
 
-    const nav = page ? await getPageNav(pageSlug) : { prev: null, next: null };
+    const nav = page ? await getPageNav(resolvedSlug) : { prev: null, next: null };
 
     const relativePath = page ? getRelativePath(page) : null;
     const originalPath = page ? getOriginalPath(page) : null;
@@ -75,9 +76,9 @@ export default {
 
     const pageData = page
       ? {
-          slug: pageSlug,
+          slug: resolvedSlug,
           frontmatter: {
-            ...extractFrontmatter(page, pageSlug[pageSlug.length - 1]),
+            ...extractFrontmatter(page, resolvedSlug[resolvedSlug.length - 1]),
             _readingTime: mdxModule?._readingTime,
           },
           content: mdxModule?.default
@@ -92,7 +93,7 @@ export default {
     const embeddedData = {
       config,
       tree,
-      slug: pageSlug,
+      slug: resolvedSlug,
       version: route.version,
       frontmatter: pageData?.frontmatter ?? null,
       relativePath,
