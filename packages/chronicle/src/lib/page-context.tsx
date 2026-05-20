@@ -136,7 +136,7 @@ export function PageProvider({
       if (cancelled.current) return;
       if (data.images?.length) {
         for (const src of data.images) {
-          const img = new window.Image();
+          const img = new Image();
           img.src = isLocalImage(src) && !isSvg(src) ? buildOptimizedUrl(src, 1024) : src;
         }
       }
