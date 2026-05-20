@@ -1,3 +1,4 @@
+import GithubSlugger from 'github-slugger';
 import { defineHandler, HTTPError } from 'nitro';
 import { useDatabase } from 'nitro/database';
 import type { OpenAPIV3 } from 'openapi-types';
@@ -143,15 +144,17 @@ function findMatch(
   title: string,
   headings: string,
   body: string,
-): { match: 'title' | 'heading' | 'body'; snippet: string } {
+): { match: 'title' | 'heading' | 'body'; snippet: string; slug?: string } {
   if (title.toLowerCase().includes(query)) {
     return { match: 'title', snippet: title };
   }
 
+  const slugger = new GithubSlugger();
   const headingList = headings.split('\n').filter(Boolean);
   for (const h of headingList) {
+    const slug = slugger.slug(h);
     if (h.toLowerCase().includes(query)) {
-      return { match: 'heading', snippet: h };
+      return { match: 'heading', snippet: h, slug };
     }
   }
 
@@ -214,10 +217,12 @@ export default defineHandler(async event => {
 
   const queryLower = query.toLowerCase();
   return Response.json((result.rows ?? []).map(r => {
-    const { match, snippet } = findMatch(queryLower, r.title as string, r.headings as string, r.body as string);
+    const { match, snippet, slug } = findMatch(queryLower, r.title as string, r.headings as string, r.body as string);
+    const id = match === 'heading' && slug ? `${r.id}#${slug}` : r.id as string;
+    const url = match === 'heading' && slug ? `${r.url}#${slug}` : r.url as string;
     return {
-      id: r.id,
-      url: r.url,
+      id,
+      url,
       type: r.type,
       content: r.title,
       match,
