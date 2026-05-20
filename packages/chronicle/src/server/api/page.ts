@@ -5,19 +5,20 @@ import { resolvePageAndSlug } from '@/lib/tree-utils';
 export default defineHandler(async event => {
   const slugParam = event.url.searchParams.get('slug') ?? '';
   const slug = slugParam ? slugParam.split(',').filter(Boolean) : [];
-  const result = await resolvePageAndSlug(slug);
+  const resolved = await resolvePageAndSlug(slug);
 
-  if (!result) {
+  if (!resolved) {
     throw new HTTPError({ status: 404, message: 'Page not found' });
   }
 
-  const nav = await getPageNav(result.slug);
+  const { page, slug: resolvedSlug } = resolved;
+  const nav = await getPageNav(resolvedSlug);
 
   return Response.json({
-    frontmatter: extractFrontmatter(result.page, result.slug[result.slug.length - 1]),
-    relativePath: getRelativePath(result.page),
-    originalPath: getOriginalPath(result.page),
-    images: getPageImages(result.page),
+    frontmatter: extractFrontmatter(page, resolvedSlug[resolvedSlug.length - 1]),
+    relativePath: getRelativePath(page),
+    originalPath: getOriginalPath(page),
+    images: getPageImages(page),
     prev: nav.prev,
     next: nav.next,
   });
