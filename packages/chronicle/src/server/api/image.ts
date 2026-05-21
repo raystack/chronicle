@@ -13,9 +13,26 @@ async function ensureCacheDir() {
   await fs.mkdir(CACHE_DIR, { recursive: true })
 }
 
-function cacheKey(url: string, w: number, q: number): string {
-  const hash = crypto.createHash('sha256').update(`${url}:${w}:${q}`).digest('hex').slice(0, 16)
-  return path.join(CACHE_DIR, `${hash}.webp`)
+type OutputFormat = 'avif' | 'webp' | 'original'
+
+function negotiateFormat(accept: string | null): OutputFormat {
+  if (accept?.includes('image/avif')) return 'avif'
+  if (accept?.includes('image/webp')) return 'webp'
+  return 'original'
+}
+
+const MIME: Record<string, string> = {
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.webp': 'image/webp',
+}
+
+function cacheKey(url: string, w: number, q: number, format: OutputFormat): string {
+  const ext = format === 'original' ? path.extname(url.split('?')[0]) : `.${format}`
+  const hash = crypto.createHash('sha256').update(`${url}:${w}:${q}:${format}`).digest('hex').slice(0, 16)
+  return path.join(CACHE_DIR, `${hash}${ext}`)
 }
 
 export default defineHandler(async event => {
@@ -50,14 +67,21 @@ export default defineHandler(async event => {
     throw new HTTPError({ status: 404, message: 'Not Found' })
   }
 
-  const cachePath = cacheKey(url, w, q)
+  const accept = event.headers.get('accept')
+  const format = negotiateFormat(accept)
+  const ext = path.extname(filePath).toLowerCase()
+  const originalMime = MIME[ext] ?? 'application/octet-stream'
+  const contentType = format === 'original' ? originalMime : `image/${format}`
+
+  const cachePath = cacheKey(url, w, q, format)
 
   const cached = await fs.readFile(cachePath).catch(() => null)
   if (cached) {
     return new Response(cached, {
       headers: {
-        'Content-Type': 'image/webp',
+        'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
+        'Vary': 'Accept',
       },
     })
   }
@@ -68,18 +92,21 @@ export default defineHandler(async event => {
   }
 
   try {
-    const optimized = await sharp(source)
-      .resize({ width: w, withoutEnlargement: true })
-      .webp({ quality: q })
-      .toBuffer()
+    const pipeline = sharp(source).resize({ width: w, withoutEnlargement: true })
+    const optimized = format === 'avif'
+      ? await pipeline.avif({ quality: q }).toBuffer()
+      : format === 'webp'
+        ? await pipeline.webp({ quality: q }).toBuffer()
+        : await pipeline.toBuffer()
 
     await ensureCacheDir()
     await fs.writeFile(cachePath, optimized).catch(() => {})
 
     return new Response(optimized, {
       headers: {
-        'Content-Type': 'image/webp',
+        'Content-Type': contentType,
         'Cache-Control': 'public, max-age=31536000, immutable',
+        'Vary': 'Accept',
       },
     })
   } catch {
