@@ -1,17 +1,11 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import os from 'node:os'
 import crypto from 'node:crypto'
 import { defineHandler, HTTPError } from 'nitro'
+import { useStorage } from 'nitro/storage'
 import sharp from 'sharp'
 import { safePath } from '@/server/utils/safe-path'
 import { ALLOWED_WIDTHS } from '@/lib/image-utils'
-
-const CACHE_DIR = path.join(os.tmpdir(), 'chronicle-image-cache')
-
-async function ensureCacheDir() {
-  await fs.mkdir(CACHE_DIR, { recursive: true })
-}
 
 type OutputFormat = 'avif' | 'webp' | 'original'
 
@@ -30,9 +24,8 @@ const MIME: Record<string, string> = {
 }
 
 function cacheKey(url: string, w: number, q: number, format: OutputFormat): string {
-  const ext = format === 'original' ? path.extname(url.split('?')[0]) : `.${format}`
   const hash = crypto.createHash('sha256').update(`${url}:${w}:${q}:${format}`).digest('hex').slice(0, 16)
-  return path.join(CACHE_DIR, `${hash}${ext}`)
+  return `${hash}.${format}`
 }
 
 export default defineHandler(async event => {
@@ -73,9 +66,10 @@ export default defineHandler(async event => {
   const originalMime = MIME[ext] ?? 'application/octet-stream'
   const contentType = format === 'original' ? originalMime : `image/${format}`
 
-  const cachePath = cacheKey(url, w, q, format)
+  const storage = useStorage('image-cache')
+  const key = cacheKey(url, w, q, format)
 
-  const cached = await fs.readFile(cachePath).catch(() => null)
+  const cached = await storage.getItemRaw<Buffer>(key)
   if (cached) {
     return new Response(cached, {
       headers: {
@@ -99,8 +93,7 @@ export default defineHandler(async event => {
         ? await pipeline.webp({ quality: q }).toBuffer()
         : await pipeline.toBuffer()
 
-    await ensureCacheDir()
-    await fs.writeFile(cachePath, optimized).catch(() => {})
+    await storage.setItemRaw(key, optimized)
 
     return new Response(optimized, {
       headers: {
