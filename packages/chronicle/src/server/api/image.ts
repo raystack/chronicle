@@ -4,6 +4,7 @@ import crypto from 'node:crypto'
 import { defineHandler, HTTPError } from 'nitro'
 import { useStorage } from 'nitro/storage'
 import sharp from 'sharp'
+import { StatusCodes } from 'http-status-codes'
 import { safePath } from '@/server/utils/safe-path'
 import { ALLOWED_WIDTHS } from '@/lib/image-utils'
 
@@ -31,35 +32,36 @@ function cacheKey(url: string, w: number, q: number, format: OutputFormat): stri
 }
 
 export default defineHandler(async event => {
+  const storage = useStorage(STORAGE_KEY)
+
   const url = event.url.searchParams.get('url')
   const wParam = event.url.searchParams.get('w')
   const qParam = event.url.searchParams.get('q')
 
   if (!url || !wParam) {
-    throw new HTTPError({ status: 400, message: 'Missing url or w parameter' })
+    throw new HTTPError({ status: StatusCodes.BAD_REQUEST, message: 'Missing url or w parameter' })
   }
 
   if (!url.startsWith('/_content/')) {
-    throw new HTTPError({ status: 400, message: 'Only local content images allowed' })
+    throw new HTTPError({ status: StatusCodes.BAD_REQUEST, message: 'Only local content images allowed' })
   }
 
   const w = Number.parseInt(wParam, 10)
   if (!ALLOWED_WIDTHS.includes(w)) {
-    throw new HTTPError({ status: 400, message: `Width must be one of: ${ALLOWED_WIDTHS.join(', ')}` })
+    throw new HTTPError({ status: StatusCodes.BAD_REQUEST, message: `Width must be one of: ${ALLOWED_WIDTHS.join(', ')}` })
   }
 
   const q = qParam ? Math.min(100, Math.max(1, Number.parseInt(qParam, 10))) : 75
 
   if (url.split('?')[0].endsWith('.svg')) {
-    const svgUrl = url.replace(/^\/_content/, '/_content')
-    return Response.redirect(svgUrl, 307)
+    return Response.redirect(url, StatusCodes.TEMPORARY_REDIRECT)
   }
 
   const contentDir = __CHRONICLE_CONTENT_DIR__
   const relativePath = url.replace(/^\/_content\//, '')
   const filePath = safePath(contentDir, `/${relativePath}`)
   if (!filePath) {
-    throw new HTTPError({ status: 404, message: 'Not Found' })
+    throw new HTTPError({ status: StatusCodes.NOT_FOUND, message: 'Not Found' })
   }
 
   const accept = event.headers.get('accept')
@@ -68,7 +70,6 @@ export default defineHandler(async event => {
   const originalMime = MIME[ext] ?? 'application/octet-stream'
   const contentType = format === 'original' ? originalMime : `image/${format}`
 
-  const storage = useStorage(STORAGE_KEY)
   const key = cacheKey(url, w, q, format)
 
   const cached = await storage.getItemRaw<Buffer>(key)
@@ -84,7 +85,7 @@ export default defineHandler(async event => {
 
   const source = await fs.readFile(filePath).catch(() => null)
   if (!source) {
-    throw new HTTPError({ status: 404, message: 'Not Found' })
+    throw new HTTPError({ status: StatusCodes.NOT_FOUND, message: 'Not Found' })
   }
 
   try {
