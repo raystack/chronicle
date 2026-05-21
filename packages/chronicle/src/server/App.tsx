@@ -3,6 +3,7 @@ import '@raystack/apsara/style.css';
 import { ThemeProvider, Skeleton, Flex } from '@raystack/apsara';
 import { lazy, Suspense } from 'react';
 import { Navigate, useLocation } from 'react-router';
+import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
 import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
@@ -37,18 +38,20 @@ export function App() {
       enableSystem={themeConfig.enableSystem}
       forcedTheme={themeConfig.forcedTheme}
     >
-      <RootHead config={config} />
-      <Suspense fallback={<PageFallback />}>
-        {isApi ? (
-          <ApiLayout>
-            <ApiPage slug={apiSlug} />
-          </ApiLayout>
-        ) : (
-          <DocsLayout hideSidebar={isLanding}>
-            {isLanding ? <LandingPage /> : <DocsPage slug={docsSlug} />}
-          </DocsLayout>
-        )}
-      </Suspense>
+      <AnalyticsProvider config={config.analytics ?? { enabled: false }} appName={config.site.title}>
+        <RootHead config={config} />
+        <Suspense fallback={<PageFallback />}>
+          {isApi ? (
+            <ApiLayout>
+              <ApiPage slug={apiSlug} />
+            </ApiLayout>
+          ) : (
+            <DocsLayout hideSidebar={isLanding}>
+              {isLanding ? <LandingPage /> : <DocsPage slug={docsSlug} />}
+            </DocsLayout>
+          )}
+        </Suspense>
+      </AnalyticsProvider>
     </ThemeProvider>
   );
 }
