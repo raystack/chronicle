@@ -7,6 +7,8 @@ import sharp from 'sharp'
 import { safePath } from '@/server/utils/safe-path'
 import { ALLOWED_WIDTHS } from '@/lib/image-utils'
 
+const STORAGE_KEY = 'image-cache'
+
 type OutputFormat = 'avif' | 'webp' | 'original'
 
 function negotiateFormat(accept: string | null): OutputFormat {
@@ -66,7 +68,7 @@ export default defineHandler(async event => {
   const originalMime = MIME[ext] ?? 'application/octet-stream'
   const contentType = format === 'original' ? originalMime : `image/${format}`
 
-  const storage = useStorage('image-cache')
+  const storage = useStorage(STORAGE_KEY)
   const key = cacheKey(url, w, q, format)
 
   const cached = await storage.getItemRaw<Buffer>(key)
