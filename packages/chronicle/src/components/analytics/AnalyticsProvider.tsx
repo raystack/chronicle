@@ -1,17 +1,20 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
-import { AnalyticsProvider as Provider, useAnalytics } from 'use-analytics'
 import type { ReactNode } from 'react'
 import type { AnalyticsConfig } from '@/types'
 import type { AnalyticsInstance } from 'analytics'
 
-function PageViewTracker() {
-  const { page } = useAnalytics()
+function PageViewTracker({ analytics }: { analytics: AnalyticsInstance }) {
   const { pathname } = useLocation()
+  const isFirst = useRef(true)
 
   useEffect(() => {
-    try { page() } catch { /* noop */ }
-  }, [pathname, page])
+    if (isFirst.current) {
+      isFirst.current = false
+      return
+    }
+    try { analytics.page() } catch { /* noop */ }
+  }, [pathname, analytics])
 
   return null
 }
@@ -57,12 +60,10 @@ export function AnalyticsProvider({
     return () => { cancelled = true }
   }, [config.enabled, config.googleAnalytics?.measurementId, appName])
 
-  if (!analytics) return <>{children}</>
-
   return (
-    <Provider instance={analytics}>
-      <PageViewTracker />
+    <>
+      {analytics && <PageViewTracker analytics={analytics} />}
       {children}
-    </Provider>
+    </>
   )
 }

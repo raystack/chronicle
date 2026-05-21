@@ -132,7 +132,8 @@ export async function createViteConfig(
       }
     },
     ssr: {
-      noExternal: ['@raystack/apsara', 'dayjs', 'fumadocs-core']
+      noExternal: ['@raystack/apsara', 'dayjs', 'fumadocs-core'],
+      external: ['analytics', 'use-analytics', '@analytics/google-analytics'],
     },
     environments: {
       client: {
