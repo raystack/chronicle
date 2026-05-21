@@ -5,6 +5,7 @@ import type { Image, Html } from 'mdast'
 import type { Element } from 'hast'
 import type { MdxJsxFlowElement, MdxJsxTextElement, MdxJsxAttribute } from 'mdast-util-mdx-jsx'
 import { MdxNodeType } from './mdx-utils'
+import { isLocalImage, isSvg, buildOptimizedUrl, DEFAULT_WIDTH } from './image-utils'
 
 function resolveUrl(src: string, dir: string): string {
   if (/^[a-z][a-z0-9+\-.]*:/i.test(src)) return src
@@ -16,7 +17,17 @@ function resolveUrl(src: string, dir: string): string {
   return `/_content/${path.posix.normalize(path.posix.join(dir, src))}`
 }
 
-const remarkResolveImages: Plugin = () => {
+interface RemarkResolveImagesOptions {
+  optimize?: boolean
+}
+
+function optimizeUrl(url: string, optimize: boolean): string {
+  if (optimize && isLocalImage(url) && !isSvg(url)) return buildOptimizedUrl(url, DEFAULT_WIDTH)
+  return url
+}
+
+const remarkResolveImages: Plugin<[RemarkResolveImagesOptions?]> = (options) => {
+  const optimize = options?.optimize ?? true
   return (tree, file) => {
     const filePath = file.path
     if (!filePath) return
@@ -40,6 +51,7 @@ const remarkResolveImages: Plugin = () => {
       if (!node.url) return
       node.url = resolveUrl(node.url, dir)
       collect(node.url)
+      node.url = optimizeUrl(node.url, optimize)
     })
 
     visit(tree, 'html', (node: Html) => {
@@ -48,7 +60,7 @@ const remarkResolveImages: Plugin = () => {
         (_, before, src, after) => {
           const resolved = resolveUrl(src, dir)
           collect(resolved)
-          return `${before}${resolved}${after}`
+          return `${before}${optimizeUrl(resolved, optimize)}${after}`
         }
       )
     })
@@ -61,6 +73,7 @@ const remarkResolveImages: Plugin = () => {
       if (!srcAttr?.value || typeof srcAttr.value !== 'string') return
       srcAttr.value = resolveUrl(srcAttr.value, dir)
       collect(srcAttr.value)
+      srcAttr.value = optimizeUrl(srcAttr.value, optimize)
     })
 
     visit(tree, 'element', (node: Element) => {
@@ -69,6 +82,7 @@ const remarkResolveImages: Plugin = () => {
       if (typeof src !== 'string') return
       node.properties.src = resolveUrl(src, dir)
       collect(node.properties.src as string)
+      node.properties.src = optimizeUrl(node.properties.src as string, optimize)
     })
 
     file.data.images = images
