@@ -151,6 +151,12 @@ export async function createViteConfig(
         dir: resolveOutputDir(projectRoot, preset),
       },
       externals: ['sharp'],
+      storage: {
+        'image-cache': {
+          driver: 'fs',
+          base: path.resolve(projectRoot, '.cache/images'),
+        },
+      },
       experimental: {
         database: true,
       },
