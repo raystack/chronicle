@@ -6,9 +6,12 @@ import { useStorage } from 'nitro/storage'
 import sharp from 'sharp'
 import { StatusCodes } from 'http-status-codes'
 import { safePath } from '@/server/utils/safe-path'
-import { ALLOWED_WIDTHS, DEFAULT_QUALITY } from '@/lib/image-utils'
+import { ALLOWED_WIDTHS, ALLOWED_QUALITIES, DEFAULT_QUALITY } from '@/lib/image-utils'
 
 const STORAGE_KEY = 'image-cache'
+const MAX_CACHE_ENTRIES = 500
+
+const inflight = new Map<string, Promise<Buffer>>()
 
 export type OutputFormat = 'avif' | 'webp' | 'original'
 
@@ -31,6 +34,21 @@ export function cacheKey(url: string, w: number, q: number, format: OutputFormat
   return `${hash}.${format}`
 }
 
+function snapQuality(q: number): number {
+  let closest = ALLOWED_QUALITIES[0];
+  for (const aq of ALLOWED_QUALITIES) {
+    if (Math.abs(aq - q) < Math.abs(closest - q)) closest = aq;
+  }
+  return closest;
+}
+
+async function evictIfNeeded(storage: ReturnType<typeof useStorage>) {
+  const keys = await storage.getKeys()
+  if (keys.length <= MAX_CACHE_ENTRIES) return
+  const toRemove = keys.slice(0, keys.length - MAX_CACHE_ENTRIES)
+  await Promise.all(toRemove.map(k => storage.removeItem(k)))
+}
+
 export default defineHandler(async event => {
   const storage = useStorage(STORAGE_KEY)
 
@@ -51,7 +69,7 @@ export default defineHandler(async event => {
     throw new HTTPError({ status: StatusCodes.BAD_REQUEST, message: `Width must be one of: ${ALLOWED_WIDTHS.join(', ')}` })
   }
 
-  const q = qParam ? Math.min(100, Math.max(1, Number.parseInt(qParam, 10))) : DEFAULT_QUALITY
+  const q = snapQuality(qParam ? Number.parseInt(qParam, 10) : DEFAULT_QUALITY)
 
   if (url.split('?')[0].endsWith('.svg')) {
     return Response.redirect(url, StatusCodes.TEMPORARY_REDIRECT)
@@ -83,12 +101,20 @@ export default defineHandler(async event => {
     })
   }
 
-  const source = await fs.readFile(filePath).catch(() => null)
-  if (!source) {
-    throw new HTTPError({ status: StatusCodes.NOT_FOUND, message: 'Not Found' })
+  const existing = inflight.get(key)
+  if (existing) {
+    const optimized = await existing
+    return new Response(optimized, {
+      headers: {
+        'Content-Type': contentType,
+        'Cache-Control': 'public, max-age=31536000, immutable',
+        'Vary': 'Accept',
+      },
+    })
   }
 
-  try {
+  const work = (async () => {
+    const source = await fs.readFile(filePath)
     const pipeline = sharp(source).resize({ width: w, withoutEnlargement: true })
     const optimized = format === 'avif'
       ? await pipeline.avif({ quality: q }).toBuffer()
@@ -97,7 +123,13 @@ export default defineHandler(async event => {
         : await pipeline.toBuffer()
 
     await storage.setItemRaw(key, optimized)
+    await evictIfNeeded(storage)
+    return optimized
+  })()
 
+  inflight.set(key, work)
+  try {
+    const optimized = await work
     return new Response(optimized, {
       headers: {
         'Content-Type': contentType,
@@ -106,11 +138,17 @@ export default defineHandler(async event => {
       },
     })
   } catch {
+    const source = await fs.readFile(filePath).catch(() => null)
+    if (!source) {
+      throw new HTTPError({ status: StatusCodes.NOT_FOUND, message: 'Not Found' })
+    }
     return new Response(source, {
       headers: {
         'Content-Type': 'application/octet-stream',
         'Cache-Control': 'public, max-age=86400',
       },
     })
+  } finally {
+    inflight.delete(key)
   }
 })

@@ -25,6 +25,12 @@ function getDatabaseConnector(preset?: string): { connector: string; options?: R
   }
 }
 
+const STATIC_PRESETS = new Set(['static', 'vercel-static', 'cloudflare-pages', 'github-pages']);
+
+function isStaticPreset(preset?: string): boolean {
+  return !!preset && STATIC_PRESETS.has(preset);
+}
+
 function resolveOutputDir(projectRoot: string, preset?: string): string {
   if (preset === 'vercel' || preset === 'vercel-static') return path.resolve(projectRoot, '.vercel/output');
   return path.resolve(projectRoot, '.output');
@@ -94,7 +100,7 @@ export async function createViteConfig(
               }],
               remarkUnusedDirectives,
               remarkResolveLinks,
-              remarkResolveImages,
+              [remarkResolveImages, { optimize: !isStaticPreset(preset) }],
               remarkMdxMermaid,
               remarkReadingTime,
             ],
