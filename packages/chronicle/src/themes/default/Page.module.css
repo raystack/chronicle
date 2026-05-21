@@ -104,10 +104,19 @@
 }
 
 .content table {
-  display: block;
-  max-width: 100%;
-  overflow-x: auto;
+  display: table;
+  table-layout: fixed;
+  width: 100%;
   margin-bottom: var(--rs-space-5);
+}
+
+.content table td,
+.content table th {
+  overflow: visible;
+  white-space: normal;
+  text-overflow: unset;
+  word-wrap: break-word;
+  vertical-align: top;
 }
 
 .content details {
