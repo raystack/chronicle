@@ -10,15 +10,15 @@ import { ALLOWED_WIDTHS, DEFAULT_QUALITY } from '@/lib/image-utils'
 
 const STORAGE_KEY = 'image-cache'
 
-type OutputFormat = 'avif' | 'webp' | 'original'
+export type OutputFormat = 'avif' | 'webp' | 'original'
 
-function negotiateFormat(accept: string | null): OutputFormat {
+export function negotiateFormat(accept: string | null): OutputFormat {
   if (accept?.includes('image/avif')) return 'avif'
   if (accept?.includes('image/webp')) return 'webp'
   return 'original'
 }
 
-const MIME: Record<string, string> = {
+export const MIME: Record<string, string> = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
@@ -26,7 +26,7 @@ const MIME: Record<string, string> = {
   '.webp': 'image/webp',
 }
 
-function cacheKey(url: string, w: number, q: number, format: OutputFormat): string {
+export function cacheKey(url: string, w: number, q: number, format: OutputFormat): string {
   const hash = crypto.createHash('sha256').update(`${url}:${w}:${q}:${format}`).digest('hex').slice(0, 16)
   return `${hash}.${format}`
 }
