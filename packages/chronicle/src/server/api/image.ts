@@ -3,6 +3,7 @@ import path from 'node:path'
 import os from 'node:os'
 import crypto from 'node:crypto'
 import { defineHandler, HTTPError } from 'nitro'
+import sharp from 'sharp'
 import { safePath } from '@/server/utils/safe-path'
 import { ALLOWED_WIDTHS } from '@/lib/image-utils'
 
@@ -67,7 +68,6 @@ export default defineHandler(async event => {
   }
 
   try {
-    const sharp = (await import('sharp')).default
     const optimized = await sharp(source)
       .resize({ width: w, withoutEnlargement: true })
       .webp({ quality: q })
