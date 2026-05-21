@@ -40,3 +40,14 @@ export function prefetchPageData(pathname: string) {
     queryFn: () => fetchPageDataByPathname(pathname),
   });
 }
+
+export function prefetchSearchSuggestions() {
+  queryClient.prefetchQuery({
+    queryKey: ['search', '', undefined],
+    queryFn: async () => {
+      const res = await fetch('/api/search');
+      if (!res.ok) throw new Error(String(res.status));
+      return res.json();
+    },
+  });
+}

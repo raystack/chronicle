@@ -7,7 +7,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { mdxComponents } from '@/components/mdx';
 import { getApiConfigsForVersion } from '@/lib/config';
 import { PageProvider } from '@/lib/page-context';
-import { queryClient } from '@/lib/preload';
+import { prefetchSearchSuggestions, queryClient } from '@/lib/preload';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import { resolveVersionFromUrl, type VersionContext } from '@/lib/version-source';
 import type { ChronicleConfig, Frontmatter, PageNavLink, Root, TableOfContents } from '@/types';
@@ -56,6 +56,7 @@ async function hydrate() {
       window as unknown as { __PAGE_DATA__?: EmbeddedData }
     ).__PAGE_DATA__;
 
+    prefetchSearchSuggestions();
     const config: ChronicleConfig = embedded?.config ?? defaultConfig;
     const tree: Root = embedded?.tree ?? { name: 'root', children: [] };
 
