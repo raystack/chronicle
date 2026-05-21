@@ -4,7 +4,8 @@ import {
   CodeBracketSquareIcon,
   RectangleStackIcon,
   DocumentTextIcon,
-  Squares2X2Icon
+  Squares2X2Icon,
+  Bars3Icon
 } from '@heroicons/react/24/outline';
 import { Flex, IconButton, Button, Sidebar } from '@raystack/apsara';
 import { PlayIcon } from '@radix-ui/react-icons';
@@ -73,6 +74,7 @@ export function Layout({
   const navigate = useNavigate();
   const { page, version } = usePageContext();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isApiRoute = pathname === '/apis' || pathname.startsWith('/apis/');
   const isApiBase = (basePath: string) =>
     pathname === basePath || pathname.startsWith(`${basePath}/`);
@@ -109,16 +111,39 @@ export function Layout({
       requestAnimationFrame(() => {
         el.scrollTop = savedScrollTop;
       });
+    setMobileSidebarOpen(false);
   }, [pathname]);
 
   return (
     <Flex direction='column' className={cx(styles.layout, classNames?.layout)}>
+      <div
+        className={styles.backdrop}
+        data-visible={mobileSidebarOpen}
+        onClick={() => setMobileSidebarOpen(false)}
+      />
+      <div className={styles.mobileHeader}>
+        <Flex align='center' gap={3}>
+          <button
+            className={styles.mobileMenuBtn}
+            onClick={() => setMobileSidebarOpen(true)}
+            aria-label='Open menu'
+          >
+            <Bars3Icon width={20} height={20} />
+          </button>
+          <SidebarLogo config={config} />
+        </Flex>
+        <Flex align='center' gap={3}>
+          {config.search?.enabled && <Search />}
+          <ClientThemeSwitcher size={16} />
+        </Flex>
+      </div>
       <Flex className={cx(styles.body, classNames?.body)}>
         {hideSidebar ? null : (
           <Sidebar
             defaultOpen
             collapsible={false}
             className={cx(styles.sidebar, classNames?.sidebar)}
+            data-mobile-open={mobileSidebarOpen}
           >
             <Sidebar.Header className={styles.sidebarHeader}>
               <SidebarLogo config={config} />
@@ -190,7 +215,7 @@ export function Layout({
         <Flex direction='column' className={styles.mainArea}>
           <div className={styles.cardWrapper}>
             <div className={styles.card}>
-              <nav className={styles.subNav}>
+              <nav className={cx(styles.subNav, styles.desktopOnly)}>
                 <Flex align='center' gap={3} className={styles.subNavLeft}>
                   <Flex align='center' gap={2}>
                     <IconButton

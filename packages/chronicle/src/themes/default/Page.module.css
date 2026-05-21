@@ -184,3 +184,17 @@
 .headerLoader {
   margin-bottom: var(--rs-space-5);
 }
+
+@media (max-width: 768px) {
+  .page {
+    gap: var(--rs-space-5);
+  }
+
+  .article {
+    max-width: 100%;
+  }
+
+  .title {
+    margin-bottom: var(--rs-space-5);
+  }
+}
