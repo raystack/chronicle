@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router'
 import type { ReactNode } from 'react'
 import type { AnalyticsConfig } from '@/types'
@@ -6,13 +6,8 @@ import type { AnalyticsInstance } from 'analytics'
 
 function PageViewTracker({ analytics }: { analytics: AnalyticsInstance }) {
   const { pathname } = useLocation()
-  const isFirst = useRef(true)
 
   useEffect(() => {
-    if (isFirst.current) {
-      isFirst.current = false
-      return
-    }
     try { analytics.page() } catch { /* noop */ }
   }, [pathname, analytics])
 
