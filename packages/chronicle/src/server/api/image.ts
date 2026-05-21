@@ -6,7 +6,7 @@ import { useStorage } from 'nitro/storage'
 import sharp from 'sharp'
 import { StatusCodes } from 'http-status-codes'
 import { safePath } from '@/server/utils/safe-path'
-import { ALLOWED_WIDTHS } from '@/lib/image-utils'
+import { ALLOWED_WIDTHS, DEFAULT_QUALITY } from '@/lib/image-utils'
 
 const STORAGE_KEY = 'image-cache'
 
@@ -51,7 +51,7 @@ export default defineHandler(async event => {
     throw new HTTPError({ status: StatusCodes.BAD_REQUEST, message: `Width must be one of: ${ALLOWED_WIDTHS.join(', ')}` })
   }
 
-  const q = qParam ? Math.min(100, Math.max(1, Number.parseInt(qParam, 10))) : 75
+  const q = qParam ? Math.min(100, Math.max(1, Number.parseInt(qParam, 10))) : DEFAULT_QUALITY
 
   if (url.split('?')[0].endsWith('.svg')) {
     return Response.redirect(url, StatusCodes.TEMPORARY_REDIRECT)

@@ -5,7 +5,7 @@ import type { Image, Html } from 'mdast'
 import type { Element } from 'hast'
 import type { MdxJsxFlowElement, MdxJsxTextElement, MdxJsxAttribute } from 'mdast-util-mdx-jsx'
 import { MdxNodeType } from './mdx-utils'
-import { isLocalImage, isSvg, buildOptimizedUrl } from './image-utils'
+import { isLocalImage, isSvg, buildOptimizedUrl, DEFAULT_WIDTH } from './image-utils'
 
 function resolveUrl(src: string, dir: string): string {
   if (/^[a-z][a-z0-9+\-.]*:/i.test(src)) return src
@@ -18,7 +18,7 @@ function resolveUrl(src: string, dir: string): string {
 }
 
 function optimizeUrl(url: string): string {
-  if (isLocalImage(url) && !isSvg(url)) return buildOptimizedUrl(url, 1024)
+  if (isLocalImage(url) && !isSvg(url)) return buildOptimizedUrl(url, DEFAULT_WIDTH)
   return url
 }
 
