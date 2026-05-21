@@ -204,6 +204,10 @@
   margin-bottom: var(--rs-space-5);
 }
 
+.content a {
+  font-size: inherit;
+}
+
 .content [role="tablist"] {
   margin-bottom: var(--rs-space-3);
 }
