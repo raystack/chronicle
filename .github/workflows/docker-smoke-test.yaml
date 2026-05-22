@@ -1,4 +1,4 @@
-name: pr
+name: docker-smoke-test
 
 on:
   pull_request:
