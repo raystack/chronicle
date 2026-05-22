@@ -53,6 +53,14 @@ describe('buildOptimizedUrl', () => {
   });
 });
 
+describe('buildOptimizedUrl with backslashes', () => {
+  test('backslashes in input are not double-encoded', () => {
+    const url = buildOptimizedUrl('/_content/docs/imgs\\screenshot.png', 640);
+    expect(url).toContain('imgs%5Cscreenshot.png');
+    expect(url).not.toContain('%255C');
+  });
+});
+
 describe('constants', () => {
   test('ALLOWED_WIDTHS is sorted ascending', () => {
     for (let i = 1; i < ALLOWED_WIDTHS.length; i++) {
