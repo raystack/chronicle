@@ -1,0 +1,51 @@
+name: pr
+
+on:
+  pull_request:
+
+jobs:
+  docker:
+    name: Docker (${{ matrix.runtime }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      matrix:
+        include:
+          - runtime: bun
+            dockerfile: docker-tests/Dockerfile.bun
+          - runtime: node
+            dockerfile: docker-tests/Dockerfile.node
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -f ${{ matrix.dockerfile }} -t chronicle-${{ matrix.runtime }} .
+
+      - name: Run container
+        run: docker run -d --name chronicle-${{ matrix.runtime }} -p 3000:3000 chronicle-${{ matrix.runtime }}
+
+      - name: Wait for server
+        run: |
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3000/api/health > /dev/null 2>&1; then
+              echo "Server ready"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Server failed to start"
+          docker logs chronicle-${{ matrix.runtime }}
+          exit 1
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Smoke tests
+        run: node docker-tests/smoke-test.mjs
+
+      - name: Cleanup
+        if: always()
+        run: docker rm -f chronicle-${{ matrix.runtime }} || true
