@@ -5,7 +5,8 @@ import {
   RectangleStackIcon,
   DocumentTextIcon,
   Squares2X2Icon,
-  Bars3Icon
+  Bars3Icon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { Flex, IconButton, Button, Sidebar } from '@raystack/apsara';
 import { PlayIcon } from '@radix-ui/react-icons';
@@ -116,26 +117,66 @@ export function Layout({
 
   return (
     <Flex direction='column' className={cx(styles.layout, classNames?.layout)}>
-      <div
-        className={styles.backdrop}
-        data-visible={mobileSidebarOpen}
-        onClick={() => setMobileSidebarOpen(false)}
-      />
       <div className={styles.mobileHeader}>
-        <Flex align='center' gap={3}>
-          <button
-            className={styles.mobileMenuBtn}
-            onClick={() => setMobileSidebarOpen(true)}
-            aria-label='Open menu'
-          >
-            <Bars3Icon width={20} height={20} />
-          </button>
-          <SidebarLogo config={config} />
-        </Flex>
+        <SidebarLogo config={config} />
         <Flex align='center' gap={3}>
           {config.search?.enabled && <Search />}
           <ClientThemeSwitcher size={16} />
+          <button
+            className={styles.mobileMenuBtn}
+            onClick={() => setMobileSidebarOpen(o => !o)}
+            aria-label={mobileSidebarOpen ? 'Close menu' : 'Open menu'}
+          >
+            {mobileSidebarOpen
+              ? <XMarkIcon width={16} height={16} />
+              : <Bars3Icon width={16} height={16} />}
+          </button>
         </Flex>
+      </div>
+      <div className={styles.mobileMenu} data-open={mobileSidebarOpen}>
+        {showTopLinks ? (
+          <div className={styles.topLinks}>
+            {contentEntries.map(entry => (
+              <Sidebar.Item
+                key={entry.href}
+                href={entry.href}
+                active={activeContentDir === entry.contentDir}
+                leadingIcon={renderConfigIcon(entry.icon, entry.label, <DocumentTextIcon width={16} height={16} />)}
+                classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
+                render={<RouterLink to={entry.href} />}
+              >
+                {entry.label}
+              </Sidebar.Item>
+            ))}
+            {apiEntries.map(api => (
+              <Sidebar.Item
+                key={`${api.basePath}-${api.name}`}
+                href={api.basePath}
+                active={isApiBase(api.basePath)}
+                leadingIcon={renderConfigIcon(api.icon, api.name, <CodeBracketSquareIcon width={16} height={16} />)}
+                classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
+                render={<RouterLink to={api.basePath} />}
+              >
+                {api.name} API
+              </Sidebar.Item>
+            ))}
+          </div>
+        ) : null}
+        {tree.children.map((item, i) => (
+          isApiRoute ? (
+            <ApiSidebarNode
+              key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
+              item={item}
+              pathname={pathname}
+            />
+          ) : (
+            <SidebarNode
+              key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
+              item={item}
+              pathname={pathname}
+            />
+          )
+        ))}
       </div>
       <Flex className={cx(styles.body, classNames?.body)}>
         {hideSidebar ? null : (
@@ -143,7 +184,6 @@ export function Layout({
             defaultOpen
             collapsible={false}
             className={cx(styles.sidebar, classNames?.sidebar)}
-            data-mobile-open={mobileSidebarOpen}
           >
             <Sidebar.Header className={styles.sidebarHeader}>
               <SidebarLogo config={config} />
@@ -215,7 +255,7 @@ export function Layout({
         <Flex direction='column' className={styles.mainArea}>
           <div className={styles.cardWrapper}>
             <div className={styles.card}>
-              <nav className={cx(styles.subNav, styles.desktopOnly)}>
+              <nav className={styles.subNav}>
                 <Flex align='center' gap={3} className={styles.subNavLeft}>
                   <Flex align='center' gap={2}>
                     <IconButton
@@ -246,6 +286,20 @@ export function Layout({
               <main className={cx(styles.content, classNames?.content)}>
                 {children}
               </main>
+              <div className={styles.mobileNav}>
+                {prev ? (
+                  <RouterLink to={prev.url} className={styles.mobileNavLink}>
+                    <ArrowLeftIcon width={16} height={16} />
+                    <span className={styles.mobileNavLabel}>{prev.title}</span>
+                  </RouterLink>
+                ) : <div />}
+                {next ? (
+                  <RouterLink to={next.url} className={styles.mobileNavLink} data-direction='next'>
+                    <span className={styles.mobileNavLabel}>{next.title}</span>
+                    <ArrowRightIcon width={16} height={16} />
+                  </RouterLink>
+                ) : <div />}
+              </div>
             </div>
           </div>
         </Flex>
