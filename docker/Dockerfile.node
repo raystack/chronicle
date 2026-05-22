@@ -14,7 +14,7 @@ RUN cd packages/chronicle && chmod +x bin/chronicle.js
 RUN ln -s /app/packages/chronicle/bin/chronicle.js /usr/local/bin/chronicle
 RUN chronicle build --config examples/basic/chronicle.yaml
 
-FROM node:22-slim AS runner
+FROM node:24-slim AS runner
 WORKDIR /app
 COPY --from=builder /app/packages/chronicle /app/packages/chronicle
 COPY --from=builder /app/examples/basic /app/examples/basic
