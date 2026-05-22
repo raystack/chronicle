@@ -14,6 +14,7 @@ import { getFirstApiUrl } from '@/lib/api-routes';
 import { StatusCodes } from 'http-status-codes';
 import { resolveDocsRedirect } from '@/lib/tree-utils';
 import { isLocalImage, isSvg, buildOptimizedUrl, DEFAULT_WIDTH } from '@/lib/image-utils';
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { useNitroApp } from 'nitro/app';
 import { App } from './App';
 
@@ -136,20 +137,22 @@ export default {
         </head>
         <body>
           <div id="root">
-            <StaticRouter location={pathname}>
-              <ReactRouterProvider>
-                <PageProvider
-                  initialConfig={config}
-                  initialTree={tree}
-                  initialPage={pageData}
-                  initialApiSpecs={apiSpecs}
-                  initialVersion={route.version}
-                  loadMdx={async () => ({ content: null, toc: [] })}
-                >
-                  <App />
-                </PageProvider>
-              </ReactRouterProvider>
-            </StaticRouter>
+            <QueryClientProvider client={new QueryClient()}>
+              <StaticRouter location={pathname}>
+                <ReactRouterProvider>
+                  <PageProvider
+                    initialConfig={config}
+                    initialTree={tree}
+                    initialPage={pageData}
+                    initialApiSpecs={apiSpecs}
+                    initialVersion={route.version}
+                    loadMdx={async () => ({ content: null, toc: [] })}
+                  >
+                    <App />
+                  </PageProvider>
+                </ReactRouterProvider>
+              </StaticRouter>
+            </QueryClientProvider>
           </div>
         </body>
       </html>,
