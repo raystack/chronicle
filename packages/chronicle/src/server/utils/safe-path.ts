@@ -5,7 +5,7 @@ import path from 'node:path';
  * Returns null if the resolved path escapes the base directory.
  */
 export function safePath(baseDir: string, urlPath: string): string | null {
-  const decoded = decodeURIComponent(urlPath.split('?')[0]);
+  const decoded = decodeURIComponent(urlPath.split('?')[0]).replace(/\\/g, '/');
   const resolved = path.resolve(baseDir, '.' + decoded);
   if (
     !resolved.startsWith(path.resolve(baseDir) + path.sep) &&

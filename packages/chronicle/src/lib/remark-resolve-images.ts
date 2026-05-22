@@ -8,13 +8,14 @@ import { MdxNodeType } from './mdx-utils'
 import { isLocalImage, isSvg, buildOptimizedUrl, DEFAULT_WIDTH } from './image-utils'
 
 function resolveUrl(src: string, dir: string): string {
-  if (/^[a-z][a-z0-9+\-.]*:/i.test(src)) return src
-  if (src.startsWith('//')) return src
-  if (src.startsWith('#')) return src
-  if (src.startsWith('/_content/')) return src
+  const normalized = src.replace(/\\/g, '/')
+  if (/^[a-z][a-z0-9+\-.]*:/i.test(normalized)) return normalized
+  if (normalized.startsWith('//')) return normalized
+  if (normalized.startsWith('#')) return normalized
+  if (normalized.startsWith('/_content/')) return normalized
 
-  if (src.startsWith('/')) return `/_content${src}`
-  return `/_content/${path.posix.normalize(path.posix.join(dir, src))}`
+  if (normalized.startsWith('/')) return `/_content${normalized}`
+  return `/_content/${path.posix.normalize(path.posix.join(dir, normalized))}`
 }
 
 interface RemarkResolveImagesOptions {

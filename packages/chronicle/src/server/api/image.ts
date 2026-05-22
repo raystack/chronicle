@@ -52,13 +52,15 @@ async function evictIfNeeded(storage: ReturnType<typeof useStorage>) {
 export default defineHandler(async event => {
   const storage = useStorage(STORAGE_KEY)
 
-  const url = event.url.searchParams.get('url')
+  const rawUrl = event.url.searchParams.get('url')
   const wParam = event.url.searchParams.get('w')
   const qParam = event.url.searchParams.get('q')
 
-  if (!url || !wParam) {
+  if (!rawUrl || !wParam) {
     throw new HTTPError({ status: StatusCodes.BAD_REQUEST, message: 'Missing url or w parameter' })
   }
+
+  const url = rawUrl.replace(/\\/g, '/')
 
   if (!url.startsWith('/_content/')) {
     throw new HTTPError({ status: StatusCodes.BAD_REQUEST, message: 'Only local content images allowed' })
