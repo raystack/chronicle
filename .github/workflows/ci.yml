@@ -33,6 +33,7 @@ jobs:
         run: bun test
 
   docker:
+    if: github.event_name == 'pull_request'
     name: Docker (${{ matrix.runtime }})
     runs-on: ubuntu-latest
     timeout-minutes: 15
