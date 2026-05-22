@@ -213,6 +213,11 @@
   text-overflow: unset;
   word-wrap: break-word;
   vertical-align: top;
+  font-size: var(--rs-font-size-regular);
+}
+
+.content table th {
+  font-weight: var(--rs-font-weight-medium);
 }
 
 .content a {
