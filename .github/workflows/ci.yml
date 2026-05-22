@@ -40,9 +40,9 @@ jobs:
       matrix:
         include:
           - runtime: bun
-            dockerfile: Dockerfile.bun
+            dockerfile: docker/Dockerfile.bun
           - runtime: node
-            dockerfile: Dockerfile.node
+            dockerfile: docker/Dockerfile.node
     steps:
       - name: Checkout
         uses: actions/checkout@v4
