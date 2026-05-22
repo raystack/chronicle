@@ -40,9 +40,9 @@ jobs:
       matrix:
         include:
           - runtime: bun
-            dockerfile: docker/Dockerfile.bun
+            dockerfile: docker-tests/Dockerfile.bun
           - runtime: node
-            dockerfile: docker/Dockerfile.node
+            dockerfile: docker-tests/Dockerfile.node
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -72,7 +72,7 @@ jobs:
           node-version: 24
 
       - name: Smoke tests
-        run: node docker/smoke-test.mjs
+        run: node docker-tests/smoke-test.mjs
 
       - name: Cleanup
         if: always()
