@@ -94,9 +94,9 @@
 
 .articleTitle {
   font-family: var(--paper-font-body);
-  font-size: var(--rs-space-8);
+  font-size: var(--rs-font-size-t4);
   font-weight: var(--rs-font-weight-medium);
-  line-height: var(--rs-space-10);
+  line-height: var(--rs-line-height-t4);
   letter-spacing: var(--rs-letter-spacing-t1);
   text-align: center;
   color: var(--rs-color-foreground-base-primary);
