@@ -90,6 +90,15 @@
   margin: var(--rs-space-2) 0;
 }
 
+.content table td {
+  font-size: var(--rs-font-size-regular);
+}
+
+.content table th {
+  font-size: var(--rs-font-size-regular);
+  font-weight: var(--rs-font-weight-medium);
+}
+
 .content a {
   font-size: inherit;
 }
