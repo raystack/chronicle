@@ -28,7 +28,10 @@ import type { ThemeLayoutProps } from '@/types';
 import styles from './Layout.module.css';
 import { OpenInAI } from './OpenInAI';
 import { SidebarLogo } from './SidebarLogo';
+
 import { VersionSwitcher } from './VersionSwitcher';
+
+const MAX_SIDEBAR_DEPTH = 3;
 
 const iconMap: Record<string, React.ReactNode> = {
   'rectangle-stack': <RectangleStackIcon width={16} height={16} />,
@@ -249,7 +252,7 @@ function SidebarNode({
   }
 
   if (item.type === 'folder') {
-    if (depth > 1) return null;
+    if (depth > MAX_SIDEBAR_DEPTH) return null;
     const icon = typeof item.icon === 'string' ? iconMap[item.icon] : item.icon;
     const hasActiveChild = hasActiveDescendant(item, pathname);
     return (
@@ -258,7 +261,7 @@ function SidebarNode({
         data-depth={depth}
         label={item.name?.toString() ?? ''}
         leadingIcon={icon ?? undefined}
-        collapsible={depth === 1}
+        collapsible={depth >= 1}
         defaultOpen={hasActiveChild}
         classNames={{
           items: styles.groupItems,
