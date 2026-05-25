@@ -12,7 +12,7 @@ export function Page({ page }: ThemePageProps) {
     <Flex className={styles.page}>
       <article className={styles.article} data-article-content>
         {page.frontmatter.title && (
-          <Headline size="t2" render={<h1 />} className={styles.title}>
+          <Headline size="t4" render={<h1 />} className={styles.title}>
             {page.frontmatter.title}
           </Headline>
         )}

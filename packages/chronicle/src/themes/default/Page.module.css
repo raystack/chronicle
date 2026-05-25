@@ -27,7 +27,9 @@
 .content h6 {
   margin-top: var(--rs-space-8);
   margin-bottom: var(--rs-space-5);
-  line-height: 1.4;
+  font-family: var(--rs-font-title);
+  font-weight: var(--rs-font-weight-medium);
+  color: var(--rs-color-foreground-base-primary);
 }
 
 .content > :is(h1, h2, h3, h4, h5, h6):first-child {
@@ -35,8 +37,37 @@
 }
 
 .content h1 {
+  font-size: var(--rs-font-size-t4);
+  line-height: var(--rs-line-height-t4);
   margin-top: 0;
   margin-bottom: var(--rs-space-10);
+}
+
+.content h2 {
+  font-size: var(--rs-font-size-t3);
+  line-height: var(--rs-line-height-t3);
+  margin-top: var(--rs-space-8);
+  margin-bottom: var(--rs-space-8);
+}
+
+.content h3 {
+  font-size: var(--rs-font-size-t2);
+  line-height: var(--rs-line-height-t2);
+}
+
+.content h4 {
+  font-size: var(--rs-font-size-t1);
+  line-height: var(--rs-line-height-t1);
+}
+
+.content h5 {
+  font-size: var(--rs-font-size-large);
+  line-height: var(--rs-line-height-large);
+}
+
+.content h6 {
+  font-size: var(--rs-font-size-regular);
+  line-height: var(--rs-line-height-regular);
 }
 
 .content p {
@@ -46,18 +77,6 @@
   font-style: normal;
   font-weight: var(--rs-font-weight-regular);
   line-height: 171.429%;
-}
-
-.content h2 {
-  margin-top: var(--rs-space-8);
-  margin-bottom: var(--rs-space-8);
-  color: var(--rs-color-foreground-base-primary);
-  font-family: var(--rs-font-title);
-  font-size: var(--rs-font-size-t3);
-  font-style: normal;
-  font-weight: var(--rs-font-weight-medium);
-  line-height: var(--rs-line-height-t3);
-  letter-spacing: var(--rs-letter-spacing-t3);
 }
 
 .content ul,
@@ -71,6 +90,19 @@
   margin: var(--rs-space-2) 0;
 }
 
+.content table td {
+  font-size: var(--rs-font-size-regular);
+}
+
+.content table th {
+  font-size: var(--rs-font-size-regular);
+  font-weight: var(--rs-font-weight-medium);
+}
+
+.content a {
+  font-size: inherit;
+}
+
 .content [role="tablist"] {
   margin-bottom: var(--rs-space-3);
 }
@@ -81,10 +113,19 @@
 }
 
 .content table {
-  display: block;
-  max-width: 100%;
-  overflow-x: auto;
+  display: table;
+  table-layout: fixed;
+  width: 100%;
   margin-bottom: var(--rs-space-5);
+}
+
+.content table td,
+.content table th {
+  overflow: visible;
+  white-space: normal;
+  text-overflow: unset;
+  word-wrap: break-word;
+  vertical-align: top;
 }
 
 .content details {

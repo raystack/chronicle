@@ -25,6 +25,12 @@ function getDatabaseConnector(preset?: string): { connector: string; options?: R
   }
 }
 
+const STATIC_PRESETS = new Set(['static', 'vercel-static', 'cloudflare-pages', 'github-pages']);
+
+function isStaticPreset(preset?: string): boolean {
+  return !!preset && STATIC_PRESETS.has(preset);
+}
+
 function resolveOutputDir(projectRoot: string, preset?: string): string {
   if (preset === 'vercel' || preset === 'vercel-static') return path.resolve(projectRoot, '.vercel/output');
   return path.resolve(projectRoot, '.output');
@@ -67,6 +73,7 @@ export async function createViteConfig(
       nitro({
         serverDir: path.resolve(packageRoot, 'src/server'),
         ...(preset && { preset }),
+        ignore: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
       }),
       mdx({
         default: defineFumadocsConfig({
@@ -94,7 +101,7 @@ export async function createViteConfig(
               }],
               remarkUnusedDirectives,
               remarkResolveLinks,
-              remarkResolveImages,
+              [remarkResolveImages, { optimize: !isStaticPreset(preset) }],
               remarkMdxMermaid,
               remarkReadingTime,
             ],
@@ -132,7 +139,8 @@ export async function createViteConfig(
       }
     },
     ssr: {
-      noExternal: ['@raystack/apsara', 'dayjs', 'fumadocs-core']
+      noExternal: ['@raystack/apsara', 'dayjs', 'fumadocs-core'],
+      external: ['analytics', 'use-analytics', '@analytics/google-analytics'],
     },
     environments: {
       client: {
@@ -149,6 +157,13 @@ export async function createViteConfig(
       publicAssets: [{ dir: path.resolve(projectRoot, 'public') }],
       output: {
         dir: resolveOutputDir(projectRoot, preset),
+      },
+      externals: ['sharp'],
+      storage: {
+        'image-cache': {
+          driver: 'fs',
+          base: path.resolve(projectRoot, '.cache/images'),
+        },
       },
       experimental: {
         database: true,

@@ -12,7 +12,9 @@ import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import { getPage, getPageTree, isDraft, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath, getPageImages } from '@/lib/source';
 import { getFirstApiUrl } from '@/lib/api-routes';
 import { StatusCodes } from 'http-status-codes';
-import { resolvePageAndSlug } from '@/lib/tree-utils';
+import { resolvePageAndSlug, resolveDocsRedirect } from '@/lib/tree-utils';
+import { isLocalImage, isSvg, buildOptimizedUrl, DEFAULT_WIDTH } from '@/lib/image-utils';
+import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { useNitroApp } from 'nitro/app';
 import { App } from './App';
 
@@ -119,28 +121,31 @@ export default {
           {assets.js.map((attr: { href: string }) => (
             <link key={attr.href} rel="modulepreload" {...attr} />
           ))}
-          {pageImages.map((src: string) => (
-            <link key={src} rel="preload" as="image" href={src} />
-          ))}
+          {[...new Set(pageImages)].map((src: string) => {
+            const href = isLocalImage(src) && !isSvg(src) ? buildOptimizedUrl(src, DEFAULT_WIDTH) : src;
+            return <link key={src} rel="preload" as="image" href={href} />;
+          })}
           <script type="module" src={assets.entry} />
           <script dangerouslySetInnerHTML={{ __html: `window.__PAGE_DATA__ = ${safeJson}` }} />
         </head>
         <body>
           <div id="root">
-            <StaticRouter location={pathname}>
-              <ReactRouterProvider>
-                <PageProvider
-                  initialConfig={config}
-                  initialTree={tree}
-                  initialPage={pageData}
-                  initialApiSpecs={apiSpecs}
-                  initialVersion={route.version}
-                  loadMdx={async () => ({ content: null, toc: [] })}
-                >
-                  <App />
-                </PageProvider>
-              </ReactRouterProvider>
-            </StaticRouter>
+            <QueryClientProvider client={new QueryClient()}>
+              <StaticRouter location={pathname}>
+                <ReactRouterProvider>
+                  <PageProvider
+                    initialConfig={config}
+                    initialTree={tree}
+                    initialPage={pageData}
+                    initialApiSpecs={apiSpecs}
+                    initialVersion={route.version}
+                    loadMdx={async () => ({ content: null, toc: [] })}
+                  >
+                    <App />
+                  </PageProvider>
+                </ReactRouterProvider>
+              </StaticRouter>
+            </QueryClientProvider>
           </div>
         </body>
       </html>,

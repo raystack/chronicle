@@ -14,6 +14,7 @@ import type { VersionContext } from '@/lib/version-source';
 import { LATEST_CONTEXT } from '@/lib/version-source';
 import type { ChronicleConfig, Frontmatter, Page, PageNavLink, Root, TableOfContents } from '@/types';
 import { queryClient } from '@/lib/preload';
+import { isLocalImage, isSvg, buildOptimizedUrl, DEFAULT_WIDTH } from '@/lib/image-utils';
 
 export type MdxLoader = (relativePath: string) => Promise<{ content: ReactNode; toc: TableOfContents }>;
 
@@ -136,7 +137,7 @@ export function PageProvider({
       if (data.images?.length) {
         for (const src of data.images) {
           const img = new Image();
-          img.src = src;
+          img.src = isLocalImage(src) && !isSvg(src) ? buildOptimizedUrl(src, DEFAULT_WIDTH) : src;
         }
       }
       const { content, toc } = await loadMdx(data.originalPath || data.relativePath);

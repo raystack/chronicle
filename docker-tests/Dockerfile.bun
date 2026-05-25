@@ -1,0 +1,20 @@
+FROM oven/bun:1.3 AS builder
+WORKDIR /app
+COPY package.json bun.lock ./
+COPY packages/chronicle/package.json ./packages/chronicle/
+RUN bun install --frozen-lockfile
+COPY packages/chronicle ./packages/chronicle
+RUN cd packages/chronicle && bun build-cli.ts
+RUN cd packages/chronicle && bun pm pack --destination /app
+
+FROM oven/bun:1.3-slim AS runner
+WORKDIR /app
+RUN bun init -y
+COPY --from=builder /app/raystack-chronicle-*.tgz ./chronicle.tgz
+RUN bun add ./chronicle.tgz && rm chronicle.tgz
+COPY examples/basic ./examples/basic
+RUN bunx chronicle build --config examples/basic/chronicle.yaml --preset bun
+
+EXPOSE 3000
+
+CMD ["bunx", "chronicle", "start", "--config", "examples/basic/chronicle.yaml", "--port", "3000", "--host", "0.0.0.0"]

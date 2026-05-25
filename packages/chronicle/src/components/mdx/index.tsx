@@ -1,5 +1,5 @@
 import type { MDXComponents } from 'mdx/types'
-import { Image } from './image'
+import { MDXImage } from './image'
 import { Link } from './link'
 import { MdxTable, MdxThead, MdxTbody, MdxTr, MdxTh, MdxTd } from './table'
 import { MdxPre, MdxCode } from './code'
@@ -25,7 +25,7 @@ MdxTabs.Content = Tabs.Content
 
 export const mdxComponents: MDXComponents = {
   p: MdxParagraph,
-  img: Image,
+  img: MDXImage,
   a: Link,
   table: MdxTable,
   thead: MdxThead,
@@ -45,5 +45,5 @@ export const mdxComponents: MDXComponents = {
   Mermaid,
 }
 
-export { Image } from './image'
+export { MDXImage } from './image'
 export { Link } from './link'
