@@ -39,8 +39,7 @@
 .content h1 {
   font-size: var(--rs-font-size-t4);
   line-height: var(--rs-line-height-t4);
-  margin-top: 0;
-  margin-bottom: var(--rs-space-10);
+  margin: var(--rs-space-10) 0;
 }
 
 .content h2 {
@@ -77,6 +76,7 @@
   font-style: normal;
   font-weight: var(--rs-font-weight-regular);
   line-height: 171.429%;
+  margin-bottom: var(--rs-space-7);
 }
 
 .content ul,
@@ -110,6 +110,7 @@
 .content img {
   max-width: 100%;
   height: auto;
+  margin: var(--rs-space-7) 0;
 }
 
 .content table {
