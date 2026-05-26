@@ -55,7 +55,7 @@
 @media (max-width: 1100px) {
   .layout {
     flex-direction: column;
-    gap: var(--rs-space-5);
+    gap: var(--rs-space-9);
   }
 
   .left,
@@ -63,5 +63,13 @@
     min-width: 0;
     max-width: 100%;
     width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout {
+    gap: var(--rs-space-5);
+    padding-left: var(--rs-space-5);
+    padding-right: var(--rs-space-5);
   }
 }
