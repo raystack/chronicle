@@ -108,7 +108,7 @@
 }
 
 .snippetText {
-  font-size: 11px;
+  font-size: var(--rs-font-size-mini);
   line-height: var(--rs-line-height-mini);
   letter-spacing: var(--rs-letter-spacing-mini);
   color: var(--rs-color-foreground-base-secondary);
