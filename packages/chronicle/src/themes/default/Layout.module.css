@@ -319,8 +319,10 @@
   padding: var(--rs-space-7) var(--rs-space-5);
 }
 
-.mobileMenu[data-open='true'] {
-  display: block;
+.mobileMenuFooter {
+  margin-top: var(--rs-space-7);
+  padding-top: var(--rs-space-5);
+  border-top: 0.5px solid var(--rs-color-border-base-primary);
 }
 
 .mobileNav {

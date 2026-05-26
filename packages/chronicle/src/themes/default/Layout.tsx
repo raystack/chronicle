@@ -122,18 +122,23 @@ export function Layout({
         <Flex align='center' gap={3}>
           {config.search?.enabled && <Search />}
           <ClientThemeSwitcher size={16} />
-          <button
-            className={styles.mobileMenuBtn}
-            onClick={() => setMobileSidebarOpen(o => !o)}
-            aria-label={mobileSidebarOpen ? 'Close menu' : 'Open menu'}
-          >
-            {mobileSidebarOpen
-              ? <XMarkIcon width={16} height={16} />
-              : <Bars3Icon width={16} height={16} />}
-          </button>
+          {!hideSidebar && (
+            <button
+              type='button'
+              className={styles.mobileMenuBtn}
+              onClick={() => setMobileSidebarOpen(o => !o)}
+              aria-label={mobileSidebarOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileSidebarOpen}
+              aria-controls='mobile-menu'
+            >
+              {mobileSidebarOpen
+                ? <XMarkIcon width={16} height={16} />
+                : <Bars3Icon width={16} height={16} />}
+            </button>
+          )}
         </Flex>
       </div>
-      <div className={styles.mobileMenu} data-open={mobileSidebarOpen}>
+      <div id='mobile-menu' className={styles.mobileMenu} data-open={!hideSidebar && mobileSidebarOpen}>
         {showTopLinks ? (
           <div className={styles.topLinks}>
             {contentEntries.map(entry => (
@@ -177,6 +182,11 @@ export function Layout({
             />
           )
         ))}
+        {config.versions?.length ? (
+          <div className={styles.mobileMenuFooter}>
+            <VersionSwitcher />
+          </div>
+        ) : null}
       </div>
       <Flex className={cx(styles.body, classNames?.body)}>
         {hideSidebar ? null : (
