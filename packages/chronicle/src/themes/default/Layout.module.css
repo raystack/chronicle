@@ -171,9 +171,13 @@
 }
 
 .groupItems {
-  padding-left: var(--rs-space-4);
+  padding-left: 0;
   padding-bottom: var(--rs-space-3);
   gap: 0;
+}
+
+.navGroup:not([data-depth='0']) .groupItems {
+  padding-left: var(--rs-space-4);
 }
 
 .navGroup {
