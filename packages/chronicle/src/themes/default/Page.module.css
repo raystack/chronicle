@@ -49,6 +49,14 @@
   margin-bottom: var(--rs-space-7);
 }
 
+.content p + h2,
+.content ul + h2,
+.content ol + h2,
+.content div + h2,
+.content table + h2 {
+  margin-top: var(--rs-space-13);
+}
+
 .content h3 {
   font-size: var(--rs-font-size-t2);
   line-height: var(--rs-line-height-t2);
