@@ -45,8 +45,8 @@
 .content h2 {
   font-size: var(--rs-font-size-t3);
   line-height: var(--rs-line-height-t3);
-  margin-top: var(--rs-space-8);
-  margin-bottom: var(--rs-space-8);
+  margin-top: var(--rs-space-10);
+  margin-bottom: var(--rs-space-7);
 }
 
 .content h3 {
