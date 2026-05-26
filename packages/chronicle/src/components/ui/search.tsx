@@ -1,15 +1,18 @@
 import {
   DocumentIcon,
   HashtagIcon,
-  MagnifyingGlassIcon
+  MagnifyingGlassIcon,
+  CodeBracketIcon,
+  ChevronRightIcon
 } from '@heroicons/react/24/outline';
-import { Badge, Command, IconButton, Text } from '@raystack/apsara';
+import { Command, IconButton, Text } from '@raystack/apsara';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { debounce } from 'lodash-es';
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { usePageContext } from '@/lib/page-context';
+import { SearchMatchType } from '@/types';
 import styles from './search.module.css';
 
 interface SearchResult {
@@ -17,7 +20,7 @@ interface SearchResult {
   url: string;
   type: string;
   content: string;
-  match?: 'title' | 'heading' | 'body';
+  match?: SearchMatchType;
   snippet?: string;
   section?: string;
 }
@@ -135,15 +138,7 @@ export function Search({ classNames }: SearchProps) {
                         onClick={() => onSelect(result.url)}
                         className={styles.item}
                       >
-                        <div className={styles.itemContent}>
-                          {getResultIcon(result)}
-                          <Text className={styles.pageText}>
-                            <HighlightedText
-                              html={stripMethod(result.content)}
-                            />
-                          </Text>
-                          {result.section && <Badge size="small" className={styles.sectionBadge}>{result.section}</Badge>}
-                        </div>
+                        <SearchResultItem result={result} query="" />
                       </Command.Item>
                     ))}
                   </Command.Group>
@@ -156,25 +151,7 @@ export function Search({ classNames }: SearchProps) {
                     onClick={() => onSelect(result.url)}
                     className={styles.item}
                   >
-                    <div className={styles.itemContent}>
-                      {getResultIcon(result)}
-                      <div className={styles.resultText}>
-                        <Text className={styles.pageText}>
-                          <HighlightQuery text={stripMethod(result.content)} query={search} />
-                        </Text>
-                        {result.snippet && result.match === 'heading' && (
-                          <Text className={styles.snippetText}>
-                            # <HighlightQuery text={result.snippet} query={search} />
-                          </Text>
-                        )}
-                        {result.snippet && result.match === 'body' && (
-                          <Text className={styles.snippetText}>
-                            <HighlightQuery text={result.snippet} query={search} />
-                          </Text>
-                        )}
-                      </div>
-                      {result.section && <Badge size="small" className={styles.sectionBadge}>{result.section}</Badge>}
-                    </div>
+                    <SearchResultItem result={result} query={search} />
                   </Command.Item>
                 ))}
             </Command.Content>
@@ -182,6 +159,38 @@ export function Search({ classNames }: SearchProps) {
         </Command.DialogContent>
       </Command.Dialog>
     </>
+  );
+}
+
+function SearchResultItem({ result, query }: { result: SearchResult; query: string }) {
+  const method = extractMethod(result.content);
+  const title = stripMethod(result.content);
+
+  return (
+    <div className={styles.itemContent}>
+      {getResultIcon(result)}
+      <div className={styles.resultText}>
+        <div className={styles.breadcrumb}>
+          {result.section && (
+            <>
+              <span className={styles.breadcrumbText}>{result.section}</span>
+              <ChevronRightIcon width={12} height={12} className={styles.breadcrumbSeparator} />
+            </>
+          )}
+          {method && <MethodBadge method={method} size='micro' />}
+          <Text className={styles.breadcrumbText}>
+            {query ? <HighlightQuery text={title} query={query} /> : <HighlightedText html={title} />}
+          </Text>
+        </div>
+        {result.snippet && (
+          <Text className={styles.snippetText}>
+            {query
+              ? <HighlightQuery text={result.snippet} query={query} />
+              : result.snippet}
+          </Text>
+        )}
+      </div>
+    </div>
   );
 }
 
@@ -233,15 +242,13 @@ function HighlightQuery({ text, query }: { text: string; query: string }) {
 }
 
 function getResultIcon(result: SearchResult): React.ReactNode {
-  if (!result.url.startsWith('/apis/')) {
-    return result.type === 'page' ? (
-      <DocumentIcon className={styles.icon} />
-    ) : (
-      <HashtagIcon className={styles.icon} />
-    );
+  if (result.url.startsWith('/apis/')) {
+    return <CodeBracketIcon className={styles.icon} />;
   }
-  const method = extractMethod(result.content);
-  return method ? <MethodBadge method={method} size='micro' /> : null;
+  if (result.match === SearchMatchType.Heading) {
+    return <HashtagIcon className={styles.icon} />;
+  }
+  return <DocumentIcon className={styles.icon} />;
 }
 
 function getPageTitle(url: string): string {

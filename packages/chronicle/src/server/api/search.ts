@@ -7,6 +7,7 @@ import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { extractFrontmatter, getPageSearchContent, getPagesForVersion } from '@/lib/source';
 import { LATEST_CONTEXT, type VersionContext } from '@/lib/version-source';
+import { SearchResultType, SearchMatchType } from '@/types';
 
 interface SearchDocument {
   id: string;
@@ -14,7 +15,7 @@ interface SearchDocument {
   title: string;
   headings: string;
   body: string;
-  type: 'page' | 'api';
+  type: SearchResultType;
   section: string;
 }
 
@@ -104,7 +105,7 @@ async function buildDocs(ctx: VersionContext): Promise<SearchDocument[]> {
       title: fm.title,
       headings,
       body: [fm.description ?? '', body].join(' '),
-      type: 'page',
+      type: SearchResultType.Page,
       section: entry?.label ?? dir ?? '',
     });
   }
@@ -128,7 +129,7 @@ async function buildDocs(ctx: VersionContext): Promise<SearchDocument[]> {
             title: `${method.toUpperCase()} ${op.summary ?? opId}`,
             headings: op.summary ?? opId,
             body: [op.description ?? '', pathStr, method.toUpperCase()].join(' '),
-            type: 'api',
+            type: SearchResultType.Api,
             section: spec.name,
           });
         }
@@ -144,9 +145,9 @@ function findMatch(
   title: string,
   headings: string,
   body: string,
-): { match: 'title' | 'heading' | 'body'; snippet: string; slug?: string } {
+): { match: SearchMatchType; snippet: string; slug?: string } {
   if (title.toLowerCase().includes(query)) {
-    return { match: 'title', snippet: title };
+    return { match: SearchMatchType.Title, snippet: title };
   }
 
   const slugger = new GithubSlugger();
@@ -154,7 +155,7 @@ function findMatch(
   for (const h of headingList) {
     const slug = slugger.slug(h);
     if (h.toLowerCase().includes(query)) {
-      return { match: 'heading', snippet: h, slug };
+      return { match: SearchMatchType.Heading, snippet: h, slug };
     }
   }
 
@@ -163,10 +164,10 @@ function findMatch(
     const start = Math.max(0, idx - 40);
     const end = Math.min(body.length, idx + query.length + 80);
     const snippet = (start > 0 ? '...' : '') + body.slice(start, end).trim() + (end < body.length ? '...' : '');
-    return { match: 'body', snippet };
+    return { match: SearchMatchType.Body, snippet };
   }
 
-  return { match: 'title', snippet: title };
+  return { match: SearchMatchType.Title, snippet: title };
 }
 
 function resolveCtx(tag: string | null): VersionContext {
@@ -218,8 +219,8 @@ export default defineHandler(async event => {
   const queryLower = query.toLowerCase();
   return Response.json((result.rows ?? []).map(r => {
     const { match, snippet, slug } = findMatch(queryLower, r.title as string, r.headings as string, r.body as string);
-    const id = match === 'heading' && slug ? `${r.id}#${slug}` : r.id as string;
-    const url = match === 'heading' && slug ? `${r.url}#${slug}` : r.url as string;
+    const id = match === SearchMatchType.Heading && slug ? `${r.id}#${slug}` : r.id as string;
+    const url = match === SearchMatchType.Heading && slug ? `${r.url}#${slug}` : r.url as string;
     return {
       id,
       url,
