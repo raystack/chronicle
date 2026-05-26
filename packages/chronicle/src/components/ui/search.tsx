@@ -12,6 +12,7 @@ import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'rea
 import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { usePageContext } from '@/lib/page-context';
+import { SearchMatchType } from '@/types';
 import styles from './search.module.css';
 
 interface SearchResult {
@@ -19,7 +20,7 @@ interface SearchResult {
   url: string;
   type: string;
   content: string;
-  match?: 'title' | 'heading' | 'body';
+  match?: SearchMatchType;
   snippet?: string;
   section?: string;
 }
@@ -244,7 +245,7 @@ function getResultIcon(result: SearchResult): React.ReactNode {
   if (result.url.startsWith('/apis/')) {
     return <CodeBracketIcon className={styles.icon} />;
   }
-  if (result.match === 'heading') {
+  if (result.match === SearchMatchType.Heading) {
     return <HashtagIcon className={styles.icon} />;
   }
   return <DocumentIcon className={styles.icon} />;

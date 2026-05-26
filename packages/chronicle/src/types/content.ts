@@ -24,6 +24,21 @@ export interface PageNav {
   next: PageNavLink | null
 }
 
+export const SearchResultType = {
+  Page: 'page',
+  Api: 'api',
+} as const;
+
+export type SearchResultType = (typeof SearchResultType)[keyof typeof SearchResultType];
+
+export const SearchMatchType = {
+  Title: 'title',
+  Heading: 'heading',
+  Body: 'body',
+} as const;
+
+export type SearchMatchType = (typeof SearchMatchType)[keyof typeof SearchMatchType];
+
 export interface Page extends PageNav {
   slug: string[]
   frontmatter: Frontmatter
