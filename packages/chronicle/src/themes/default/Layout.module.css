@@ -283,3 +283,121 @@
   line-height: var(--rs-line-height-mini);
   flex-shrink: 0;
 }
+
+.mobileMenuBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--rs-space-1);
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.mobileHeader {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--navbar-height);
+  padding: 0 var(--rs-space-5);
+  background: var(--rs-color-background-base-primary);
+  border-bottom: 0.5px solid var(--rs-color-border-base-primary);
+  backdrop-filter: blur(1px);
+}
+
+.mobileMenu {
+  display: none;
+  position: fixed;
+  top: var(--navbar-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 100;
+  background: var(--rs-color-background-base-primary);
+  overflow-y: auto;
+  padding: var(--rs-space-7) var(--rs-space-5);
+}
+
+.mobileMenuFooter {
+  margin-top: var(--rs-space-7);
+  padding-top: var(--rs-space-5);
+  border-top: 0.5px solid var(--rs-color-border-base-primary);
+}
+
+.mobileNav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+
+  .mobileHeader {
+    display: flex;
+  }
+
+  .mobileMenuBtn {
+    display: flex;
+  }
+
+  .mobileMenu[data-open='true'] {
+    display: block;
+  }
+
+  .subNav {
+    display: none;
+  }
+
+  .content {
+    padding: var(--rs-space-10) var(--rs-space-5);
+  }
+
+  .card {
+    width: 100%;
+    border-left: none;
+    box-shadow: none;
+  }
+
+  .cardWrapper {
+    padding: 0;
+  }
+
+  .mobileNav {
+    display: flex;
+    gap: var(--rs-space-10);
+    padding: var(--rs-space-3) var(--rs-space-5);
+    background: var(--rs-color-background-base-primary);
+  }
+
+  .mobileNavLink {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: var(--rs-space-3);
+    padding: var(--rs-space-4) var(--rs-space-3);
+    border: 0.5px solid var(--rs-color-border-base-primary);
+    border-radius: var(--rs-radius-4);
+    text-decoration: none;
+    font-family: var(--rs-font-body);
+    font-size: var(--rs-font-size-regular);
+    font-weight: var(--rs-font-weight-medium);
+    line-height: var(--rs-line-height-regular);
+    letter-spacing: var(--rs-letter-spacing-regular);
+    color: var(--rs-color-foreground-base-tertiary);
+    min-width: 0;
+  }
+
+  .mobileNavLink[data-direction='next'] {
+    justify-content: flex-end;
+    background: var(--rs-color-background-base-secondary);
+    color: var(--rs-color-foreground-base-primary);
+  }
+
+  .mobileNavLabel {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}

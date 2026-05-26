@@ -4,7 +4,9 @@ import {
   CodeBracketSquareIcon,
   RectangleStackIcon,
   DocumentTextIcon,
-  Squares2X2Icon
+  Squares2X2Icon,
+  Bars3Icon,
+  XMarkIcon
 } from '@heroicons/react/24/outline';
 import { Flex, IconButton, Button, Sidebar } from '@raystack/apsara';
 import { PlayIcon } from '@radix-ui/react-icons';
@@ -73,6 +75,7 @@ export function Layout({
   const navigate = useNavigate();
   const { page, version } = usePageContext();
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isApiRoute = pathname === '/apis' || pathname.startsWith('/apis/');
   const isApiBase = (basePath: string) =>
     pathname === basePath || pathname.startsWith(`${basePath}/`);
@@ -109,10 +112,82 @@ export function Layout({
       requestAnimationFrame(() => {
         el.scrollTop = savedScrollTop;
       });
+    setMobileSidebarOpen(false);
   }, [pathname]);
 
   return (
     <Flex direction='column' className={cx(styles.layout, classNames?.layout)}>
+      <div className={styles.mobileHeader}>
+        <SidebarLogo config={config} />
+        <Flex align='center' gap={3}>
+          {config.search?.enabled && <Search />}
+          <ClientThemeSwitcher size={16} />
+          {!hideSidebar && (
+            <button
+              type='button'
+              className={styles.mobileMenuBtn}
+              onClick={() => setMobileSidebarOpen(o => !o)}
+              aria-label={mobileSidebarOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={mobileSidebarOpen}
+              aria-controls='mobile-menu'
+            >
+              {mobileSidebarOpen
+                ? <XMarkIcon width={16} height={16} />
+                : <Bars3Icon width={16} height={16} />}
+            </button>
+          )}
+        </Flex>
+      </div>
+      <div id='mobile-menu' className={styles.mobileMenu} data-open={!hideSidebar && mobileSidebarOpen}>
+        {showTopLinks ? (
+          <div className={styles.topLinks}>
+            {contentEntries.map(entry => (
+              <Sidebar.Item
+                key={entry.href}
+                href={entry.href}
+                active={activeContentDir === entry.contentDir}
+                leadingIcon={renderConfigIcon(entry.icon, entry.label, <DocumentTextIcon width={16} height={16} />)}
+                classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
+                render={<RouterLink to={entry.href} />}
+              >
+                {entry.label}
+              </Sidebar.Item>
+            ))}
+            {apiEntries.map(api => (
+              <Sidebar.Item
+                key={`${api.basePath}-${api.name}`}
+                href={api.basePath}
+                active={isApiBase(api.basePath)}
+                leadingIcon={renderConfigIcon(api.icon, api.name, <CodeBracketSquareIcon width={16} height={16} />)}
+                classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
+                render={<RouterLink to={api.basePath} />}
+              >
+                {api.name} API
+              </Sidebar.Item>
+            ))}
+          </div>
+        ) : null}
+        {tree.children.map((item, i) => (
+          isApiRoute ? (
+            <ApiSidebarNode
+              key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
+              item={item}
+              pathname={pathname}
+            />
+          ) : (
+            <SidebarNode
+              key={item.type === 'page' ? item.url : (item.name?.toString() ?? i)}
+              item={item}
+              pathname={pathname}
+            />
+          )
+        ))}
+        {config.versions?.length ? (
+          <div className={styles.mobileMenuFooter}>
+            <VersionSwitcher />
+          </div>
+        ) : null}
+      </div>
       <Flex className={cx(styles.body, classNames?.body)}>
         {hideSidebar ? null : (
           <Sidebar
@@ -221,6 +296,20 @@ export function Layout({
               <main className={cx(styles.content, classNames?.content)}>
                 {children}
               </main>
+              <div className={styles.mobileNav}>
+                {prev ? (
+                  <RouterLink to={prev.url} className={styles.mobileNavLink}>
+                    <ArrowLeftIcon width={16} height={16} />
+                    <span className={styles.mobileNavLabel}>{prev.title}</span>
+                  </RouterLink>
+                ) : <div />}
+                {next ? (
+                  <RouterLink to={next.url} className={styles.mobileNavLink} data-direction='next'>
+                    <span className={styles.mobileNavLabel}>{next.title}</span>
+                    <ArrowRightIcon width={16} height={16} />
+                  </RouterLink>
+                ) : <div />}
+              </div>
             </div>
           </div>
         </Flex>

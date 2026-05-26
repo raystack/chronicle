@@ -3,6 +3,7 @@
   border-radius: var(--rs-radius-2);
   overflow: hidden;
   width: 100%;
+  max-width: 100%;
 }
 
 .header {
@@ -20,4 +21,5 @@
 
 .body {
   background: var(--rs-color-background-base-primary);
+  overflow-x: auto;
 }
