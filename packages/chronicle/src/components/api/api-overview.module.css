@@ -55,7 +55,7 @@
 @media (max-width: 1100px) {
   .layout {
     flex-direction: column;
-    gap: var(--rs-space-9);
+    gap: var(--rs-space-5);
   }
 
   .left,
