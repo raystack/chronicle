@@ -41,6 +41,11 @@ function generateApiMarkdown(
     lines.push(operation.description)
     lines.push('')
   }
+  if (operation.externalDocs?.url) {
+    const label = operation.externalDocs.description || 'external documentation'
+    lines.push(`Read more about this operation in the [${label}](${operation.externalDocs.url}).`)
+    lines.push('')
+  }
   lines.push(`\`${method}\` \`${path}\``)
   lines.push('')
 
