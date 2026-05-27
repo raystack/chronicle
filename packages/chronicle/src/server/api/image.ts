@@ -8,8 +8,7 @@ import { StatusCodes } from 'http-status-codes'
 import { safePath } from '@/server/utils/safe-path'
 import { ALLOWED_WIDTHS, ALLOWED_QUALITIES, DEFAULT_QUALITY } from '@/lib/image-utils'
 
-const STORAGE_KEY = 'image-cache'
-const MAX_CACHE_ENTRIES = 500
+export const STORAGE_KEY = 'image-cache'
 
 const inflight = new Map<string, Promise<Buffer>>()
 
@@ -42,11 +41,17 @@ function snapQuality(q: number): number {
   return closest;
 }
 
-async function evictIfNeeded(storage: ReturnType<typeof useStorage>) {
-  const keys = await storage.getKeys()
-  if (keys.length <= MAX_CACHE_ENTRIES) return
-  const toRemove = keys.slice(0, keys.length - MAX_CACHE_ENTRIES)
-  await Promise.all(toRemove.map(k => storage.removeItem(k)))
+export async function optimizeImage(
+  filePath: string,
+  w: number,
+  q: number,
+  format: OutputFormat,
+): Promise<Buffer> {
+  const source = await fs.readFile(filePath);
+  const pipeline = sharp(source).resize({ width: w, withoutEnlargement: true });
+  if (format === 'avif') return pipeline.avif({ quality: q }).toBuffer();
+  if (format === 'webp') return pipeline.webp({ quality: q }).toBuffer();
+  return pipeline.toBuffer();
 }
 
 export default defineHandler(async event => {
@@ -116,16 +121,8 @@ export default defineHandler(async event => {
   }
 
   const work = (async () => {
-    const source = await fs.readFile(filePath)
-    const pipeline = sharp(source).resize({ width: w, withoutEnlargement: true })
-    const optimized = format === 'avif'
-      ? await pipeline.avif({ quality: q }).toBuffer()
-      : format === 'webp'
-        ? await pipeline.webp({ quality: q }).toBuffer()
-        : await pipeline.toBuffer()
-
+    const optimized = await optimizeImage(filePath, w, q, format)
     await storage.setItemRaw(key, optimized)
-    await evictIfNeeded(storage)
     return optimized
   })()
 
