@@ -28,8 +28,8 @@ export const MIME: Record<string, string> = {
   '.webp': 'image/webp',
 }
 
-export function cacheKey(url: string, w: number, q: number, format: OutputFormat): string {
-  const hash = crypto.createHash('sha256').update(`${url}:${w}:${q}:${format}`).digest('hex').slice(0, 16)
+export function cacheKey(url: string, w: number, q: number, format: OutputFormat, mtime?: number): string {
+  const hash = crypto.createHash('sha256').update(`${url}:${w}:${q}:${format}:${mtime ?? 0}`).digest('hex').slice(0, 16)
   return `${hash}.${format}`
 }
 
@@ -95,7 +95,11 @@ export default defineHandler(async event => {
   const originalMime = MIME[ext] ?? 'application/octet-stream'
   const contentType = format === 'original' ? originalMime : `image/${format}`
 
-  const key = cacheKey(url, w, q, format)
+  const stat = await fs.stat(filePath).catch(() => null)
+  if (!stat) {
+    throw new HTTPError({ status: StatusCodes.NOT_FOUND, message: 'Not Found' })
+  }
+  const key = cacheKey(url, w, q, format, stat.mtimeMs)
 
   const cached = await storage.getItemRaw<Buffer>(key)
   if (cached) {
@@ -154,6 +158,7 @@ export default defineHandler(async event => {
 
 export async function warmupImageCache() {
   const { getPages, getPageImages } = await import('@/lib/source');
+  // biome-ignore lint/correctness/useHookAtTopLevel: useStorage is a Nitro DI accessor, not a React hook
   const storage = useStorage(STORAGE_KEY);
   const contentDir = __CHRONICLE_CONTENT_DIR__;
   const format = 'webp' as const;
@@ -169,13 +174,16 @@ export async function warmupImageCache() {
       if (!isLocalImage(url) || isSvg(url) || seen.has(url)) continue;
       seen.add(url);
 
-      const key = cacheKey(url, w, q, format);
-      const cached = await storage.getItemRaw(key);
-      if (cached) continue;
-
       const relativePath = url.replace(/^\/_content\//, '');
       const filePath = safePath(contentDir, `/${relativePath}`);
       if (!filePath) continue;
+
+      const stat = await fs.stat(filePath).catch(() => null);
+      if (!stat) continue;
+
+      const key = cacheKey(url, w, q, format, stat.mtimeMs);
+      const cached = await storage.getItemRaw(key);
+      if (cached) continue;
 
       try {
         const optimized = await optimizeImage(filePath, w, q, format);
