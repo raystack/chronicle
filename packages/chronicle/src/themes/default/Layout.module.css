@@ -174,7 +174,7 @@
 
 .groupItems {
   padding-left: 0;
-  padding-bottom: var(--rs-space-3);
+  padding-bottom: 0;
   gap: 0;
 }
 
@@ -192,13 +192,9 @@
 
 .navGroup .navGroupHeader {
   margin: 0;
-  margin-bottom: var(--rs-space-4);
+  margin-bottom: 0;
   padding-top: 0;
   padding-bottom: 0;
-}
-
-.navGroupHeader h3 {
-  margin: 0;
 }
 
 .navGroup[data-depth='1'] .navGroupHeader {
