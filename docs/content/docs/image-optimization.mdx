@@ -1,0 +1,114 @@
+---
+title: Image Optimization
+description: Automatic image optimization with on-demand resizing and format conversion.
+order: 5
+---
+
+# Image Optimization
+
+Chronicle automatically optimizes content images via an on-demand `/api/image` endpoint. Images are resized, converted to modern formats (WebP/AVIF), and cached on disk.
+
+## How It Works
+
+1. The remark plugin rewrites all image URLs to route through `/api/image`
+2. On first request, the image is resized and converted based on browser support
+3. The result is cached — subsequent requests are served instantly
+4. On server start, all content images are pre-cached (warmup)
+
+## Format Negotiation
+
+The endpoint reads the browser's `Accept` header and serves the best format:
+
+| Browser sends | Format served |
+|---|---|
+| `Accept: image/avif` | AVIF |
+| `Accept: image/webp` | WebP |
+| Neither | Original (resized only) |
+
+SVG images are passed through unchanged.
+
+## Query Parameters
+
+Control image output directly in markdown using query parameters:
+
+```md
+![Screenshot](screenshot.png?w=640&q=90)
+```
+
+### Width (`w`)
+
+Sets the output width in pixels. The image is resized proportionally (height auto-calculated). Images are never enlarged beyond their original size.
+
+**Allowed values:**
+
+| Width | Use case |
+|---|---|
+| `320` | Small thumbnails, mobile icons |
+| `640` | Mobile content images |
+| `768` | Tablet content images |
+| `1024` | Default — desktop content |
+| `1280` | Wide content areas |
+| `1536` | Large displays |
+| `1920` | Full-width hero images |
+
+Default: `1024`
+
+### Quality (`q`)
+
+Sets the compression quality. Lower values produce smaller files with more compression artifacts.
+
+**Allowed values:**
+
+| Quality | File size | Use case |
+|---|---|---|
+| `60` | Smallest | Thumbnails, previews |
+| `75` | Balanced | Default — content images |
+| `90` | High quality | Screenshots with text |
+| `100` | Maximum | Lossless-like output |
+
+Default: `75`
+
+## Examples
+
+```md
+<!-- Default: 1024w, quality 75 -->
+![Overview](overview.png)
+
+<!-- Small thumbnail -->
+![Thumb](thumb.png?w=320&q=60)
+
+<!-- High quality screenshot -->
+![UI](dashboard.png?w=1280&q=90)
+
+<!-- Width only, default quality -->
+![Photo](photo.png?w=640)
+
+<!-- Quality only, default width -->
+![Chart](chart.png?q=90)
+```
+
+## API Endpoint
+
+```
+GET /api/image?url=/_content/docs/photo.png&w=640&q=75
+```
+
+| Parameter | Required | Description |
+|---|---|---|
+| `url` | Yes | Content image path (must start with `/_content/`) |
+| `w` | Yes | Output width (must be an allowed value) |
+| `q` | No | Quality 1-100 (snapped to nearest allowed value) |
+
+### Response Headers
+
+```
+Content-Type: image/webp (or image/avif, or original mime)
+Cache-Control: public, max-age=31536000, immutable
+Vary: Accept
+```
+
+## Cache
+
+Optimized images are cached using Nitro storage with the `fs` driver at `.cache/images/`. Cache persists across server restarts.
+
+The warmup process pre-caches all content images as WebP at default width (1024) and quality (75) when the server starts.
