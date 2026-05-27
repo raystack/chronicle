@@ -62,8 +62,6 @@ function renderConfigIcon(
   return <img src={icon} alt={alt} className={styles.configIcon} />;
 }
 
-let savedScrollTop = 0;
-
 export function Layout({
   children,
   config,
@@ -97,22 +95,20 @@ export function Layout({
   );
 
   useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const onScroll = () => {
-      savedScrollTop = el.scrollTop;
-    };
-    el.addEventListener('scroll', onScroll);
-    return () => el.removeEventListener('scroll', onScroll);
-  }, []);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (el)
-      requestAnimationFrame(() => {
-        el.scrollTop = savedScrollTop;
-      });
+    const timer = setTimeout(() => {
+      const container = document.querySelector<HTMLElement>(`.${styles.sidebarMain}`);
+      if (!container) return;
+      const allActive = container.querySelectorAll<HTMLElement>('[data-active="true"]');
+      const activeItem = allActive[allActive.length - 1];
+      if (!activeItem) return;
+      const containerRect = container.getBoundingClientRect();
+      const itemRect = activeItem.getBoundingClientRect();
+      if (itemRect.top < containerRect.top || itemRect.bottom > containerRect.bottom) {
+        container.scrollTop += itemRect.top - containerRect.top - containerRect.height / 2 + itemRect.height / 2;
+      }
+    }, 100);
     setMobileSidebarOpen(false);
+    return () => clearTimeout(timer);
   }, [pathname]);
 
   return (
@@ -436,6 +432,7 @@ function ApiSidebarNode({ item, pathname }: { item: Node; pathname: string }) {
       align='center'
       gap={3}
       className={`${styles.apiItem} ${isActive ? styles.apiItemActive : ''}`}
+      data-active={isActive}
       render={<RouterLink to={href} />}
     >
       <span className={styles.apiItemName}>{item.name}</span>
