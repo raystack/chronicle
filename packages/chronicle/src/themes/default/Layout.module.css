@@ -76,7 +76,6 @@
 
 .topLinks {
   width: 100%;
-  margin-bottom: var(--rs-space-7);
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -193,6 +192,9 @@
 
 .navGroup .navGroupHeader {
   margin: 0;
+  margin-bottom: var(--rs-space-4);
+  padding-top: 0;
+  padding-bottom: 0;
 }
 
 .navGroup[data-depth='1'] .navGroupHeader {
@@ -224,6 +226,10 @@
   font-weight: var(--rs-font-weight-medium);
   line-height: var(--rs-line-height-small);
   letter-spacing: var(--rs-letter-spacing-small);
+}
+
+.sidebar :global([class*="nav-group"]) h3 {
+  margin: 0;
 }
 
 .navGroupChevron {
