@@ -6,7 +6,7 @@ import { useStorage } from 'nitro/storage'
 import sharp from 'sharp'
 import { StatusCodes } from 'http-status-codes'
 import { safePath } from '@/server/utils/safe-path'
-import { ALLOWED_WIDTHS, ALLOWED_QUALITIES, DEFAULT_QUALITY } from '@/lib/image-utils'
+import { ALLOWED_WIDTHS, ALLOWED_QUALITIES, DEFAULT_WIDTH, DEFAULT_QUALITY, isLocalImage, isSvg } from '@/lib/image-utils'
 
 export const STORAGE_KEY = 'image-cache'
 
@@ -151,3 +151,41 @@ export default defineHandler(async event => {
     inflight.delete(key)
   }
 })
+
+export async function warmupImageCache() {
+  const { getPages, getPageImages } = await import('@/lib/source');
+  const storage = useStorage(STORAGE_KEY);
+  const contentDir = __CHRONICLE_CONTENT_DIR__;
+  const format = 'webp' as const;
+  const w = DEFAULT_WIDTH;
+  const q = DEFAULT_QUALITY;
+
+  const pages = await getPages();
+  const seen = new Set<string>();
+  let warmed = 0;
+
+  for (const page of pages) {
+    for (const url of getPageImages(page)) {
+      if (!isLocalImage(url) || isSvg(url) || seen.has(url)) continue;
+      seen.add(url);
+
+      const key = cacheKey(url, w, q, format);
+      const cached = await storage.getItemRaw(key);
+      if (cached) continue;
+
+      const relativePath = url.replace(/^\/_content\//, '');
+      const filePath = safePath(contentDir, `/${relativePath}`);
+      if (!filePath) continue;
+
+      try {
+        const optimized = await optimizeImage(filePath, w, q, format);
+        await storage.setItemRaw(key, optimized);
+        warmed++;
+      } catch { /* skip unprocessable */ }
+    }
+  }
+
+  if (warmed > 0) {
+    console.log(`[image-warmup] cached ${warmed} images as webp@${w}w`);
+  }
+}
