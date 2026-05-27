@@ -7,6 +7,30 @@ import type { MdxJsxFlowElement, MdxJsxTextElement, MdxJsxAttribute } from 'mdas
 import { MdxNodeType } from './mdx-utils'
 import { isLocalImage, isSvg, buildOptimizedUrl, DEFAULT_WIDTH } from './image-utils'
 
+interface ImageParams {
+  w?: number
+  q?: number
+}
+
+function parseImageParams(src: string): { base: string; params: ImageParams } {
+  const qIdx = src.indexOf('?')
+  if (qIdx === -1) return { base: src, params: {} }
+  const base = src.slice(0, qIdx)
+  const search = new URLSearchParams(src.slice(qIdx + 1))
+  const params: ImageParams = {}
+  if (search.has('w')) params.w = Number.parseInt(search.get('w')!, 10)
+  if (search.has('q')) params.q = Number.parseInt(search.get('q')!, 10)
+  return { base, params }
+}
+
+function appendParams(url: string, params: ImageParams): string {
+  if (!params.w && !params.q) return url
+  const qs = new URLSearchParams()
+  if (params.w) qs.set('w', String(params.w))
+  if (params.q) qs.set('q', String(params.q))
+  return `${url}?${qs}`
+}
+
 function resolveUrl(src: string, dir: string): string {
   const normalized = src.replace(/\\/g, '/')
   if (/^[a-z][a-z0-9+\-.]*:/i.test(normalized)) return normalized
@@ -23,8 +47,11 @@ interface RemarkResolveImagesOptions {
 }
 
 function optimizeUrl(url: string, optimize: boolean): string {
-  if (optimize && isLocalImage(url) && !isSvg(url)) return buildOptimizedUrl(url, DEFAULT_WIDTH)
-  return url
+  const { base, params } = parseImageParams(url)
+  const width = params.w || DEFAULT_WIDTH
+  const quality = params.q
+  if (optimize && isLocalImage(base) && !isSvg(base)) return buildOptimizedUrl(base, width, quality)
+  return base
 }
 
 const remarkResolveImages: Plugin<[RemarkResolveImagesOptions?]> = (options) => {
@@ -50,18 +77,20 @@ const remarkResolveImages: Plugin<[RemarkResolveImagesOptions?]> = (options) => 
 
     visit(tree, 'image', (node: Image) => {
       if (!node.url) return
-      node.url = resolveUrl(node.url, dir)
-      collect(node.url)
-      node.url = optimizeUrl(node.url, optimize)
+      const { base, params } = parseImageParams(node.url)
+      const resolved = resolveUrl(base, dir)
+      collect(resolved)
+      node.url = optimizeUrl(appendParams(resolved, params), optimize)
     })
 
     visit(tree, 'html', (node: Html) => {
       node.value = node.value.replace(
         /(<img\b[^>]*\bsrc=["'])([^"']+)(["'])/gi,
         (_, before, src, after) => {
-          const resolved = resolveUrl(src, dir)
+          const { base, params } = parseImageParams(src)
+          const resolved = resolveUrl(base, dir)
           collect(resolved)
-          return `${before}${optimizeUrl(resolved, optimize)}${after}`
+          return `${before}${optimizeUrl(appendParams(resolved, params), optimize)}${after}`
         }
       )
     })
@@ -72,18 +101,20 @@ const remarkResolveImages: Plugin<[RemarkResolveImagesOptions?]> = (options) => 
       if (jsx.name !== 'img') return
       const srcAttr = jsx.attributes.find((a): a is MdxJsxAttribute => a.type === 'mdxJsxAttribute' && a.name === 'src')
       if (!srcAttr?.value || typeof srcAttr.value !== 'string') return
-      srcAttr.value = resolveUrl(srcAttr.value, dir)
-      collect(srcAttr.value)
-      srcAttr.value = optimizeUrl(srcAttr.value, optimize)
+      const { base: jsxBase, params: jsxParams } = parseImageParams(srcAttr.value)
+      const jsxResolved = resolveUrl(jsxBase, dir)
+      collect(jsxResolved)
+      srcAttr.value = optimizeUrl(appendParams(jsxResolved, jsxParams), optimize)
     })
 
     visit(tree, 'element', (node: Element) => {
       if (node.tagName !== 'img') return
       const src = node.properties?.src
       if (typeof src !== 'string') return
-      node.properties.src = resolveUrl(src, dir)
-      collect(node.properties.src as string)
-      node.properties.src = optimizeUrl(node.properties.src as string, optimize)
+      const { base: elBase, params: elParams } = parseImageParams(src)
+      const elResolved = resolveUrl(elBase, dir)
+      collect(elResolved)
+      node.properties.src = optimizeUrl(appendParams(elResolved, elParams), optimize)
     })
 
     file.data.images = images
