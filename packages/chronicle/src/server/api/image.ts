@@ -6,10 +6,9 @@ import { useStorage } from 'nitro/storage'
 import sharp from 'sharp'
 import { StatusCodes } from 'http-status-codes'
 import { safePath } from '@/server/utils/safe-path'
-import { ALLOWED_WIDTHS, ALLOWED_QUALITIES, DEFAULT_QUALITY } from '@/lib/image-utils'
+import { ALLOWED_WIDTHS, ALLOWED_QUALITIES, DEFAULT_WIDTH, DEFAULT_QUALITY, isLocalImage, isSvg } from '@/lib/image-utils'
 
-const STORAGE_KEY = 'image-cache'
-const MAX_CACHE_ENTRIES = 500
+export const STORAGE_KEY = 'image-cache'
 
 const inflight = new Map<string, Promise<Buffer>>()
 
@@ -29,8 +28,8 @@ export const MIME: Record<string, string> = {
   '.webp': 'image/webp',
 }
 
-export function cacheKey(url: string, w: number, q: number, format: OutputFormat): string {
-  const hash = crypto.createHash('sha256').update(`${url}:${w}:${q}:${format}`).digest('hex').slice(0, 16)
+export function cacheKey(url: string, w: number, q: number, format: OutputFormat, mtime?: number): string {
+  const hash = crypto.createHash('sha256').update(`${url}:${w}:${q}:${format}:${mtime ?? 0}`).digest('hex').slice(0, 16)
   return `${hash}.${format}`
 }
 
@@ -42,11 +41,17 @@ function snapQuality(q: number): number {
   return closest;
 }
 
-async function evictIfNeeded(storage: ReturnType<typeof useStorage>) {
-  const keys = await storage.getKeys()
-  if (keys.length <= MAX_CACHE_ENTRIES) return
-  const toRemove = keys.slice(0, keys.length - MAX_CACHE_ENTRIES)
-  await Promise.all(toRemove.map(k => storage.removeItem(k)))
+export async function optimizeImage(
+  filePath: string,
+  w: number,
+  q: number,
+  format: OutputFormat,
+): Promise<Buffer> {
+  const source = await fs.readFile(filePath);
+  const pipeline = sharp(source).resize({ width: w, withoutEnlargement: true });
+  if (format === 'avif') return pipeline.avif({ quality: q }).toBuffer();
+  if (format === 'webp') return pipeline.webp({ quality: q }).toBuffer();
+  return pipeline.toBuffer();
 }
 
 export default defineHandler(async event => {
@@ -90,7 +95,11 @@ export default defineHandler(async event => {
   const originalMime = MIME[ext] ?? 'application/octet-stream'
   const contentType = format === 'original' ? originalMime : `image/${format}`
 
-  const key = cacheKey(url, w, q, format)
+  const stat = await fs.stat(filePath).catch(() => null)
+  if (!stat) {
+    throw new HTTPError({ status: StatusCodes.NOT_FOUND, message: 'Not Found' })
+  }
+  const key = cacheKey(url, w, q, format, stat.mtimeMs)
 
   const cached = await storage.getItemRaw<Buffer>(key)
   if (cached) {
@@ -116,16 +125,8 @@ export default defineHandler(async event => {
   }
 
   const work = (async () => {
-    const source = await fs.readFile(filePath)
-    const pipeline = sharp(source).resize({ width: w, withoutEnlargement: true })
-    const optimized = format === 'avif'
-      ? await pipeline.avif({ quality: q }).toBuffer()
-      : format === 'webp'
-        ? await pipeline.webp({ quality: q }).toBuffer()
-        : await pipeline.toBuffer()
-
+    const optimized = await optimizeImage(filePath, w, q, format)
     await storage.setItemRaw(key, optimized)
-    await evictIfNeeded(storage)
     return optimized
   })()
 
@@ -154,3 +155,45 @@ export default defineHandler(async event => {
     inflight.delete(key)
   }
 })
+
+export async function warmupImageCache() {
+  const { getPages, getPageImages } = await import('@/lib/source');
+  // biome-ignore lint/correctness/useHookAtTopLevel: useStorage is a Nitro DI accessor, not a React hook
+  const storage = useStorage(STORAGE_KEY);
+  const contentDir = __CHRONICLE_CONTENT_DIR__;
+  const format = 'webp' as const;
+  const w = DEFAULT_WIDTH;
+  const q = DEFAULT_QUALITY;
+
+  const pages = await getPages();
+  const seen = new Set<string>();
+  let warmed = 0;
+
+  for (const page of pages) {
+    for (const url of getPageImages(page)) {
+      if (!isLocalImage(url) || isSvg(url) || seen.has(url)) continue;
+      seen.add(url);
+
+      const relativePath = url.replace(/^\/_content\//, '');
+      const filePath = safePath(contentDir, `/${relativePath}`);
+      if (!filePath) continue;
+
+      const stat = await fs.stat(filePath).catch(() => null);
+      if (!stat) continue;
+
+      const key = cacheKey(url, w, q, format, stat.mtimeMs);
+      const cached = await storage.getItemRaw(key);
+      if (cached) continue;
+
+      try {
+        const optimized = await optimizeImage(filePath, w, q, format);
+        await storage.setItemRaw(key, optimized);
+        warmed++;
+      } catch { /* skip unprocessable */ }
+    }
+  }
+
+  if (warmed > 0) {
+    console.log(`[image-warmup] cached ${warmed} images as webp@${w}w`);
+  }
+}

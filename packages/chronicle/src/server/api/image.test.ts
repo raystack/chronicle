@@ -48,6 +48,12 @@ describe('cacheKey', () => {
     expect(a).not.toBe(b);
   });
 
+  test('returns different keys for different mtime', () => {
+    const a = cacheKey('/_content/img.png', 640, 75, 'webp', 1000);
+    const b = cacheKey('/_content/img.png', 640, 75, 'webp', 2000);
+    expect(a).not.toBe(b);
+  });
+
   test('key ends with format extension', () => {
     expect(cacheKey('/_content/img.png', 640, 75, 'webp')).toMatch(/\.webp$/);
     expect(cacheKey('/_content/img.png', 640, 75, 'avif')).toMatch(/\.avif$/);
