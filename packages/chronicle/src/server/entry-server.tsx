@@ -9,10 +9,10 @@ import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
-import { getPageTree, getPage, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath, getPageImages, isDraft } from '@/lib/source';
+import { getPage, getPageTree, isDraft, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath, getPageImages } from '@/lib/source';
 import { getFirstApiUrl } from '@/lib/api-routes';
 import { StatusCodes } from 'http-status-codes';
-import { resolveDocsRedirect } from '@/lib/tree-utils';
+import { resolvePageAndSlug, resolveDocsRedirect } from '@/lib/tree-utils';
 import { isLocalImage, isSvg, buildOptimizedUrl, DEFAULT_WIDTH } from '@/lib/image-utils';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { useNitroApp } from 'nitro/app';
@@ -46,11 +46,7 @@ export default {
       : [];
     const apiSpecs = apiConfigs.length ? await loadApiSpecs(apiConfigs) : [];
 
-    const [tree, rawPage] = await Promise.all([
-      getPageTree(),
-      route.type === RouteType.DocsPage ? getPage(route.slug) : Promise.resolve(null),
-    ]);
-    const page = rawPage && isDraft(rawPage) ? null : rawPage;
+    const tree = await getPageTree();
 
     // SSR redirects for index pages
     if (route.type === RouteType.ApiIndex) {
@@ -60,23 +56,20 @@ export default {
       }
     }
 
-    if (route.type === RouteType.DocsPage && !page) {
-      const versionPrefix = route.version.urlPrefix;
-      const slugWithoutVersion = versionPrefix && route.slug[0] === route.version.dir
-        ? route.slug.slice(1)
-        : route.slug;
-      const contentEntries = route.version.dir
-        ? config.versions?.find(v => v.dir === route.version.dir)?.content ?? config.content
-        : config.content;
-      const contentConfig = contentEntries?.find((c: { dir: string }) => c.dir === slugWithoutVersion[0]);
-      const redirectUrl = resolveDocsRedirect(slugWithoutVersion, tree, contentConfig);
-      if (redirectUrl) {
-        const fullUrl = versionPrefix ? `${versionPrefix}${redirectUrl}` : redirectUrl;
-        return new Response(null, { status: StatusCodes.TEMPORARY_REDIRECT, headers: { Location: fullUrl } });
-      }
+    const resolved = route.type === RouteType.DocsPage
+      ? await resolvePageAndSlug(route.slug, { getPage, getPageTree, isDraft, config, version: route.version })
+      : null;
+    const page = resolved?.page ?? null;
+    const resolvedSlug = resolved?.slug ?? pageSlug;
+
+    if (route.type === RouteType.DocsPage && resolved && resolved.slug.join('/') !== route.slug.join('/')) {
+      return new Response(null, {
+        status: StatusCodes.TEMPORARY_REDIRECT,
+        headers: { Location: `/${resolved.slug.join('/')}` },
+      });
     }
 
-    const nav = page ? await getPageNav(pageSlug) : { prev: null, next: null };
+    const nav = page ? await getPageNav(resolvedSlug) : { prev: null, next: null };
 
     const relativePath = page ? getRelativePath(page) : null;
     const originalPath = page ? getOriginalPath(page) : null;
@@ -85,9 +78,9 @@ export default {
 
     const pageData = page
       ? {
-          slug: pageSlug,
+          slug: resolvedSlug,
           frontmatter: {
-            ...extractFrontmatter(page, pageSlug[pageSlug.length - 1]),
+            ...extractFrontmatter(page, resolvedSlug[resolvedSlug.length - 1]),
             _readingTime: mdxModule?._readingTime,
           },
           content: mdxModule?.default
@@ -102,7 +95,7 @@ export default {
     const embeddedData = {
       config,
       tree,
-      slug: pageSlug,
+      slug: resolvedSlug,
       version: route.version,
       frontmatter: pageData?.frontmatter ?? null,
       relativePath,

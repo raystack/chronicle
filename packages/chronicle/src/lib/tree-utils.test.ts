@@ -1,6 +1,8 @@
 import { describe, expect, test } from 'bun:test'
 import type { Node } from 'fumadocs-core/page-tree'
-import { getFirstPageUrl, findFolderFirstPage, resolveDocsRedirect } from './tree-utils'
+import type { ChronicleConfig } from '@/types'
+import type { VersionContext } from './version-source'
+import { getFirstPageUrl, findFolderFirstPage, resolveDocsRedirect, resolvePageAndSlug } from './tree-utils'
 
 function page(url: string, name = 'Page'): Node {
   return { type: 'page', name, url } as Node
@@ -109,5 +111,59 @@ describe('resolveDocsRedirect', () => {
   test('index_page takes priority over first page', () => {
     expect(resolveDocsRedirect(['docs'], tree, { dir: 'docs', index_page: 'custom' }))
       .toBe('/docs/custom')
+  })
+})
+
+describe('resolvePageAndSlug', () => {
+  const treeDef = {
+    children: [
+      page('/docs/intro'),
+      folder('Guides', [page('/docs/guides/install'), page('/docs/guides/config')]),
+    ] as Node[],
+  }
+
+  const config: ChronicleConfig = {
+    site: { title: 'Test' },
+    content: [{ dir: 'docs', label: 'Docs' }],
+  }
+
+  const version: VersionContext = { dir: null, urlPrefix: '' }
+
+  function makeDeps(pages: Record<string, unknown> = {}) {
+    return {
+      getPage: async (slug: string[]) => pages[slug.join('/')] ?? null,
+      getPageTree: async () => treeDef,
+      isDraft: () => false,
+      config,
+      version,
+    }
+  }
+
+  test('returns page when found directly', async () => {
+    const pageObj = { title: 'Intro' }
+    const result = await resolvePageAndSlug(['docs', 'intro'], makeDeps({ 'docs/intro': pageObj }))
+    expect(result).toEqual({ page: pageObj, slug: ['docs', 'intro'] })
+  })
+
+  test('resolves folder slug to first child page', async () => {
+    const installPage = { title: 'Install' }
+    const deps = makeDeps({ 'docs/guides/install': installPage })
+    const result = await resolvePageAndSlug(['docs', 'guides'], deps)
+    expect(result).toEqual({ page: installPage, slug: ['docs', 'guides', 'install'] })
+  })
+
+  test('returns null for non-matching slug', async () => {
+    const result = await resolvePageAndSlug(['docs', 'nonexistent'], makeDeps())
+    expect(result).toBeNull()
+  })
+
+  test('returns null when resolved page is draft', async () => {
+    const draftPage = { title: 'Draft' }
+    const deps = {
+      ...makeDeps({ 'docs/guides/install': draftPage }),
+      isDraft: () => true,
+    }
+    const result = await resolvePageAndSlug(['docs', 'guides'], deps)
+    expect(result).toBeNull()
   })
 })

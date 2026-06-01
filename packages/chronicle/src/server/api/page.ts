@@ -1,19 +1,25 @@
 import { defineHandler, HTTPError } from 'nitro';
-import { getPage, getPageNav, extractFrontmatter, getRelativePath, getOriginalPath, getPageImages, isDraft } from '@/lib/source';
+import { loadConfig } from '@/lib/config';
+import { getPage, getPageTree, isDraft, getPageNav, extractFrontmatter, getRelativePath, getOriginalPath, getPageImages } from '@/lib/source';
+import { resolvePageAndSlug } from '@/lib/tree-utils';
+import { resolveVersionFromUrl } from '@/lib/version-source';
 
 export default defineHandler(async event => {
   const slugParam = event.url.searchParams.get('slug') ?? '';
   const slug = slugParam ? slugParam.split(',').filter(Boolean) : [];
-  const page = await getPage(slug);
+  const config = loadConfig();
+  const version = resolveVersionFromUrl(`/${slug.join('/')}`, config);
+  const resolved = await resolvePageAndSlug(slug, { getPage, getPageTree, isDraft, config, version });
 
-  if (!page || isDraft(page)) {
+  if (!resolved) {
     throw new HTTPError({ status: 404, message: 'Page not found' });
   }
 
-  const nav = await getPageNav(slug);
+  const { page, slug: resolvedSlug } = resolved;
+  const nav = await getPageNav(resolvedSlug);
 
   return Response.json({
-    frontmatter: extractFrontmatter(page, slug[slug.length - 1]),
+    frontmatter: extractFrontmatter(page, resolvedSlug[resolvedSlug.length - 1]),
     relativePath: getRelativePath(page),
     originalPath: getOriginalPath(page),
     images: getPageImages(page),
