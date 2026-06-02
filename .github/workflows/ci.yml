@@ -32,13 +32,14 @@ jobs:
       - name: Test
         run: bun test
 
-  test-windows:
-    name: Test (Windows)
-    runs-on: windows-latest
-    timeout-minutes: 10
-    defaults:
-      run:
-        working-directory: ./packages/chronicle
+  smoke-test:
+    name: Smoke Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -50,7 +51,43 @@ jobs:
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
-        working-directory: .
 
-      - name: Test
-        run: bun test
+      - name: Build CLI
+        run: bun run build:cli
+        working-directory: ./packages/chronicle
+
+      - name: Build example
+        run: ./packages/chronicle/bin/chronicle.js build --config examples/basic/chronicle.yaml
+        shell: bash
+
+      - name: Smoke test dev server
+        shell: bash
+        run: |
+          ./packages/chronicle/bin/chronicle.js dev --config examples/basic/chronicle.yaml --port 3001 &
+          DEV_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3001/api/health > /dev/null 2>&1; then
+              echo "Dev server ready"
+              break
+            fi
+            sleep 2
+          done
+          curl -sf http://localhost:3001/api/health | grep -q '"ok"'
+          echo "Dev server health check passed"
+          kill $DEV_PID 2>/dev/null || true
+
+      - name: Smoke test start server
+        shell: bash
+        run: |
+          ./packages/chronicle/bin/chronicle.js start --config examples/basic/chronicle.yaml --port 3002 &
+          START_PID=$!
+          for i in $(seq 1 30); do
+            if curl -sf http://localhost:3002/api/health > /dev/null 2>&1; then
+              echo "Start server ready"
+              break
+            fi
+            sleep 2
+          done
+          curl -sf http://localhost:3002/api/health | grep -q '"ok"'
+          echo "Start server health check passed"
+          kill $START_PID 2>/dev/null || true
