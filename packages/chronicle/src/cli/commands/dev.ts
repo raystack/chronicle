@@ -16,6 +16,11 @@ export const devCommand = new Command('dev')
 
     await linkContent(projectRoot, config);
 
+    // Nitro 3's default node-worker runner fails on Windows due to Vite 8 environment API incompatibility
+    if (process.platform === 'win32' && !process.env.NITRO_DEV_RUNNER) {
+      process.env.NITRO_DEV_RUNNER = 'node-process';
+    }
+
     console.log(chalk.cyan('Starting dev server...'));
 
     const { createServer } = await import('vite');
