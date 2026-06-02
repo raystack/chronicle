@@ -1,6 +1,24 @@
-import type { Node } from 'fumadocs-core/page-tree';
+import type { Folder, Node, Root } from 'fumadocs-core/page-tree';
 import type { ChronicleConfig } from '@/types';
 import type { VersionContext } from './version-source';
+
+const KEEP_FIELDS = new Set(['type', 'name', 'url', 'icon', 'children', 'index']);
+
+function compactNode(node: Node): Node {
+  if (node.type === 'separator') return { type: 'separator' };
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(node)) {
+    if (!KEEP_FIELDS.has(k)) continue;
+    if (k === 'children') out.children = (v as Node[]).map(compactNode);
+    else if (k === 'index') out.index = compactNode(v as Node);
+    else out[k] = v;
+  }
+  return out as Node;
+}
+
+export function compactTree(tree: Root): Root {
+  return { ...tree, children: tree.children.map(compactNode) };
+}
 
 export const NodeType = {
   Page: 'page',
