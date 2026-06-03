@@ -3,7 +3,7 @@ import { loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 
 const MAX_BODY_SIZE = 10_485_760; // 10 MB
-const UPSTREAM_TIMEOUT_MS = 30_000;
+const UPSTREAM_TIMEOUT_MS = 120_000;
 
 interface ProxyRequest {
   specName: string;
