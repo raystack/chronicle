@@ -13,6 +13,33 @@ declare module 'nitro/types' {
   }
 }
 
+const ROUTES = {
+  ROOT: '/',
+  DOCS: '/docs/:slug',
+  API_INTERNAL: '/api/:action',
+  API_REFERENCE: '/apis/:slug',
+  ASSETS: '/assets/:file',
+  CONTENT: '/_content/:path',
+} as const
+
+const ENDPOINT_MAP: [string, string | null][] = [
+  ['/api/', null],
+  ['/_content/', ROUTES.CONTENT],
+  ['/apis/', ROUTES.API_REFERENCE],
+  ['/assets/', ROUTES.ASSETS],
+]
+
+const STATIC_ROUTES = new Set(['/llms.txt', '/robots.txt', '/sitemap.xml', '/og'])
+
+export function toEndpoint(pathname: string): string {
+  if (pathname === '/') return ROUTES.ROOT;
+  for (const [prefix, template] of ENDPOINT_MAP) {
+    if (pathname.startsWith(prefix)) return template ?? pathname;
+  }
+  if (STATIC_ROUTES.has(pathname)) return pathname;
+  return ROUTES.DOCS;
+}
+
 export default definePlugin((nitroApp) => {
   const config = loadConfig()
   if (!config.telemetry?.enabled) return
@@ -42,7 +69,7 @@ export default definePlugin((nitroApp) => {
   })
 
   nitroApp.hooks.hook('chronicle:ssr-rendered', (route, status, durationMs) => {
-    ssrRenderDuration.record(durationMs, { route, status })
+    ssrRenderDuration.record(durationMs, { route: toEndpoint(route), status })
   })
 
   nitroApp.hooks.hook('request', (event) => {
@@ -54,8 +81,8 @@ export default definePlugin((nitroApp) => {
     if (start === undefined) return
     const duration = performance.now() - start
     const method = event.req.method
-    const route = new URL(event.req.url).pathname
-    requestCounter.add(1, { method, route, status: res.status })
-    requestDuration.record(duration, { method, route, status: res.status })
+    const endpoint = toEndpoint(new URL(event.req.url).pathname)
+    requestCounter.add(1, { method, endpoint, status: res.status })
+    requestDuration.record(duration, { method, endpoint, status: res.status })
   })
 })
