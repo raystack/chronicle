@@ -179,30 +179,7 @@ export default {
       console.error(`[chronicle] SSR error for ${pathname}:`, err);
       const message = (err instanceof Error ? err.message : String(err)).replace(/[<>&"]/g, '');
       return new Response(
-        `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>500 — Internal Server Error</title>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #fafafa; color: #111; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-    .container { text-align: center; max-width: 480px; padding: 2rem; }
-    .code { font-size: 4rem; font-weight: 700; color: #ccc; margin-bottom: 0.5rem; }
-    h1 { font-size: 1.25rem; font-weight: 600; margin-bottom: 1rem; }
-    p { font-size: 0.875rem; color: #666; line-height: 1.6; word-break: break-word; }
-    @media (prefers-color-scheme: dark) { body { background: #111; color: #eee; } .code { color: #333; } p { color: #888; } }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="code">500</div>
-    <h1>Internal Server Error</h1>
-    <p>${message}</p>
-  </div>
-</body>
-</html>`,
+        `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>500 — Internal Server Error</title></head><body><h1>500 — Internal Server Error</h1><p>${message}</p></body></html>`,
         { status: 500, headers: { 'Content-Type': 'text/html;charset=utf-8' } },
       );
     }
