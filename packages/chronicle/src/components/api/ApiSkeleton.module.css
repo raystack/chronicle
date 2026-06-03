@@ -1,0 +1,74 @@
+.layout {
+  padding-left: var(--rs-space-9);
+  padding-right: var(--rs-space-9);
+  width: 100%;
+}
+
+.left {
+  min-width: 0;
+  flex: 0 1 545px;
+}
+
+.right {
+  min-width: 376px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.methodBar {
+  padding: var(--rs-space-3) 0;
+}
+
+.fieldRow {
+  padding: var(--rs-space-3) 0;
+}
+
+.codeBlock {
+  background: var(--rs-color-background-neutral-secondary);
+  border-radius: var(--rs-radius-4);
+  padding: var(--rs-space-5);
+  min-height: 180px;
+}
+
+.responseBlock {
+  background: var(--rs-color-background-neutral-secondary);
+  border-radius: var(--rs-radius-4);
+  padding: var(--rs-space-5);
+  min-height: 120px;
+}
+
+.sidebarGroup {
+  margin-top: var(--rs-space-8);
+  width: 100%;
+  padding: 0 var(--rs-space-3);
+}
+
+.sidebarGroup:first-child {
+  margin-top: 0;
+}
+
+.sidebarItem {
+  padding: var(--rs-space-3) 0;
+}
+
+@media (max-width: 1100px) {
+  .layout {
+    flex-direction: column;
+    gap: var(--rs-space-9);
+  }
+
+  .left,
+  .right {
+    min-width: 0;
+    max-width: 100%;
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout {
+    gap: var(--rs-space-5);
+    padding-left: var(--rs-space-5);
+    padding-right: var(--rs-space-5);
+  }
+}

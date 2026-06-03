@@ -1,5 +1,6 @@
 import { cx } from 'class-variance-authority';
 import type { ReactNode } from 'react';
+import { ApiFullSkeleton } from '@/components/api/ApiSkeleton';
 import { buildApiPageTree } from '@/lib/api-routes';
 import { usePageContext } from '@/lib/page-context';
 import { getTheme } from '@/themes/registry';
@@ -10,7 +11,10 @@ interface ApiLayoutProps {
 }
 
 export function ApiLayout({ children }: ApiLayoutProps) {
-  const { config, apiSpecs } = usePageContext();
+  const { config, apiSpecs, isLoading } = usePageContext();
+
+  if (isLoading) return <ApiFullSkeleton />;
+
   const { Layout, className } = getTheme(config.theme?.name);
   const tree = buildApiPageTree(apiSpecs);
 

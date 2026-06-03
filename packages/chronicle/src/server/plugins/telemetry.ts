@@ -19,6 +19,33 @@ declare module 'nitro/types' {
   }
 }
 
+const ROUTES = {
+  ROOT: '/',
+  DOCS: '/docs/:slug',
+  API_INTERNAL: '/api/:action',
+  API_REFERENCE: '/apis/:slug',
+  ASSETS: '/assets/:file',
+  CONTENT: '/_content/:path',
+} as const
+
+const ENDPOINT_MAP: [string, string | null][] = [
+  ['/api/', null],
+  ['/_content/', ROUTES.CONTENT],
+  ['/apis/', ROUTES.API_REFERENCE],
+  ['/assets/', ROUTES.ASSETS],
+]
+
+const STATIC_ROUTES = new Set(['/llms.txt', '/robots.txt', '/sitemap.xml', '/og'])
+
+export function toEndpoint(pathname: string): string {
+  if (pathname === '/') return ROUTES.ROOT;
+  for (const [prefix, template] of ENDPOINT_MAP) {
+    if (pathname.startsWith(prefix)) return template ?? pathname;
+  }
+  if (STATIC_ROUTES.has(pathname)) return pathname;
+  return ROUTES.DOCS;
+}
+
 export default definePlugin((nitroApp) => {
   const config = loadConfig()
   if (!config.telemetry?.enabled) return
@@ -55,7 +82,7 @@ export default definePlugin((nitroApp) => {
   })
 
   nitroApp.hooks.hook('chronicle:ssr-rendered', (route, status, durationMs) => {
-    ssrRenderDuration.record(durationMs, { route, status })
+    ssrRenderDuration.record(durationMs, { route: toEndpoint(route), status })
   })
 
   nitroApp.hooks.hook('request', (event) => {
@@ -68,14 +95,16 @@ export default definePlugin((nitroApp) => {
     const duration = performance.now() - start
     const method = event.req.method
     const route = new URL(event.req.url).pathname
+    const endpoint = toEndpoint(route)
+
     const clientIp =
       event.req.headers['x-forwarded-for']?.toString().split(',')[0].trim() ??
       event.req.headers['x-real-ip']?.toString() ??
       event.req.socket?.remoteAddress ??
       'unknown'
 
-    requestCounter.add(1, { method, route, status: res.status })
-    requestDuration.record(duration, { method, route, status: res.status })
+    requestCounter.add(1, { method, endpoint, status: res.status })
+    requestDuration.record(duration, { method, endpoint, status: res.status })
 
     logger.emit({
       severityNumber: SeverityNumber.INFO,
@@ -89,5 +118,6 @@ export default definePlugin((nitroApp) => {
         'http.request.duration_ms': Math.round(duration),
       },
     })
+
   })
 })
