@@ -239,6 +239,43 @@ describe('compactTree', () => {
     expect(result.children[0]).toEqual({ type: 'page', name: 'Home', url: '/', icon: 'home' })
   })
 
+  test('page leaf only keeps type, name, url, icon', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{
+        type: 'page', name: 'Test', url: '/test', icon: 'doc',
+        $ref: 'test.mdx', $id: 'test', description: 'A test page', external: true,
+      } as Node],
+    }
+    const result = compactTree(tree)
+    const node = result.children[0] as any
+    expect(Object.keys(node).sort()).toEqual(['icon', 'name', 'type', 'url'])
+  })
+
+  test('separator leaf strips unknown fields', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{ type: 'separator', name: 'Divider', $id: 'sep1', root: true } as Node],
+    }
+    const result = compactTree(tree)
+    const node = result.children[0] as any
+    expect(Object.keys(node).sort()).toEqual(['name', 'type'])
+  })
+
+  test('folder index is compacted as leaf', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{
+        type: 'folder', name: 'Docs',
+        index: { type: 'page', name: 'Index', url: '/docs', $ref: 'index.mdx', $id: 'idx', description: 'main' },
+        children: [],
+      } as Node],
+    }
+    const result = compactTree(tree)
+    const idx = (result.children[0] as any).index
+    expect(Object.keys(idx).sort()).toEqual(['name', 'type', 'url'])
+  })
+
   test('recursively compacts nested folders', () => {
     const tree: Root = {
       name: 'root',
