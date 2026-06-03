@@ -2,6 +2,9 @@ import { defineHandler, HTTPError } from 'nitro';
 import { loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 
+const MAX_BODY_SIZE = 1_048_576; // 1 MB
+const UPSTREAM_TIMEOUT_MS = 30_000;
+
 interface ProxyRequest {
   specName: string;
   method: string;
@@ -10,9 +13,26 @@ interface ProxyRequest {
   body?: unknown;
 }
 
+function isPathSafe(p: string): boolean {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(p);
+  } catch {
+    return false;
+  }
+  if (/^[a-z]+:\/\//i.test(decoded)) return false;
+  const normalized = new URL(decoded, 'http://localhost').pathname;
+  return !normalized.split('/').includes('..');
+}
+
 export default defineHandler(async event => {
   if (event.req.method !== 'POST') {
     throw new HTTPError({ status: 405, message: 'Method not allowed' });
+  }
+
+  const contentLength = parseInt(event.req.headers.get('content-length') ?? '0', 10);
+  if (contentLength > MAX_BODY_SIZE) {
+    throw new HTTPError({ status: 413, message: `Request body too large (max ${MAX_BODY_SIZE} bytes)` });
   }
 
   const { specName, method, path, headers, body } =
@@ -33,7 +53,7 @@ export default defineHandler(async event => {
     throw new HTTPError({ status: 404, message: `Unknown spec: ${specName}` });
   }
 
-  if (/^[a-z]+:\/\//i.test(path) || path.includes('..')) {
+  if (!isPathSafe(path)) {
     throw new HTTPError({ status: 400, message: 'Invalid path' });
   }
 
@@ -43,7 +63,8 @@ export default defineHandler(async event => {
     const response = await fetch(url, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined
+      body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
 
     const contentType = response.headers.get('content-type') ?? '';
@@ -64,6 +85,9 @@ export default defineHandler(async event => {
       headers: responseHeaders
     });
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      throw new HTTPError({ status: 504, message: `Upstream request timed out after ${UPSTREAM_TIMEOUT_MS}ms` });
+    }
     const message =
       error instanceof Error
         ? `${error.message}${error.cause ? `: ${(error.cause as Error).message}` : ''}`
