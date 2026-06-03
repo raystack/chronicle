@@ -1,6 +1,7 @@
 import type { OpenAPIV3 } from 'openapi-types';
 import { Navigate } from 'react-router';
 import { ApiOverview } from '@/components/api';
+import { ApiPageSkeleton } from '@/components/api/ApiSkeleton';
 import { findApiOperation, getFirstApiUrl } from '@/lib/api-routes';
 import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
@@ -10,7 +11,9 @@ interface ApiPageProps {
 }
 
 export function ApiPage({ slug }: ApiPageProps) {
-  const { config, apiSpecs } = usePageContext();
+  const { config, apiSpecs, isLoading } = usePageContext();
+
+  if (isLoading) return <ApiPageSkeleton />;
 
   if (slug.length === 0) {
     const firstUrl = getFirstApiUrl(apiSpecs);
