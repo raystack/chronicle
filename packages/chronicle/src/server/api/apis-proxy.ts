@@ -1,4 +1,5 @@
 import { defineHandler, HTTPError } from 'nitro';
+import { StatusCodes } from 'http-status-codes';
 import { loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
 
@@ -27,12 +28,12 @@ function isPathSafe(p: string): boolean {
 
 export default defineHandler(async event => {
   if (event.req.method !== 'POST') {
-    throw new HTTPError({ status: 405, message: 'Method not allowed' });
+    throw new HTTPError({ status: StatusCodes.METHOD_NOT_ALLOWED, message: 'Method not allowed' });
   }
 
   const contentLength = parseInt(event.req.headers.get('content-length') ?? '0', 10);
   if (contentLength > MAX_BODY_SIZE) {
-    throw new HTTPError({ status: 413, message: `Request body too large (max ${MAX_BODY_SIZE} bytes)` });
+    throw new HTTPError({ status: StatusCodes.CONTENT_TOO_LARGE, message: `Request body too large (max ${MAX_BODY_SIZE} bytes)` });
   }
 
   const { specName, method, path, headers, body } =
@@ -40,7 +41,7 @@ export default defineHandler(async event => {
 
   if (!specName || !method || !path) {
     throw new HTTPError({
-      status: 400,
+      status: StatusCodes.BAD_REQUEST,
       message: 'Missing specName, method, or path'
     });
   }
@@ -50,11 +51,11 @@ export default defineHandler(async event => {
   const spec = specs.find(s => s.name === specName);
 
   if (!spec) {
-    throw new HTTPError({ status: 404, message: `Unknown spec: ${specName}` });
+    throw new HTTPError({ status: StatusCodes.NOT_FOUND, message: `Unknown spec: ${specName}` });
   }
 
   if (!isPathSafe(path)) {
-    throw new HTTPError({ status: 400, message: 'Invalid path' });
+    throw new HTTPError({ status: StatusCodes.BAD_REQUEST, message: 'Invalid path' });
   }
 
   const url = spec.server.url + path;
@@ -86,14 +87,14 @@ export default defineHandler(async event => {
     });
   } catch (error) {
     if (error instanceof DOMException && error.name === 'TimeoutError') {
-      throw new HTTPError({ status: 504, message: `Upstream request timed out after ${UPSTREAM_TIMEOUT_MS}ms` });
+      throw new HTTPError({ status: StatusCodes.GATEWAY_TIMEOUT, message: `Upstream request timed out after ${UPSTREAM_TIMEOUT_MS}ms` });
     }
     const message =
       error instanceof Error
         ? `${error.message}${error.cause ? `: ${(error.cause as Error).message}` : ''}`
         : 'Request failed';
     throw new HTTPError({
-      status: 502,
+      status: StatusCodes.BAD_GATEWAY,
       message: `Could not reach ${url}\n${message}`
     });
   }
