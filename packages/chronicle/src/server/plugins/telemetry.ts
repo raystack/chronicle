@@ -16,8 +16,8 @@ declare module 'nitro/types' {
 const ROUTES = {
   ROOT: '/',
   DOCS: '/docs/:slug',
-  API: '/api/:action',
-  APIS: '/apis/:slug',
+  API_INTERNAL: '/api/:action',
+  API_PROXY: '/apis/:slug',
   ASSETS: '/assets/:file',
   CONTENT: '/_content/:path',
 } as const
@@ -25,7 +25,7 @@ const ROUTES = {
 const ENDPOINT_MAP: [string, string | null][] = [
   ['/api/', null],
   ['/_content/', ROUTES.CONTENT],
-  ['/apis/', ROUTES.APIS],
+  ['/apis/', ROUTES.API_PROXY],
   ['/assets/', ROUTES.ASSETS],
 ]
 
