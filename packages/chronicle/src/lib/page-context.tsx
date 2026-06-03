@@ -7,7 +7,7 @@ import {
   useRef,
   useState
 } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import type { ApiSpec } from '@/lib/openapi';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import type { VersionContext } from '@/lib/version-source';
@@ -60,6 +60,10 @@ interface PageProviderProps {
   children: ReactNode;
 }
 
+function isStaticMode(): boolean {
+  return typeof window !== 'undefined' && (window as any).__STATIC_MODE__ === true;
+}
+
 function isApisRoute(pathname: string): boolean {
   return pathname === '/apis' || pathname.startsWith('/apis/');
 }
@@ -83,6 +87,7 @@ export function PageProvider({
   children
 }: PageProviderProps) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const [tree] = useState<Root>(initialTree);
   const [page, setPage] = useState<Page | null>(initialPage);
   const [errorStatus, setErrorStatus] = useState<number | null>(getInitialErrorStatus(initialPage, initialConfig, pathname));
@@ -94,9 +99,17 @@ export function PageProvider({
   const fetchApiSpecs = useCallback(async (route: { version: VersionContext }, cancelled: { current: boolean }) => {
     setIsLoading(true);
     try {
-      const specsUrl = route.version.dir
-        ? `/api/specs?version=${encodeURIComponent(route.version.dir)}`
-        : '/api/specs';
+      let specsUrl: string;
+      if (isStaticMode()) {
+        const file = route.version.dir
+          ? `${encodeURIComponent(route.version.dir)}.json`
+          : 'latest.json';
+        specsUrl = `/data/specs/${file}`;
+      } else {
+        specsUrl = route.version.dir
+          ? `/api/specs?version=${encodeURIComponent(route.version.dir)}`
+          : '/api/specs';
+      }
       const res = await fetch(specsUrl);
       const specs = await res.json();
       if (!cancelled.current) setApiSpecs(specs);
@@ -118,7 +131,13 @@ export function PageProvider({
 
   const fetchPageData = useCallback(async (slug: string[]): Promise<PageData> => {
     const key = slug.length === 0 ? '' : slug.map(s => encodeURIComponent(s)).join(',');
-    const apiPath = key ? `/api/page?slug=${key}` : '/api/page';
+    let apiPath: string;
+    if (isStaticMode()) {
+      const file = key || 'index';
+      apiPath = `/data/pages/${file}.json`;
+    } else {
+      apiPath = key ? `/api/page?slug=${key}` : '/api/page';
+    }
     return queryClient.fetchQuery({
       queryKey: ['pageData', key],
       queryFn: async () => {
@@ -183,11 +202,19 @@ export function PageProvider({
       return () => { cancelled.current = true; };
     }
 
+    if (isStaticMode() && route.slug.length === 1) {
+      const entry = initialConfig.content?.find(c => c.dir === route.slug[0]);
+      if (entry?.index_page) {
+        navigate(`/${entry.dir}/${entry.index_page}`, { replace: true });
+        return () => { cancelled.current = true; };
+      }
+    }
+
     setPage(null);
     setErrorStatus(null);
     loadDocsPage(route.slug, cancelled);
     return () => { cancelled.current = true; };
-  }, [pathname, initialConfig, fetchApiSpecs, loadDocsPage]);
+  }, [pathname, initialConfig, fetchApiSpecs, loadDocsPage, navigate]);
 
   return (
     <PageContext.Provider

@@ -1,3 +1,4 @@
+import path from 'node:path';
 import chalk from 'chalk';
 import { Command } from 'commander';
 import { loadCLIConfig } from '@/cli/utils/config';
@@ -9,7 +10,7 @@ export const buildCommand = new Command('build')
   .option('--config <path>', 'Path to chronicle.yaml')
   .option(
     '--preset <preset>',
-    'Deploy preset (vercel, cloudflare, node-server)'
+    'Deploy preset (vercel, cloudflare, node-server, static)'
   )
   .action(async options => {
     const { config, projectRoot, configPath, preset } = await loadCLIConfig(options.config, {
@@ -19,8 +20,8 @@ export const buildCommand = new Command('build')
 
     console.log(chalk.cyan('Building for production...'));
 
-    const { createBuilder } = await import('vite');
-    const { createViteConfig } = await import('@/server/vite-config');
+    const { createBuilder, build } = await import('vite');
+    const { createViteConfig, isStaticPreset } = await import('@/server/vite-config');
 
     const viteConfig = await createViteConfig({
       packageRoot: PACKAGE_ROOT,
@@ -29,9 +30,28 @@ export const buildCommand = new Command('build')
       preset
     });
 
-    const builder = await createBuilder({ ...viteConfig, builder: {} });
-    await builder.buildApp();
+    if (isStaticPreset(preset)) {
+      await build(viteConfig);
+    } else {
+      const builder = await createBuilder({ ...viteConfig, builder: {} });
+      await builder.buildApp();
+    }
 
-    console.log(chalk.green('Build complete'));
-    console.log(chalk.cyan('Run `chronicle start` to start the server'));
+    if (isStaticPreset(preset)) {
+      const { generateStaticSite } = await import('@/cli/commands/static-generate');
+      const outputDir = path.resolve(projectRoot, '.output/public');
+
+      await generateStaticSite({
+        projectRoot,
+        config,
+        outputDir,
+        packageRoot: PACKAGE_ROOT,
+      });
+
+      console.log(chalk.green('Static build complete'));
+      console.log(chalk.cyan(`Output: ${outputDir}`));
+    } else {
+      console.log(chalk.green('Build complete'));
+      console.log(chalk.cyan('Run `chronicle start` to start the server'));
+    }
   });

@@ -27,7 +27,7 @@ function getDatabaseConnector(preset?: string): { connector: string; options?: R
 
 const STATIC_PRESETS = new Set(['static', 'vercel-static', 'cloudflare-pages', 'github-pages']);
 
-function isStaticPreset(preset?: string): boolean {
+export function isStaticPreset(preset?: string): boolean {
   return !!preset && STATIC_PRESETS.has(preset);
 }
 
@@ -72,8 +72,9 @@ export async function createViteConfig(
     plugins: [
       nitro({
         serverDir: path.resolve(packageRoot, 'src/server'),
-        ...(preset && { preset }),
+        ...(!isStaticPreset(preset) && preset && { preset }),
         ignore: ['**/*.test.ts', '**/*.test.tsx', '**/*.spec.ts', '**/*.spec.tsx'],
+        ...(isStaticPreset(preset) && { prerender: { routes: [] } }),
       }),
       mdx({
         default: defineFumadocsConfig({
@@ -146,8 +147,14 @@ export async function createViteConfig(
     environments: {
       client: {
         build: {
+          manifest: isStaticPreset(preset),
           rollupOptions: {
-            input: path.resolve(packageRoot, 'src/server/entry-client.tsx')
+            input: path.resolve(
+              packageRoot,
+              isStaticPreset(preset)
+                ? 'src/server/entry-static.tsx'
+                : 'src/server/entry-client.tsx',
+            )
           }
         }
       }
@@ -166,12 +173,16 @@ export async function createViteConfig(
           base: path.resolve(projectRoot, '.cache/images'),
         },
       },
-      experimental: {
-        database: true,
-      },
-      database: {
-        default: getDatabaseConnector(preset),
-      },
+      ...(isStaticPreset(preset)
+        ? {}
+        : {
+            experimental: {
+              database: true,
+            },
+            database: {
+              default: getDatabaseConnector(preset),
+            },
+          }),
     },
   };
 }

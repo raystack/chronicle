@@ -11,6 +11,66 @@ import { generateCurl } from '@/lib/snippet-generators'
 import { JsonEditor } from '@/components/api/json-editor'
 import styles from './playground-dialog.module.css'
 
+type ProxyResponse = {
+  status: number
+  statusText: string
+  body: unknown
+  headers?: Record<string, string>
+}
+
+function isStaticMode(): boolean {
+  return typeof window !== 'undefined' && '__STATIC_MODE__' in window && (window as unknown as Record<string, unknown>).__STATIC_MODE__ === true
+}
+
+async function sendViaProxy(
+  specName: string,
+  method: string,
+  path: string,
+  headers: Record<string, string>,
+  body: unknown,
+): Promise<ProxyResponse> {
+  const res = await fetch('/api/apis-proxy', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ specName, method, path, headers, body }),
+  })
+  const data = await res.json()
+  if (data.status !== undefined) return data
+  return { status: res.status, statusText: res.statusText, body: data.error ?? data }
+}
+
+async function sendDirect(
+  serverUrl: string,
+  method: string,
+  path: string,
+  headers: Record<string, string>,
+  body: unknown,
+): Promise<ProxyResponse> {
+  const url = serverUrl + path
+  try {
+    const res = await fetch(url, {
+      method,
+      headers,
+      body: body ? JSON.stringify(body) : undefined,
+    })
+    const contentType = res.headers.get('content-type') ?? ''
+    const responseBody = contentType.includes('application/json')
+      ? await res.json()
+      : await res.text()
+    const responseHeaders: Record<string, string> = {}
+    res.headers.forEach((v, k) => { responseHeaders[k] = v })
+    return { status: res.status, statusText: res.statusText, body: responseBody, headers: responseHeaders }
+  } catch (err) {
+    if (err instanceof TypeError) {
+      throw new Error(
+        `CORS Error: The API server at ${serverUrl} does not allow requests from this origin.\n` +
+        `Ask the API server administrator to add this site's origin to their CORS allowed origins.`
+      )
+    }
+    throw err
+  }
+}
+
 type AuthScheme = {
   name: string
   type: 'apiKey' | 'bearer' | 'basic' | 'none'
@@ -193,24 +253,18 @@ export function PlaygroundDialog({
     }
 
     try {
-      const res = await fetch('/api/apis-proxy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ specName, method, path: fullPath, headers: reqHeaders, body: reqBody }),
-      })
-      const data = await res.json()
+      const data = isStaticMode()
+        ? await sendDirect(serverUrl, method, fullPath, reqHeaders, reqBody)
+        : await sendViaProxy(specName, method, fullPath, reqHeaders, reqBody)
       const elapsed = Math.round(performance.now() - startTime)
-      if (data.status !== undefined) {
-        setResponseData({ ...data, time: elapsed })
-      } else {
-        setResponseData({ status: res.status, statusText: res.statusText, body: data.error ?? data, time: elapsed })
-      }
-    } catch {
-      setResponseData({ status: 0, statusText: 'Error', body: 'Failed to send request', time: 0 })
+      setResponseData({ ...data, time: elapsed })
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to send request'
+      setResponseData({ status: 0, statusText: 'Error', body: message, time: 0 })
     } finally {
       setLoading(false)
     }
-  }, [specName, method, path, pathValues, queryValues, getAuthHeaders, headerValues, bodyValues, body])
+  }, [specName, method, path, serverUrl, pathValues, queryValues, getAuthHeaders, headerValues, bodyValues, body])
 
   const responseJson = responseData
     ? (typeof responseData.body === 'string' ? responseData.body : JSON.stringify(responseData.body, null, 2))
