@@ -116,7 +116,7 @@ async function searchStatic(query: string, tag?: string): Promise<SearchResult[]
 
   if (!query) {
     let docs = searchDocuments.filter(d => d.type === 'page');
-    if (tag) docs = docs.filter(d => d.url.startsWith(`/${tag}/`) || d.url.startsWith(`/${tag}`));
+    if (tag) docs = docs.filter(d => d.url === `/${tag}` || d.url.startsWith(`/${tag}/`));
     return docs.slice(0, 8).map(d => ({
       id: d.id,
       url: d.url,
@@ -130,7 +130,7 @@ async function searchStatic(query: string, tag?: string): Promise<SearchResult[]
   if (tag) {
     results = results.filter(r => {
       const url = r.url as string;
-      return url.startsWith(`/${tag}/`) || url.startsWith(`/${tag}`);
+      return url === `/${tag}` || url.startsWith(`/${tag}/`);
     });
   }
 

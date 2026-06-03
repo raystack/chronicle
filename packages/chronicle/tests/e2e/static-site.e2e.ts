@@ -31,30 +31,28 @@ test.describe('Static site mode', () => {
     await page.waitForTimeout(2000);
 
     const installationLink = page.locator('a[href="/docs/guides/installation"]').first();
-    if (await installationLink.isVisible()) {
-      await installationLink.click();
-      await page.waitForTimeout(2000);
-      expect(page.url()).toContain('/docs/guides/installation');
-      const body = await page.textContent('body');
-      expect(body).toContain('Installation');
-    }
+    await expect(installationLink).toBeVisible();
+    await installationLink.click();
+    await page.waitForTimeout(2000);
+    expect(page.url()).toContain('/docs/guides/installation');
+    const body = await page.textContent('body');
+    expect(body).toContain('Installation');
   });
 
-  test('search dialog opens with Ctrl+K', async ({ page }) => {
+  test('search dialog opens with Ctrl/Cmd+K', async ({ page }) => {
     await page.goto(`${BASE_URL}/docs/getting-started`);
     await page.waitForSelector('[data-theme]', { timeout: 10000 });
     await page.waitForTimeout(1000);
 
-    await page.keyboard.press('Meta+k');
+    await page.keyboard.press('ControlOrMeta+k');
     await page.waitForTimeout(500);
 
     const searchInput = page.locator('input[placeholder="Search"]').first();
-    if (await searchInput.isVisible()) {
-      await searchInput.fill('install');
-      await page.waitForTimeout(1000);
-      const results = await page.textContent('body');
-      expect(results).toContain('Install');
-    }
+    await expect(searchInput).toBeVisible();
+    await searchInput.fill('install');
+    await page.waitForTimeout(1000);
+    const results = await page.textContent('body');
+    expect(results).toContain('Install');
   });
 
   test('page data JSON files are accessible', async ({ page }) => {

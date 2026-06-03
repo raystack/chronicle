@@ -541,9 +541,11 @@ async function generateSitemap(
   const baseUrl = config.url.replace(/\/$/, '');
 
   const docPages = pages.map(page => {
-    const lastmod = page.frontmatter.lastModified
-      ? `<lastmod>${new Date(page.frontmatter.lastModified).toISOString()}</lastmod>`
-      : '';
+    let lastmod = '';
+    if (page.frontmatter.lastModified) {
+      const d = new Date(page.frontmatter.lastModified);
+      if (!Number.isNaN(d.getTime())) lastmod = `<lastmod>${d.toISOString()}</lastmod>`;
+    }
     return `<url><loc>${baseUrl}/${page.slugs.join('/')}</loc>${lastmod}</url>`;
   });
 
@@ -618,6 +620,7 @@ async function generateOgImages(
   try {
     const response = await fetch(
       'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.woff2',
+      { signal: AbortSignal.timeout(10000) },
     );
     fontData = await response.arrayBuffer();
   } catch {
@@ -694,10 +697,10 @@ async function optimizeImages(
       seen.add(imgUrl);
 
       const relativePath = imgUrl.replace(/^\/_content\//, '');
+      const srcPath = path.resolve(contentDir, relativePath);
+      if (!srcPath.startsWith(contentDir + path.sep) && srcPath !== contentDir) continue;
 
       if (isSvg(imgUrl)) {
-        // Copy SVGs as-is
-        const srcPath = path.resolve(contentDir, relativePath);
         const destPath = path.join(outputDir, '_content', relativePath);
         try {
           await fs.mkdir(path.dirname(destPath), { recursive: true });
@@ -709,8 +712,6 @@ async function optimizeImages(
         continue;
       }
 
-      // Convert raster images to webp
-      const srcPath = path.resolve(contentDir, relativePath);
       const webpRelative = relativePath.replace(/\.[^.]+$/, '.webp');
       const destPath = path.join(outputDir, '_content', webpRelative);
 
@@ -829,6 +830,10 @@ async function generateSpaIndex(
         break;
       }
     }
+  }
+
+  if (!entryJs) {
+    throw new Error('Could not determine Vite client entry from manifest — static index generation aborted');
   }
 
   const latestCtx: VersionContext = { dir: null, urlPrefix: '' };
