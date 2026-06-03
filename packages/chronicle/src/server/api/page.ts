@@ -25,7 +25,5 @@ export default defineHandler(async event => {
     images: getPageImages(page),
     prev: nav.prev,
     next: nav.next,
-  }, {
-    headers: { 'Cache-Control': 'public, max-age=3600, s-maxage=86400' },
   });
 });
