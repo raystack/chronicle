@@ -17,7 +17,7 @@ const ROUTES = {
   ROOT: '/',
   DOCS: '/docs/:slug',
   API_INTERNAL: '/api/:action',
-  API_PROXY: '/apis/:slug',
+  API_REFERENCE: '/apis/:slug',
   ASSETS: '/assets/:file',
   CONTENT: '/_content/:path',
 } as const
@@ -25,7 +25,7 @@ const ROUTES = {
 const ENDPOINT_MAP: [string, string | null][] = [
   ['/api/', null],
   ['/_content/', ROUTES.CONTENT],
-  ['/apis/', ROUTES.API_PROXY],
+  ['/apis/', ROUTES.API_REFERENCE],
   ['/assets/', ROUTES.ASSETS],
 ]
 
