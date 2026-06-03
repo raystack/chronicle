@@ -84,7 +84,7 @@ export function findApiOperation(specs: ApiSpec[], slug: string[]): ApiRouteMatc
   return null
 }
 
-export function buildApiPageTree(specs: ApiSpec[]): Root {
+export function buildApiPageTree(specs: ApiSpec[] = []): Root {
   const children: Node[] = []
 
   for (const spec of specs) {

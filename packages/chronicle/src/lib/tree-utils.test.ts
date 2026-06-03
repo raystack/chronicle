@@ -1,8 +1,8 @@
 import { describe, expect, test } from 'bun:test'
-import type { Node } from 'fumadocs-core/page-tree'
+import type { Node, Root } from 'fumadocs-core/page-tree'
 import type { ChronicleConfig } from '@/types'
 import type { VersionContext } from './version-source'
-import { getFirstPageUrl, findFolderFirstPage, resolveDocsRedirect, resolvePageAndSlug } from './tree-utils'
+import { getFirstPageUrl, findFolderFirstPage, resolveDocsRedirect, resolvePageAndSlug, compactTree } from './tree-utils'
 
 function page(url: string, name = 'Page'): Node {
   return { type: 'page', name, url } as Node
@@ -165,5 +165,139 @@ describe('resolvePageAndSlug', () => {
     }
     const result = await resolvePageAndSlug(['docs', 'guides'], deps)
     expect(result).toBeNull()
+  })
+})
+
+describe('compactTree', () => {
+  test('strips $ref and $id from page nodes', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{
+        type: 'page', name: 'Intro', url: '/docs/intro',
+        $ref: 'docs/intro.mdx', $id: 'docs/intro.mdx',
+      } as Node],
+    }
+    const result = compactTree(tree)
+    expect(result.children[0]).toEqual({ type: 'page', name: 'Intro', url: '/docs/intro' })
+  })
+
+  test('strips description and root from folder nodes', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{
+        type: 'folder', name: 'Guides',
+        description: 'Guide section', root: true,
+        children: [{ type: 'page', name: 'Install', url: '/guides/install', $ref: 'install.mdx' } as Node],
+      } as Node],
+    }
+    const result = compactTree(tree)
+    const folder = result.children[0] as any
+    expect(folder.description).toBeUndefined()
+    expect(folder.root).toBeUndefined()
+    expect(folder.name).toBe('Guides')
+    expect(folder.children[0]).toEqual({ type: 'page', name: 'Install', url: '/guides/install' })
+  })
+
+  test('preserves separator nodes', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{ type: 'separator' } as Node],
+    }
+    const result = compactTree(tree)
+    expect(result.children[0]).toEqual({ type: 'separator' })
+  })
+
+  test('preserves separator name and icon', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{ type: 'separator', name: 'Section', icon: 'star' } as Node],
+    }
+    const result = compactTree(tree)
+    expect(result.children[0]).toEqual({ type: 'separator', name: 'Section', icon: 'star' })
+  })
+
+  test('preserves folder index and strips its extra fields', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{
+        type: 'folder', name: 'Docs',
+        index: { type: 'page', name: 'Overview', url: '/docs', $ref: 'docs/index.mdx' },
+        children: [{ type: 'page', name: 'Intro', url: '/docs/intro' } as Node],
+      } as Node],
+    }
+    const result = compactTree(tree)
+    const folder = result.children[0] as any
+    expect(folder.index).toEqual({ type: 'page', name: 'Overview', url: '/docs' })
+  })
+
+  test('preserves icon field', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{ type: 'page', name: 'Home', url: '/', icon: 'home', $id: 'x' } as Node],
+    }
+    const result = compactTree(tree)
+    expect(result.children[0]).toEqual({ type: 'page', name: 'Home', url: '/', icon: 'home' })
+  })
+
+  test('page leaf only keeps type, name, url, icon', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{
+        type: 'page', name: 'Test', url: '/test', icon: 'doc',
+        $ref: 'test.mdx', $id: 'test', description: 'A test page', external: true,
+      } as Node],
+    }
+    const result = compactTree(tree)
+    const node = result.children[0] as any
+    expect(Object.keys(node).sort()).toEqual(['icon', 'name', 'type', 'url'])
+  })
+
+  test('separator leaf strips unknown fields', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{ type: 'separator', name: 'Divider', $id: 'sep1', root: true } as Node],
+    }
+    const result = compactTree(tree)
+    const node = result.children[0] as any
+    expect(Object.keys(node).sort()).toEqual(['name', 'type'])
+  })
+
+  test('folder index is compacted as leaf', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{
+        type: 'folder', name: 'Docs',
+        index: { type: 'page', name: 'Index', url: '/docs', $ref: 'index.mdx', $id: 'idx', description: 'main' },
+        children: [],
+      } as Node],
+    }
+    const result = compactTree(tree)
+    const idx = (result.children[0] as any).index
+    expect(Object.keys(idx).sort()).toEqual(['name', 'type', 'url'])
+  })
+
+  test('recursively compacts nested folders', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{
+        type: 'folder', name: 'L1', $ref: 'l1',
+        children: [{
+          type: 'folder', name: 'L2', $ref: 'l2',
+          children: [{ type: 'page', name: 'Deep', url: '/l1/l2/deep', $ref: 'deep.mdx', $id: 'deep' } as Node],
+        } as Node],
+      } as Node],
+    }
+    const result = compactTree(tree)
+    const l1 = result.children[0] as any
+    const l2 = l1.children[0] as any
+    const deep = l2.children[0]
+    expect(l1.$ref).toBeUndefined()
+    expect(l2.$ref).toBeUndefined()
+    expect(deep).toEqual({ type: 'page', name: 'Deep', url: '/l1/l2/deep' })
+  })
+
+  test('preserves tree name', () => {
+    const tree: Root = { name: 'custom', children: [] }
+    expect(compactTree(tree).name).toBe('custom')
   })
 })
