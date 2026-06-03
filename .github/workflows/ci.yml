@@ -62,6 +62,8 @@ jobs:
 
       - name: Smoke test dev server
         shell: bash
+        env:
+          NITRO_DEV_RUNNER: ${{ matrix.os == 'windows-latest' && 'self' || '' }}
         run: |
           ./packages/chronicle/bin/chronicle.js dev --config examples/basic/chronicle.yaml --port 3001 &
           DEV_PID=$!
