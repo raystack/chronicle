@@ -13,22 +13,31 @@ declare module 'nitro/types' {
   }
 }
 
+const ROUTES = {
+  ROOT: '/',
+  DOCS: '/docs/:slug',
+  API: '/api/:action',
+  APIS: '/apis/:slug',
+  ASSETS: '/assets/:file',
+  CONTENT: '/_content/:path',
+} as const
+
 const ENDPOINT_MAP: [string, string | null][] = [
   ['/api/', null],
-  ['/_content/', '/_content/:path'],
-  ['/apis/', '/apis/:slug'],
-  ['/assets/', '/assets/:file'],
+  ['/_content/', ROUTES.CONTENT],
+  ['/apis/', ROUTES.APIS],
+  ['/assets/', ROUTES.ASSETS],
 ]
 
 const STATIC_ROUTES = new Set(['/llms.txt', '/robots.txt', '/sitemap.xml', '/og'])
 
 function toEndpoint(pathname: string): string {
-  if (pathname === '/') return '/';
+  if (pathname === '/') return ROUTES.ROOT;
   for (const [prefix, template] of ENDPOINT_MAP) {
     if (pathname.startsWith(prefix)) return template ?? pathname;
   }
   if (STATIC_ROUTES.has(pathname)) return pathname;
-  return '/docs/:slug';
+  return ROUTES.DOCS;
 }
 
 export default definePlugin((nitroApp) => {
