@@ -31,7 +31,7 @@ const ENDPOINT_MAP: [string, string | null][] = [
 
 const STATIC_ROUTES = new Set(['/llms.txt', '/robots.txt', '/sitemap.xml', '/og'])
 
-function toEndpoint(pathname: string): string {
+export function toEndpoint(pathname: string): string {
   if (pathname === '/') return ROUTES.ROOT;
   for (const [prefix, template] of ENDPOINT_MAP) {
     if (pathname.startsWith(prefix)) return template ?? pathname;
