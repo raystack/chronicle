@@ -5,7 +5,6 @@ import type { VersionContext } from './version-source';
 const KEEP_FIELDS = new Set(['type', 'name', 'url', 'icon', 'children', 'index']);
 
 function compactNode(node: Node): Node {
-  if (node.type === 'separator') return { type: 'separator' };
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(node)) {
     if (!KEEP_FIELDS.has(k)) continue;

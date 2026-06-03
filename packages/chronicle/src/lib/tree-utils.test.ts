@@ -207,6 +207,15 @@ describe('compactTree', () => {
     expect(result.children[0]).toEqual({ type: 'separator' })
   })
 
+  test('preserves separator name and icon', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{ type: 'separator', name: 'Section', icon: 'star' } as Node],
+    }
+    const result = compactTree(tree)
+    expect(result.children[0]).toEqual({ type: 'separator', name: 'Section', icon: 'star' })
+  })
+
   test('preserves folder index and strips its extra fields', () => {
     const tree: Root = {
       name: 'root',
