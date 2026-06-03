@@ -26,10 +26,22 @@ import serverAssets from './entry-server?assets=ssr';
 
 function errorResponse(status: number, title: string, message: string): Response {
   const safe = message.replace(/[<>&"]/g, '');
-  return new Response(
-    `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>${status} — ${title}</title></head><body><h1>${status} — ${title}</h1><p>${safe}</p></body></html>`,
-    { status, headers: { 'Content-Type': 'text/html;charset=utf-8' } },
-  );
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${status} — ${title}</title>
+</head>
+<body>
+  <h1>${status} — ${title}</h1>
+  <p>${safe}</p>
+</body>
+</html>`;
+  return new Response(html, {
+    status,
+    headers: { 'Content-Type': 'text/html;charset=utf-8' },
+  });
 }
 
 export default {
