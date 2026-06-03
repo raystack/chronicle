@@ -28,6 +28,7 @@ export default {
   async fetch(req: Request) {
     const url = new URL(req.url);
     const pathname = decodeURIComponent(url.pathname);
+    try {
 
     const config = loadConfig();
     const route = resolveRoute(pathname, config);
@@ -174,5 +175,13 @@ export default {
       status,
       headers: { 'Content-Type': 'text/html;charset=utf-8' },
     });
+    } catch (err) {
+      console.error(`[chronicle] SSR error for ${pathname}:`, err);
+      const message = err instanceof Error ? err.message : String(err);
+      return new Response(
+        `<!DOCTYPE html><html><head><title>500</title></head><body><h1>Internal Server Error</h1><p>${message.replace(/[<>&"]/g, '')}</p></body></html>`,
+        { status: 500, headers: { 'Content-Type': 'text/html;charset=utf-8' } },
+      );
+    }
   },
 };
