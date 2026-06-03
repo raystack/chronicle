@@ -1,6 +1,12 @@
 import type { Counter, Histogram } from '@opentelemetry/api'
 import { MeterProvider } from '@opentelemetry/sdk-metrics'
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus'
+import {
+  LoggerProvider,
+  SimpleLogRecordProcessor,
+  ConsoleLogRecordExporter,
+} from '@opentelemetry/sdk-logs'
+import { SeverityNumber } from '@opentelemetry/api-logs'
 import { resourceFromAttributes } from '@opentelemetry/resources'
 import { ATTR_SERVICE_NAME } from '@opentelemetry/semantic-conventions'
 import type { H3Event } from 'h3'
@@ -26,6 +32,12 @@ export default definePlugin((nitroApp) => {
   const provider = new MeterProvider({ resource, readers: [exporter] })
   const meter = provider.getMeter('chronicle')
 
+  const loggerProvider = new LoggerProvider({
+    resource,
+    processors: [new SimpleLogRecordProcessor(new ConsoleLogRecordExporter())],
+  })
+  const logger = loggerProvider.getLogger('chronicle')
+
   const requestCounter: Counter = meter.createCounter('http_server_request_total', {
     description: 'Total HTTP requests',
   })
@@ -37,6 +49,7 @@ export default definePlugin((nitroApp) => {
   })
 
   nitroApp.hooks.hook('close', async () => {
+    await loggerProvider.shutdown()
     await provider.shutdown()
     await exporter.shutdown()
   })
@@ -55,7 +68,26 @@ export default definePlugin((nitroApp) => {
     const duration = performance.now() - start
     const method = event.req.method
     const route = new URL(event.req.url).pathname
+    const clientIp =
+      event.req.headers['x-forwarded-for']?.toString().split(',')[0].trim() ??
+      event.req.headers['x-real-ip']?.toString() ??
+      event.req.socket?.remoteAddress ??
+      'unknown'
+
     requestCounter.add(1, { method, route, status: res.status })
     requestDuration.record(duration, { method, route, status: res.status })
+
+    logger.emit({
+      severityNumber: SeverityNumber.INFO,
+      severityText: 'INFO',
+      body: `${method} ${route} ${res.status} ${duration.toFixed(1)}ms`,
+      attributes: {
+        'client.address': clientIp,
+        'http.request.method': method,
+        'url.path': route,
+        'http.response.status_code': res.status,
+        'http.request.duration_ms': Math.round(duration),
+      },
+    })
   })
 })
