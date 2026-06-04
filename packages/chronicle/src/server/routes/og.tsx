@@ -5,6 +5,7 @@ import { loadConfig } from '@/lib/config';
 import { loadFont, loadLogo } from './og-utils';
 
 let fontData: ArrayBuffer | null = null;
+let cachedLogo: string | null | undefined;
 
 export default defineHandler(async event => {
   const config = loadConfig();
@@ -13,9 +14,11 @@ export default defineHandler(async event => {
   const siteName = config.site.title;
 
   if (!fontData) fontData = await loadFont(__CHRONICLE_PACKAGE_ROOT__);
-  const logoSrc = config.logo?.dark
-    ? await loadLogo(__CHRONICLE_PROJECT_ROOT__, config.logo.dark)
-    : null;
+  if (cachedLogo === undefined) {
+    cachedLogo = config.logo?.dark
+      ? await loadLogo(__CHRONICLE_PROJECT_ROOT__, config.logo.dark)
+      : null;
+  }
 
   const svg = await satori(
     <div
@@ -31,9 +34,9 @@ export default defineHandler(async event => {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-        {logoSrc && (
+        {cachedLogo && (
           <img
-            src={logoSrc}
+            src={cachedLogo}
             width={48}
             height={48}
             style={{ marginRight: 16 }}

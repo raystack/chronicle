@@ -24,11 +24,17 @@ describe('getLogoDataUri', () => {
     expect(result).toStartWith('data:image/jpeg;base64,');
   });
 
+  test('returns null for unsupported format', () => {
+    const data = Buffer.from('fake-webp');
+    const result = getLogoDataUri(data, '/logo.webp');
+    expect(result).toBeNull();
+  });
+
   test('encodes data as base64', () => {
     const content = '<svg xmlns="http://www.w3.org/2000/svg"></svg>';
     const data = Buffer.from(content);
     const result = getLogoDataUri(data, '/icon.svg');
-    const base64 = result.split(',')[1];
+    const base64 = result!.split(',')[1];
     expect(Buffer.from(base64, 'base64').toString()).toBe(content);
   });
 });
@@ -51,8 +57,7 @@ describe('loadFont', () => {
     expect(font.byteLength).toBeGreaterThan(0);
   });
 
-  test('returns empty ArrayBuffer for invalid path', async () => {
-    const font = await loadFont('/nonexistent');
-    expect(font.byteLength).toBe(0);
+  test('throws for invalid path', async () => {
+    expect(loadFont('/nonexistent')).rejects.toThrow();
   });
 });
