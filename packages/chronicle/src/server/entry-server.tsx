@@ -158,6 +158,16 @@ export default {
             const href = isLocalImage(src) && !isSvg(src) ? buildOptimizedUrl(src, DEFAULT_WIDTH) : src;
             return <link key={src} rel="preload" as="image" href={href} />;
           })}
+          {isApiRoute && (
+            <link
+              rel="preload"
+              as="fetch"
+              crossOrigin="anonymous"
+              href={route.version.dir
+                ? `/api/specs?version=${encodeURIComponent(route.version.dir)}`
+                : '/api/specs'}
+            />
+          )}
           <script type="module" src={assets.entry} />
           <script dangerouslySetInnerHTML={{ __html: `window.__PAGE_DATA__ = ${safeJson}` }} />
         </head>
