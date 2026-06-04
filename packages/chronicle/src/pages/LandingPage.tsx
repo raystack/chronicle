@@ -16,7 +16,7 @@ export function LandingPage() {
   return (
     <>
       <Head
-        title={config.site.title}
+        title={version.dir ? `${config.site.title} — ${versionLabel(config, version.dir)}` : 'Documentation'}
         description={config.site.description}
         config={config}
       />
