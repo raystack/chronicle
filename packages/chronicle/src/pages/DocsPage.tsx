@@ -38,7 +38,8 @@ export function DocsPage({ slug }: DocsPageProps) {
           '@type': 'Article',
           headline: page.frontmatter.title,
           description: page.frontmatter.description,
-          ...(pageUrl && { url: pageUrl })
+          ...(pageUrl && { url: pageUrl }),
+          ...(page.frontmatter.lastModified && { dateModified: new Date(page.frontmatter.lastModified).toISOString() }),
         }}
       />
       <Page

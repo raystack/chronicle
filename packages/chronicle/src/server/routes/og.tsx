@@ -2,23 +2,10 @@ import { defineHandler } from 'nitro';
 import React from 'react';
 import satori from 'satori';
 import { loadConfig } from '@/lib/config';
+import { loadFont, loadLogo } from './og-utils';
 
 let fontData: ArrayBuffer | null = null;
-
-async function loadFont(): Promise<ArrayBuffer> {
-  if (fontData) return fontData;
-
-  try {
-    const response = await fetch(
-      'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.woff2'
-    );
-    fontData = await response.arrayBuffer();
-  } catch {
-    fontData = new ArrayBuffer(0);
-  }
-
-  return fontData;
-}
+let cachedLogo: string | null | undefined;
 
 export default defineHandler(async event => {
   const config = loadConfig();
@@ -26,7 +13,12 @@ export default defineHandler(async event => {
   const description = event.url.searchParams.get('description') ?? '';
   const siteName = config.site.title;
 
-  const font = await loadFont();
+  if (!fontData) fontData = await loadFont(__CHRONICLE_PACKAGE_ROOT__);
+  if (cachedLogo === undefined) {
+    cachedLogo = config.logo?.dark
+      ? await loadLogo(__CHRONICLE_PROJECT_ROOT__, config.logo.dark)
+      : null;
+  }
 
   const svg = await satori(
     <div
@@ -41,8 +33,18 @@ export default defineHandler(async event => {
         color: '#fafafa',
       }}
     >
-      <div style={{ fontSize: 24, color: '#888', marginBottom: 16 }}>
-        {siteName}
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
+        {cachedLogo && (
+          <img
+            src={cachedLogo}
+            width={48}
+            height={48}
+            style={{ marginRight: 16 }}
+          />
+        )}
+        <div style={{ fontSize: 32, color: '#888' }}>
+          {siteName}
+        </div>
       </div>
       <div
         style={{
@@ -64,7 +66,7 @@ export default defineHandler(async event => {
       width: 1200,
       height: 630,
       fonts: [
-        { name: 'Inter', data: font, weight: 400, style: 'normal' as const },
+        { name: 'Inter', data: fontData, weight: 400, style: 'normal' as const },
       ],
     },
   );

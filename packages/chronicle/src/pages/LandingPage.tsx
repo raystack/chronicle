@@ -1,6 +1,7 @@
 import { FolderIcon } from '@heroicons/react/24/outline';
 import { Link as RouterLink } from 'react-router';
 import { getLandingEntries } from '@/lib/config';
+import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
 import styles from './LandingPage.module.css';
 
@@ -13,6 +14,12 @@ export function LandingPage() {
     : `${config.site.title} — ${versionLabel(config, version.dir)}`;
 
   return (
+    <>
+      <Head
+        title={version.dir ? `${config.site.title} — ${versionLabel(config, version.dir)}` : 'Documentation'}
+        description={config.site.description}
+        config={config}
+      />
     <div className={styles.root}>
       <div className={styles.header}>
         <h1 className={styles.title}>{heading}</h1>
@@ -42,6 +49,7 @@ export function LandingPage() {
         ))}
       </div>
     </div>
+    </>
   );
 }
 
