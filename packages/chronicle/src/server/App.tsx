@@ -4,7 +4,6 @@ import { ThemeProvider, Skeleton, Flex } from '@raystack/apsara';
 import { lazy, Suspense } from 'react';
 import { Navigate, useLocation } from 'react-router';
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
-import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import type { ChronicleConfig } from '@/types';
@@ -69,22 +68,25 @@ function PageFallback() {
 }
 
 function RootHead({ config }: { config: ChronicleConfig }) {
-  return (
-    <Head
-      title={config.site.title}
-      description={config.site.description}
-      config={config}
-      jsonLd={
-        config.url
-          ? {
-              '@context': 'https://schema.org',
-              '@type': 'WebSite',
-              name: config.site.title,
-              description: config.site.description,
-              url: config.url
-            }
-          : undefined
+  const siteJsonLd = config.url
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: config.site.title,
+        description: config.site.description,
+        url: config.url,
       }
-    />
+    : null;
+
+  return (
+    <>
+      <title>{config.site.title}</title>
+      {siteJsonLd && (
+        <script
+          type='application/ld+json'
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd, null, 2) }}
+        />
+      )}
+    </>
   );
 }

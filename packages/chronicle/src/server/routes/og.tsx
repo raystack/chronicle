@@ -34,12 +34,12 @@ export default defineHandler(async event => {
         {logoSrc && (
           <img
             src={logoSrc}
-            width={32}
-            height={32}
-            style={{ marginRight: 12 }}
+            width={48}
+            height={48}
+            style={{ marginRight: 16 }}
           />
         )}
-        <div style={{ fontSize: 24, color: '#888' }}>
+        <div style={{ fontSize: 32, color: '#888' }}>
           {siteName}
         </div>
       </div>
