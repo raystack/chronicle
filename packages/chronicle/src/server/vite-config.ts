@@ -131,6 +131,7 @@ export async function createViteConfig(
     define: {
       __CHRONICLE_CONTENT_DIR__: JSON.stringify(contentMirror),
       __CHRONICLE_PROJECT_ROOT__: JSON.stringify(projectRoot),
+      __CHRONICLE_PACKAGE_ROOT__: JSON.stringify(packageRoot),
       __CHRONICLE_CONFIG_RAW__: JSON.stringify(rawConfig),
     },
     css: {
