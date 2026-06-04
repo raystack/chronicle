@@ -9,8 +9,9 @@ export interface HeadProps {
   markdownHref?: string;
 }
 
-export function Head({ title, description, config, jsonLd, markdownHref }: HeadProps) {
+export function Head({ title, description: pageDescription, config, jsonLd, markdownHref }: HeadProps) {
   const { pathname } = useLocation();
+  const description = pageDescription || config.site.description;
   const fullTitle = `${title} | ${config.site.title}`;
   const ogParams = new URLSearchParams({ title });
   if (description) ogParams.set('description', description);
