@@ -1,4 +1,3 @@
-import dayjs from 'dayjs';
 import { Navigate } from 'react-router';
 import { StatusCodes } from 'http-status-codes';
 import { Head } from '@/lib/head';
@@ -40,7 +39,7 @@ export function DocsPage({ slug }: DocsPageProps) {
           headline: page.frontmatter.title,
           description: page.frontmatter.description,
           ...(pageUrl && { url: pageUrl }),
-          ...(page.frontmatter.lastModified && { dateModified: dayjs(page.frontmatter.lastModified).toISOString() }),
+          ...(page.frontmatter.lastModified && { dateModified: new Date(page.frontmatter.lastModified).toISOString() }),
         }}
       />
       <Page
