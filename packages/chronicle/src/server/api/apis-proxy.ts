@@ -10,9 +10,17 @@ interface ProxyRequest {
   body?: unknown;
 }
 
+const MAX_BODY_BYTES = 50 * 1024 * 1024;
+const UPSTREAM_TIMEOUT_MS = 120_000;
+
 export default defineHandler(async event => {
   if (event.req.method !== 'POST') {
     throw new HTTPError({ status: 405, message: 'Method not allowed' });
+  }
+
+  const contentLength = Number(event.req.headers.get('content-length') ?? '0');
+  if (contentLength > MAX_BODY_BYTES) {
+    throw new HTTPError({ status: 413, message: 'Request body too large' });
   }
 
   const { specName, method, path, headers, body } =
@@ -43,7 +51,8 @@ export default defineHandler(async event => {
     const response = await fetch(url, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined
+      body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
 
     const contentType = response.headers.get('content-type') ?? '';
