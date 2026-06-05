@@ -8,7 +8,8 @@ import { mdxComponents } from '@/components/mdx';
 import { getApiConfigsForVersion } from '@/lib/config';
 import { PageProvider } from '@/lib/page-context';
 import { queryClient } from '@/lib/preload';
-import { resolveRoute, RouteType } from '@/lib/route-resolver';
+import { resolveRoute, resolveContentRootRedirect, RouteType } from '@/lib/route-resolver';
+import { pageDataUrl, specsUrl } from '@/lib/data-urls';
 import { resolveVersionFromUrl, type VersionContext } from '@/lib/version-source';
 import type { ChronicleConfig, Frontmatter, PageNavLink, Root, TableOfContents } from '@/types';
 import type { ApiSpec } from '@/lib/openapi';
@@ -45,8 +46,7 @@ async function loadMdxModule(relativePath: string): Promise<{ content: ReactNode
 }
 
 async function fetchStaticPageData(slug: string[]) {
-  const key = slug.length === 0 ? 'index' : slug.map(s => encodeURIComponent(s)).join(',');
-  const res = await fetch(`/data/pages/${key}.json`);
+  const res = await fetch(pageDataUrl(slug));
   if (!res.ok) throw new Error(String(res.status));
   const ct = res.headers.get('content-type') ?? '';
   if (!ct.includes('json')) throw new Error('404');
@@ -54,9 +54,8 @@ async function fetchStaticPageData(slug: string[]) {
 }
 
 async function fetchStaticApiSpecs(version: VersionContext): Promise<ApiSpec[]> {
-  const file = version.dir ? `${encodeURIComponent(version.dir)}.json` : 'latest.json';
   try {
-    const res = await fetch(`/data/specs/${file}`);
+    const res = await fetch(specsUrl(version.dir));
     if (!res.ok) return [];
     const ct = res.headers.get('content-type') ?? '';
     if (!ct.includes('json')) return [];
@@ -64,13 +63,6 @@ async function fetchStaticApiSpecs(version: VersionContext): Promise<ApiSpec[]> 
   } catch {
     return [];
   }
-}
-
-function resolveContentRootRedirect(slug: string[], config: ChronicleConfig): string | null {
-  if (slug.length !== 1) return null;
-  const entry = config.content?.find(c => c.dir === slug[0]);
-  if (entry?.index_page) return `/${entry.dir}/${entry.index_page}`;
-  return null;
 }
 
 async function mount() {

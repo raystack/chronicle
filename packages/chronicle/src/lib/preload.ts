@@ -1,8 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
-
-function isStaticMode(): boolean {
-  return typeof window !== 'undefined' && (window as any).__STATIC_MODE__ === true;
-}
+import { isStaticMode } from '@/lib/static-mode';
+import { pageDataUrl } from '@/lib/data-urls';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -21,14 +19,7 @@ export function pageDataQueryKey(pathname: string) {
 
 async function fetchPageDataByPathname(pathname: string) {
   const slug = pathname.split('/').filter(Boolean);
-  const key = slug.length === 0 ? '' : slug.map(s => encodeURIComponent(s)).join(',');
-  let apiPath: string;
-  if (isStaticMode()) {
-    const file = key || 'index';
-    apiPath = `/data/pages/${file}.json`;
-  } else {
-    apiPath = key ? `/api/page?slug=${key}` : '/api/page';
-  }
+  const apiPath = pageDataUrl(slug);
   const res = await fetch(apiPath);
   if (!res.ok) throw new Error(String(res.status));
   return res.json();

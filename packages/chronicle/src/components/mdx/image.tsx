@@ -1,11 +1,8 @@
 import type { ComponentProps } from 'react';
 import { isLocalImage, isSvg, buildOptimizedUrl, DEFAULT_WIDTH } from '@/lib/image-utils';
+import { isStaticMode } from '@/lib/static-mode';
 
 type MDXImageProps = ComponentProps<'img'>;
-
-function isStaticMode(): boolean {
-  return typeof window !== 'undefined' && '__STATIC_MODE__' in window && (window as unknown as Record<string, unknown>).__STATIC_MODE__ === true;
-}
 
 function webpUrl(src: string): string {
   return src.replace(/\.[^.]+$/, '.webp');

@@ -611,21 +611,13 @@ async function generateOgImages(
   pages: ScannedPage[],
   config: ChronicleConfig,
   outputDir: string,
+  packageRoot: string,
 ): Promise<void> {
   const ogDir = path.join(outputDir, 'og');
   await fs.mkdir(ogDir, { recursive: true });
 
-  // Load font — try local file first, then fetch from Google
-  let fontData: ArrayBuffer;
-  try {
-    const response = await fetch(
-      'https://fonts.gstatic.com/s/inter/v18/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiA.woff2',
-      { signal: AbortSignal.timeout(10000) },
-    );
-    fontData = await response.arrayBuffer();
-  } catch {
-    fontData = new ArrayBuffer(0);
-  }
+  const { loadFont } = await import('@/server/routes/og-utils');
+  const fontData = await loadFont(packageRoot);
 
   const siteName = config.site.title;
 
@@ -1064,7 +1056,7 @@ export async function generateStaticSite(options: StaticGenerateOptions): Promis
   await generateLlmsTxt(pages, config, outputDir);
 
   console.log(chalk.gray('  Generating OG images...'));
-  await generateOgImages(pages, config, outputDir);
+  await generateOgImages(pages, config, outputDir, packageRoot);
 
   console.log(chalk.gray('  Optimizing images...'));
   await optimizeImages(pages, packageRoot, outputDir);

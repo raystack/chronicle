@@ -14,6 +14,8 @@ import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'rea
 import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { usePageContext } from '@/lib/page-context';
+import { isStaticMode } from '@/lib/static-mode';
+import { searchIndexUrl } from '@/lib/data-urls';
 import { SearchMatchType } from '@/types';
 import styles from './search.module.css';
 
@@ -41,10 +43,6 @@ interface SearchDocument {
   section: string;
 }
 
-function isStaticMode(): boolean {
-  return typeof window !== 'undefined' && (window as unknown as { __STATIC_MODE__?: boolean }).__STATIC_MODE__ === true;
-}
-
 let miniSearchInstance: MiniSearch<SearchDocument> | null = null;
 let miniSearchLoading: Promise<MiniSearch<SearchDocument>> | null = null;
 let searchDocuments: SearchDocument[] = [];
@@ -53,7 +51,7 @@ function loadSearchIndex(): Promise<MiniSearch<SearchDocument>> {
   if (miniSearchInstance) return Promise.resolve(miniSearchInstance);
   if (miniSearchLoading) return miniSearchLoading;
 
-  miniSearchLoading = fetch('/data/search.json')
+  miniSearchLoading = fetch(searchIndexUrl())
     .then(res => {
       if (!res.ok) throw new Error(`Failed to load search index: ${res.status}`);
       return res.json() as Promise<SearchDocument[]>;

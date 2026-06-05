@@ -8,6 +8,7 @@ import { CounterClockwiseClockIcon, CodeIcon } from '@radix-ui/react-icons'
 import { MethodBadge } from '@/components/api/method-badge'
 import { flattenSchema, generateExampleJson, toKind, type SchemaField } from '@/lib/schema'
 import { generateCurl } from '@/lib/snippet-generators'
+import { isStaticMode } from '@/lib/static-mode'
 import { JsonEditor } from '@/components/api/json-editor'
 import styles from './playground-dialog.module.css'
 
@@ -16,10 +17,6 @@ type ProxyResponse = {
   statusText: string
   body: unknown
   headers?: Record<string, string>
-}
-
-function isStaticMode(): boolean {
-  return typeof window !== 'undefined' && '__STATIC_MODE__' in window && (window as unknown as Record<string, unknown>).__STATIC_MODE__ === true
 }
 
 async function sendViaProxy(
