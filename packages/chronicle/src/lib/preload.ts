@@ -1,4 +1,6 @@
 import { QueryClient } from '@tanstack/react-query';
+import { isStaticMode } from '@/lib/static-mode';
+import { pageDataUrl } from '@/lib/data-urls';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,8 +19,7 @@ export function pageDataQueryKey(pathname: string) {
 
 async function fetchPageDataByPathname(pathname: string) {
   const slug = pathname.split('/').filter(Boolean);
-  const key = slug.length === 0 ? '' : slug.map(s => encodeURIComponent(s)).join(',');
-  const apiPath = key ? `/api/page?slug=${key}` : '/api/page';
+  const apiPath = pageDataUrl(slug);
   const res = await fetch(apiPath);
   if (!res.ok) throw new Error(String(res.status));
   return res.json();
@@ -42,6 +43,7 @@ export function prefetchPageData(pathname: string) {
 }
 
 export function prefetchSearchSuggestions() {
+  if (isStaticMode()) return;
   queryClient.prefetchQuery({
     queryKey: ['search', '', undefined],
     queryFn: async () => {

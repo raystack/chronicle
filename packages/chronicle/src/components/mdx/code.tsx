@@ -1,8 +1,9 @@
 'use client'
 
-import { type ComponentProps, isValidElement, Children } from 'react'
-import { Mermaid } from './mermaid'
+import { type ComponentProps, isValidElement, lazy, Suspense } from 'react'
 import styles from './code.module.css'
+
+const Mermaid = lazy(() => import('./mermaid').then(m => ({ default: m.Mermaid })))
 
 type PreProps = ComponentProps<'pre'> & {
   'data-language'?: string
@@ -21,7 +22,11 @@ export function MdxPre({ children, title, className, ...props }: PreProps) {
   if (isValidElement(children)) {
     const childProps = children.props as { className?: string; children?: string }
     if (childProps.className?.includes('language-mermaid') && typeof childProps.children === 'string') {
-      return <Mermaid chart={childProps.children} />
+      return (
+        <Suspense fallback={<pre className={styles.pre}><code>{childProps.children}</code></pre>}>
+          <Mermaid chart={childProps.children} />
+        </Suspense>
+      )
     }
   }
 

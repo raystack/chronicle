@@ -81,3 +81,10 @@ export function resolveRoute(
 
   return { type: RouteType.DocsPage, version, slug: parts }
 }
+
+export function resolveContentRootRedirect(slug: string[], config: ChronicleConfig): string | null {
+  if (slug.length !== 1) return null;
+  const entry = config.content?.find(c => c.dir === slug[0]);
+  if (entry?.index_page) return `/${entry.dir}/${entry.index_page}`;
+  return null;
+}

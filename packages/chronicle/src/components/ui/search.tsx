@@ -7,11 +7,15 @@ import {
 } from '@heroicons/react/24/outline';
 import { Command, IconButton, Text } from '@raystack/apsara';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import GithubSlugger from 'github-slugger';
 import { debounce } from 'lodash-es';
+import MiniSearch from 'minisearch';
 import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { usePageContext } from '@/lib/page-context';
+import { isStaticMode } from '@/lib/static-mode';
+import { searchIndexUrl } from '@/lib/data-urls';
 import { SearchMatchType } from '@/types';
 import styles from './search.module.css';
 
@@ -27,6 +31,127 @@ interface SearchResult {
 
 interface SearchProps {
   classNames?: { trigger?: string };
+}
+
+interface SearchDocument {
+  id: string;
+  url: string;
+  title: string;
+  headings: string;
+  body: string;
+  type: string;
+  section: string;
+}
+
+let miniSearchInstance: MiniSearch<SearchDocument> | null = null;
+let miniSearchLoading: Promise<MiniSearch<SearchDocument>> | null = null;
+let searchDocuments: SearchDocument[] = [];
+
+function loadSearchIndex(): Promise<MiniSearch<SearchDocument>> {
+  if (miniSearchInstance) return Promise.resolve(miniSearchInstance);
+  if (miniSearchLoading) return miniSearchLoading;
+
+  miniSearchLoading = fetch(searchIndexUrl())
+    .then(res => {
+      if (!res.ok) throw new Error(`Failed to load search index: ${res.status}`);
+      return res.json() as Promise<SearchDocument[]>;
+    })
+    .then(docs => {
+      searchDocuments = docs;
+      const ms = new MiniSearch<SearchDocument>({
+        fields: ['title', 'headings', 'body'],
+        storeFields: ['url', 'title', 'headings', 'body', 'type', 'section'],
+        searchOptions: {
+          boost: { title: 10, headings: 5, body: 1 },
+          prefix: true,
+          fuzzy: 0.2,
+        },
+      });
+      ms.addAll(docs);
+      miniSearchInstance = ms;
+      return ms;
+    })
+    .catch(err => {
+      miniSearchLoading = null;
+      throw err;
+    });
+
+  return miniSearchLoading;
+}
+
+function findMatch(
+  query: string,
+  title: string,
+  headings: string,
+  body: string,
+): { match: SearchMatchType; snippet: string; slug?: string } {
+  if (title.toLowerCase().includes(query)) {
+    return { match: SearchMatchType.Title, snippet: title };
+  }
+
+  const slugger = new GithubSlugger();
+  const headingList = headings.split('\n').filter(Boolean);
+  for (const h of headingList) {
+    const slug = slugger.slug(h);
+    if (h.toLowerCase().includes(query)) {
+      return { match: SearchMatchType.Heading, snippet: h, slug };
+    }
+  }
+
+  const idx = body.toLowerCase().indexOf(query);
+  if (idx >= 0) {
+    const start = Math.max(0, idx - 40);
+    const end = Math.min(body.length, idx + query.length + 80);
+    const snippet = (start > 0 ? '...' : '') + body.slice(start, end).trim() + (end < body.length ? '...' : '');
+    return { match: SearchMatchType.Body, snippet };
+  }
+
+  return { match: SearchMatchType.Title, snippet: title };
+}
+
+async function searchStatic(query: string, tag?: string): Promise<SearchResult[]> {
+  const ms = await loadSearchIndex();
+
+  if (!query) {
+    let docs = searchDocuments.filter(d => d.type === 'page');
+    if (tag) docs = docs.filter(d => d.url === `/${tag}` || d.url.startsWith(`/${tag}/`));
+    return docs.slice(0, 8).map(d => ({
+      id: d.id,
+      url: d.url,
+      type: d.type,
+      content: d.title,
+      section: d.section || undefined,
+    }));
+  }
+
+  let results = ms.search(query);
+  if (tag) {
+    results = results.filter(r => {
+      const url = r.url as string;
+      return url === `/${tag}` || url.startsWith(`/${tag}/`);
+    });
+  }
+
+  const queryLower = query.toLowerCase();
+  return results.slice(0, 20).map(r => {
+    const { match, snippet, slug } = findMatch(
+      queryLower,
+      r.title as string,
+      r.headings as string,
+      r.body as string,
+    );
+    const id = match === SearchMatchType.Heading && slug ? `${r.id}#${slug}` : r.id as string;
+    const url = match === SearchMatchType.Heading && slug ? `${r.url}#${slug}` : r.url as string;
+    return {
+      id,
+      url,
+      type: r.type as string,
+      content: r.title as string,
+      match,
+      snippet,
+      section: (r.section as string) || undefined,
+    };
+  });
 }
 
 function buildSearchUrl(query: string, tag?: string): string {
@@ -64,9 +189,14 @@ export function Search({ classNames }: SearchProps) {
     }
   }, [open, updateDebouncedSearch]);
 
+  const staticMode = isStaticMode();
+
   const { data = [], isLoading } = useQuery<SearchResult[]>({
-    queryKey: ['search', debouncedSearch, tag],
+    queryKey: ['search', debouncedSearch, tag, staticMode],
     queryFn: async ({ signal }) => {
+      if (staticMode) {
+        return searchStatic(debouncedSearch, tag);
+      }
       const res = await fetch(buildSearchUrl(debouncedSearch, tag), { signal });
       if (!res.ok) throw new Error(String(res.status));
       return res.json();

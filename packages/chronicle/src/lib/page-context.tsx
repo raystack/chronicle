@@ -7,9 +7,11 @@ import {
   useRef,
   useState
 } from 'react';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import type { ApiSpec } from '@/lib/openapi';
-import { resolveRoute, RouteType } from '@/lib/route-resolver';
+import { resolveRoute, resolveContentRootRedirect, RouteType } from '@/lib/route-resolver';
+import { isStaticMode } from '@/lib/static-mode';
+import { pageDataUrl, specsUrl } from '@/lib/data-urls';
 import type { VersionContext } from '@/lib/version-source';
 import { LATEST_CONTEXT } from '@/lib/version-source';
 import type { ChronicleConfig, Frontmatter, Page, PageNavLink, Root, TableOfContents } from '@/types';
@@ -60,10 +62,6 @@ interface PageProviderProps {
   children: ReactNode;
 }
 
-function isApisRoute(pathname: string): boolean {
-  return pathname === '/apis' || pathname.startsWith('/apis/');
-}
-
 function getInitialErrorStatus(page: Page | null, config: ChronicleConfig, pathname: string): number | null {
   if (page) return null;
   const route = resolveRoute(pathname, config);
@@ -83,6 +81,7 @@ export function PageProvider({
   children
 }: PageProviderProps) {
   const { pathname } = useLocation();
+  const navigate = useNavigate();
   const [tree] = useState<Root>(initialTree);
   const [page, setPage] = useState<Page | null>(initialPage);
   const [errorStatus, setErrorStatus] = useState<number | null>(getInitialErrorStatus(initialPage, initialConfig, pathname));
@@ -94,10 +93,8 @@ export function PageProvider({
   const fetchApiSpecs = useCallback(async (route: { version: VersionContext }, cancelled: { current: boolean }) => {
     setIsLoading(true);
     try {
-      const specsUrl = route.version.dir
-        ? `/api/specs?version=${encodeURIComponent(route.version.dir)}`
-        : '/api/specs';
-      const res = await fetch(specsUrl);
+      const url = specsUrl(route.version.dir);
+      const res = await fetch(url);
       const specs = await res.json();
       if (!cancelled.current) setApiSpecs(specs);
     } catch {
@@ -118,7 +115,7 @@ export function PageProvider({
 
   const fetchPageData = useCallback(async (slug: string[]): Promise<PageData> => {
     const key = slug.length === 0 ? '' : slug.map(s => encodeURIComponent(s)).join(',');
-    const apiPath = key ? `/api/page?slug=${key}` : '/api/page';
+    const apiPath = pageDataUrl(slug);
     return queryClient.fetchQuery({
       queryKey: ['pageData', key],
       queryFn: async () => {
@@ -183,11 +180,19 @@ export function PageProvider({
       return () => { cancelled.current = true; };
     }
 
+    if (isStaticMode()) {
+      const redirect = resolveContentRootRedirect(route.slug, initialConfig);
+      if (redirect) {
+        navigate(redirect, { replace: true });
+        return () => { cancelled.current = true; };
+      }
+    }
+
     setPage(null);
     setErrorStatus(null);
     loadDocsPage(route.slug, cancelled);
     return () => { cancelled.current = true; };
-  }, [pathname, initialConfig, fetchApiSpecs, loadDocsPage]);
+  }, [pathname, initialConfig, fetchApiSpecs, loadDocsPage, navigate]);
 
   return (
     <PageContext.Provider

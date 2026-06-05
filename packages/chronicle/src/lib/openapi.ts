@@ -95,7 +95,7 @@ function deepResolveRefs(
   return result
 }
 
-function resolveDocument(doc: OpenAPIV3.Document): OpenAPIV3.Document {
+export function resolveDocument(doc: OpenAPIV3.Document): OpenAPIV3.Document {
   const root = doc as unknown as JsonObject
   return deepResolveRefs(doc, root) as unknown as OpenAPIV3.Document
 }

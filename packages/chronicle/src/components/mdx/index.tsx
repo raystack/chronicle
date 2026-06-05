@@ -4,11 +4,12 @@ import { Link } from './link'
 import { MdxTable, MdxThead, MdxTbody, MdxTr, MdxTh, MdxTd } from './table'
 import { MdxPre, MdxCode } from './code'
 import { MdxDetails, MdxSummary } from './details'
-import { Mermaid } from './mermaid'
 import { MdxParagraph } from './paragraph'
 import { CalloutContainer, CalloutTitle, CalloutDescription, MdxBlockquote } from '@/components/common/callout'
 import { Tabs } from '@raystack/apsara'
-import { type ComponentProps, useEffect, useState } from 'react'
+import { type ComponentProps, lazy, useEffect, useState, Suspense } from 'react'
+
+const LazyMermaid = lazy(() => import('./mermaid').then(m => ({ default: m.Mermaid })))
 
 function ClientOnly({ children }: { children: React.ReactNode }) {
   const [mounted, setMounted] = useState(false)
@@ -42,7 +43,11 @@ export const mdxComponents: MDXComponents = {
   CalloutTitle,
   CalloutDescription,
   Tabs: MdxTabs,
-  Mermaid,
+  Mermaid: (props: { chart: string }) => (
+    <Suspense fallback={<pre><code>{props.chart}</code></pre>}>
+      <LazyMermaid {...props} />
+    </Suspense>
+  ),
 }
 
 export { MDXImage } from './image'
