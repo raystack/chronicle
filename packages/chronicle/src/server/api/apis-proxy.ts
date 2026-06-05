@@ -41,7 +41,8 @@ export default defineHandler(async event => {
     throw new HTTPError({ status: 404, message: `Unknown spec: ${specName}` });
   }
 
-  if (/^[a-z]+:\/\//i.test(path) || path.includes('..')) {
+  const decoded = decodeURIComponent(path);
+  if (/^[a-z]+:\/\//i.test(decoded) || decoded.includes('..')) {
     throw new HTTPError({ status: 400, message: 'Invalid path' });
   }
 
