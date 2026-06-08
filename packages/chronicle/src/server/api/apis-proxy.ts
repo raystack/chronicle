@@ -1,6 +1,10 @@
 import { defineHandler, HTTPError } from 'nitro';
+import { StatusCodes } from 'http-status-codes';
 import { loadConfig } from '@/lib/config';
 import { loadApiSpecs } from '@/lib/openapi';
+
+const MAX_BODY_SIZE = 10_485_760; // 10 MB
+const UPSTREAM_TIMEOUT_MS = 120_000;
 
 interface ProxyRequest {
   specName: string;
@@ -10,9 +14,26 @@ interface ProxyRequest {
   body?: unknown;
 }
 
+function isPathSafe(p: string): boolean {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(p);
+  } catch {
+    return false;
+  }
+  if (/^[a-z]+:\/\//i.test(decoded)) return false;
+  const normalized = new URL(decoded, 'http://localhost').pathname;
+  return !normalized.split('/').includes('..');
+}
+
 export default defineHandler(async event => {
   if (event.req.method !== 'POST') {
-    throw new HTTPError({ status: 405, message: 'Method not allowed' });
+    throw new HTTPError({ status: StatusCodes.METHOD_NOT_ALLOWED, message: 'Method not allowed' });
+  }
+
+  const contentLength = parseInt(event.req.headers.get('content-length') ?? '0', 10);
+  if (contentLength > MAX_BODY_SIZE) {
+    throw new HTTPError({ status: StatusCodes.CONTENT_TOO_LARGE, message: `Request body too large (max ${MAX_BODY_SIZE} bytes)` });
   }
 
   const { specName, method, path, headers, body } =
@@ -20,7 +41,7 @@ export default defineHandler(async event => {
 
   if (!specName || !method || !path) {
     throw new HTTPError({
-      status: 400,
+      status: StatusCodes.BAD_REQUEST,
       message: 'Missing specName, method, or path'
     });
   }
@@ -30,11 +51,11 @@ export default defineHandler(async event => {
   const spec = specs.find(s => s.name === specName);
 
   if (!spec) {
-    throw new HTTPError({ status: 404, message: `Unknown spec: ${specName}` });
+    throw new HTTPError({ status: StatusCodes.NOT_FOUND, message: `Unknown spec: ${specName}` });
   }
 
-  if (/^[a-z]+:\/\//i.test(path) || path.includes('..')) {
-    throw new HTTPError({ status: 400, message: 'Invalid path' });
+  if (!isPathSafe(path)) {
+    throw new HTTPError({ status: StatusCodes.BAD_REQUEST, message: 'Invalid path' });
   }
 
   const url = spec.server.url + path;
@@ -43,7 +64,8 @@ export default defineHandler(async event => {
     const response = await fetch(url, {
       method,
       headers,
-      body: body ? JSON.stringify(body) : undefined
+      body: body ? JSON.stringify(body) : undefined,
+      signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
     });
 
     const contentType = response.headers.get('content-type') ?? '';
@@ -64,12 +86,15 @@ export default defineHandler(async event => {
       headers: responseHeaders
     });
   } catch (error) {
+    if (error instanceof DOMException && error.name === 'TimeoutError') {
+      throw new HTTPError({ status: StatusCodes.GATEWAY_TIMEOUT, message: `Upstream request timed out after ${UPSTREAM_TIMEOUT_MS}ms` });
+    }
     const message =
       error instanceof Error
         ? `${error.message}${error.cause ? `: ${(error.cause as Error).message}` : ''}`
         : 'Request failed';
     throw new HTTPError({
-      status: 502,
+      status: StatusCodes.BAD_GATEWAY,
       message: `Could not reach ${url}\n${message}`
     });
   }
