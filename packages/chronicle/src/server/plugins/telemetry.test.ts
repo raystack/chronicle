@@ -44,4 +44,13 @@ describe('toEndpoint', () => {
     expect(toEndpoint('/v1/docs/intro')).toBe('/docs/:slug')
     expect(toEndpoint('/v2/guides/setup')).toBe('/docs/:slug')
   })
+
+  test('scanner/unmatched routes return null', () => {
+    expect(toEndpoint('/.env')).toBeNull()
+    expect(toEndpoint('/.aws/credentials')).toBeNull()
+    expect(toEndpoint('/wp-config.bak')).toBeNull()
+    expect(toEndpoint('/$(pwd)/.git/config')).toBeNull()
+    expect(toEndpoint('/.circleci/context/secrets.yml')).toBeNull()
+    expect(toEndpoint('/application.properties')).toBeNull()
+  })
 })

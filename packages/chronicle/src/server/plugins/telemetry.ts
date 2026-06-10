@@ -37,13 +37,16 @@ const ENDPOINT_MAP: [string, string | null][] = [
 
 const STATIC_ROUTES = new Set(['/llms.txt', '/robots.txt', '/sitemap.xml', '/og'])
 
-export function toEndpoint(pathname: string): string {
+const DOC_PATH_PREFIX = /^\/(?:docs|developer|v\d+)\//
+
+export function toEndpoint(pathname: string): string | null {
   if (pathname === '/') return ROUTES.ROOT;
   for (const [prefix, template] of ENDPOINT_MAP) {
     if (pathname.startsWith(prefix)) return template ?? pathname;
   }
   if (STATIC_ROUTES.has(pathname)) return pathname;
-  return ROUTES.DOCS;
+  if (DOC_PATH_PREFIX.test(pathname)) return ROUTES.DOCS;
+  return null;
 }
 
 export default definePlugin((nitroApp) => {
@@ -82,7 +85,8 @@ export default definePlugin((nitroApp) => {
   })
 
   nitroApp.hooks.hook('chronicle:ssr-rendered', (route, status, durationMs) => {
-    ssrRenderDuration.record(durationMs, { route: toEndpoint(route), status })
+    const endpoint = toEndpoint(route)
+    if (endpoint) ssrRenderDuration.record(durationMs, { route: endpoint, status })
   })
 
   nitroApp.hooks.hook('request', (event) => {
@@ -103,8 +107,10 @@ export default definePlugin((nitroApp) => {
       event.req.socket?.remoteAddress ??
       'unknown'
 
-    requestCounter.add(1, { method, endpoint, status: res.status })
-    requestDuration.record(duration, { method, endpoint, status: res.status })
+    if (endpoint) {
+      requestCounter.add(1, { method, endpoint, status: res.status })
+      requestDuration.record(duration, { method, endpoint, status: res.status })
+    }
 
     logger.emit({
       severityNumber: SeverityNumber.INFO,
