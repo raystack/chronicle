@@ -45,18 +45,9 @@ describe('toEndpoint', () => {
     expect(toEndpoint('/v2/guides/setup')).toBe('/docs/:slug')
   })
 
-  test('bare docs root paths map to /docs/:slug', () => {
-    expect(toEndpoint('/docs')).toBe('/docs/:slug')
-    expect(toEndpoint('/developer')).toBe('/docs/:slug')
-    expect(toEndpoint('/v1')).toBe('/docs/:slug')
-  })
-
-  test('scanner/unmatched routes return null', () => {
-    expect(toEndpoint('/.env')).toBeNull()
-    expect(toEndpoint('/.aws/credentials')).toBeNull()
-    expect(toEndpoint('/wp-config.bak')).toBeNull()
-    expect(toEndpoint('/$(pwd)/.git/config')).toBeNull()
-    expect(toEndpoint('/.circleci/context/secrets.yml')).toBeNull()
-    expect(toEndpoint('/application.properties')).toBeNull()
+  test('unmatched paths fall through to /docs/:slug', () => {
+    expect(toEndpoint('/.env')).toBe('/docs/:slug')
+    expect(toEndpoint('/wp-config.bak')).toBe('/docs/:slug')
+    expect(toEndpoint('/unknown/path')).toBe('/docs/:slug')
   })
 })
