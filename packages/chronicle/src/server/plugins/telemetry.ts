@@ -37,7 +37,7 @@ const ENDPOINT_MAP: [string, string | null][] = [
 
 const STATIC_ROUTES = new Set(['/llms.txt', '/robots.txt', '/sitemap.xml', '/og'])
 
-const DOC_PATH_PREFIX = /^\/(?:docs|developer|v\d+)\//
+const DOC_PATH_PREFIX = /^\/(?:docs|developer|v\d+)(?:\/|$)/
 
 export function toEndpoint(pathname: string): string | null {
   if (pathname === '/') return ROUTES.ROOT;

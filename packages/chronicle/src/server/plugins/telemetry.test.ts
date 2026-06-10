@@ -45,6 +45,12 @@ describe('toEndpoint', () => {
     expect(toEndpoint('/v2/guides/setup')).toBe('/docs/:slug')
   })
 
+  test('bare docs root paths map to /docs/:slug', () => {
+    expect(toEndpoint('/docs')).toBe('/docs/:slug')
+    expect(toEndpoint('/developer')).toBe('/docs/:slug')
+    expect(toEndpoint('/v1')).toBe('/docs/:slug')
+  })
+
   test('scanner/unmatched routes return null', () => {
     expect(toEndpoint('/.env')).toBeNull()
     expect(toEndpoint('/.aws/credentials')).toBeNull()
