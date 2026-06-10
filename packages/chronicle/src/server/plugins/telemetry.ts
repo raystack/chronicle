@@ -82,8 +82,8 @@ export default definePlugin((nitroApp) => {
   })
 
   nitroApp.hooks.hook('chronicle:ssr-rendered', (route, status, durationMs) => {
-    if (status === 404) return
-    ssrRenderDuration.record(durationMs, { route: toEndpoint(route), status })
+    const endpoint = status === 404 ? '/api/not-found' : toEndpoint(route)
+    ssrRenderDuration.record(durationMs, { route: endpoint, status })
   })
 
   nitroApp.hooks.hook('request', (event) => {
@@ -96,7 +96,7 @@ export default definePlugin((nitroApp) => {
     const duration = performance.now() - start
     const method = event.req.method
     const route = new URL(event.req.url).pathname
-    const endpoint = toEndpoint(route)
+    const endpoint = res.status === 404 ? '/api/not-found' : toEndpoint(route)
 
     const clientIp =
       event.req.headers['x-forwarded-for']?.toString().split(',')[0].trim() ??
@@ -104,10 +104,8 @@ export default definePlugin((nitroApp) => {
       event.req.socket?.remoteAddress ??
       'unknown'
 
-    if (res.status !== 404) {
-      requestCounter.add(1, { method, endpoint, status: res.status })
-      requestDuration.record(duration, { method, endpoint, status: res.status })
-    }
+    requestCounter.add(1, { method, endpoint, status: res.status })
+    requestDuration.record(duration, { method, endpoint, status: res.status })
 
     logger.emit({
       severityNumber: SeverityNumber.INFO,
