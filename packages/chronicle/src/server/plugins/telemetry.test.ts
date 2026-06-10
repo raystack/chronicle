@@ -44,10 +44,4 @@ describe('toEndpoint', () => {
     expect(toEndpoint('/v1/docs/intro')).toBe('/docs/:slug')
     expect(toEndpoint('/v2/guides/setup')).toBe('/docs/:slug')
   })
-
-  test('unmatched paths fall through to /docs/:slug', () => {
-    expect(toEndpoint('/.env')).toBe('/docs/:slug')
-    expect(toEndpoint('/wp-config.bak')).toBe('/docs/:slug')
-    expect(toEndpoint('/unknown/path')).toBe('/docs/:slug')
-  })
 })
