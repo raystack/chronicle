@@ -126,6 +126,8 @@
   table-layout: fixed;
   width: 100%;
   margin-bottom: var(--rs-space-5);
+  /* block inherited justify (e.g. from <p align="justify"> in content) without overriding GFM column alignment */
+  text-align: start;
 }
 
 .content table td,
