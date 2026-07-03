@@ -95,4 +95,18 @@ describe('remark-resolve-images version stamping', () => {
     const { file } = await transform('![alt](./missing.png)', { optimize: true });
     expect(file.data.images).toEqual(['/_content/docs/missing.png']);
   });
+
+  test('keeps sizing params alongside the version when optimizing', async () => {
+    const { tree } = await transform('![alt](./img.png?w=640&q=90)', { optimize: true });
+    expect(firstImageUrl(tree)).toBe(
+      `/api/image?url=%2F_content%2Fdocs%2Fimg.png&w=640&q=90&v=${PNG_HASH}`
+    );
+  });
+
+  test('resolves url-encoded filenames to the file on disk', async () => {
+    const contentDir = setupContentDir();
+    fs.writeFileSync(path.join(contentDir, 'docs', 'my image.png'), PNG_BYTES);
+    const { tree } = await transform('![alt](./my%20image.png)', { optimize: false }, contentDir);
+    expect(firstImageUrl(tree)).toBe(`/_content/docs/my%20image.png?v=${PNG_HASH}`);
+  });
 });
