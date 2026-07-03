@@ -101,7 +101,7 @@ export default defineHandler(async event => {
   if (!stat) {
     throw new HTTPError({ status: StatusCodes.NOT_FOUND, message: 'Not Found' })
   }
-  const currentVersion = getAssetVersion(filePath)
+  const currentVersion = await getAssetVersion(filePath)
   const key = cacheKey(url, w, q, format, currentVersion ?? stat.mtimeMs)
 
   const requestedVersion = event.url.searchParams.get('v')
@@ -183,7 +183,7 @@ export async function warmupImageCache() {
       const stat = await fs.stat(filePath).catch(() => null);
       if (!stat) continue;
 
-      const key = cacheKey(base, w, q, format, getAssetVersion(filePath) ?? stat.mtimeMs);
+      const key = cacheKey(base, w, q, format, (await getAssetVersion(filePath)) ?? stat.mtimeMs);
       const cached = await storage.getItemRaw(key);
       if (cached) continue;
 

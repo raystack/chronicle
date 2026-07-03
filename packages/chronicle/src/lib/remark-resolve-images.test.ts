@@ -103,6 +103,14 @@ describe('remark-resolve-images version stamping', () => {
     );
   });
 
+  test('never hashes files outside the content root', async () => {
+    const contentDir = setupContentDir();
+    fs.writeFileSync(path.join(contentDir, '..', 'secret.png'), 'outside-bytes');
+    const { tree } = await transform('![alt](../../secret.png)', { optimize: false }, contentDir);
+    expect(firstImageUrl(tree)).toBe('/_content/../secret.png');
+    expect(firstImageUrl(tree)).not.toContain('?v=');
+  });
+
   test('resolves url-encoded filenames to the file on disk', async () => {
     const contentDir = setupContentDir();
     fs.writeFileSync(path.join(contentDir, 'docs', 'my image.png'), PNG_BYTES);

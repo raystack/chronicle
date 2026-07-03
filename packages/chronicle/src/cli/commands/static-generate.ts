@@ -168,15 +168,17 @@ async function scanContentDir(
           draft: fm.draft as boolean | undefined,
         },
         rawContent: content,
-        images: extractImages(content).map(img => {
+        images: await Promise.all(extractImages(content).map(async img => {
           if (img.startsWith('http')) return img;
           const relative = img.startsWith('/')
             ? img.slice(1)
             : path.join(path.dirname(normalizedRelative), img).replace(/\\/g, '/');
           const url = `/_content/${relative}`;
-          const version = getAssetVersion(path.join(contentMirrorRoot, relative));
+          const diskPath = path.join(contentMirrorRoot, relative);
+          if (!diskPath.startsWith(contentMirrorRoot + path.sep)) return url;
+          const version = await getAssetVersion(diskPath);
           return version ? `${url}?v=${version}` : url;
-        }),
+        })),
       });
     }
   }

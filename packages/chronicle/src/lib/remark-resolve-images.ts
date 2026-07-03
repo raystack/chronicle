@@ -55,9 +55,11 @@ function finalizeUrl(url: string, optimize: boolean, version?: string): string {
   return version ? `${base}?v=${version}` : base
 }
 
+const IMG_SRC_PATTERN = /(<img\b[^>]*\bsrc=["'])([^"']+)(["'])/gi
+
 const remarkResolveImages: Plugin<[RemarkResolveImagesOptions?]> = (options) => {
   const optimize = options?.optimize ?? true
-  return (tree, file) => {
+  return async (tree, file) => {
     const filePath = file.path
     if (!filePath) return
 
@@ -77,7 +79,7 @@ const remarkResolveImages: Plugin<[RemarkResolveImagesOptions?]> = (options) => 
       images.push(src)
     }
 
-    function versionFor(resolved: string): string | undefined {
+    async function versionFor(resolved: string): Promise<string | undefined> {
       if (!isLocalImage(resolved)) return undefined
       let rel: string
       try {
@@ -85,27 +87,30 @@ const remarkResolveImages: Plugin<[RemarkResolveImagesOptions?]> = (options) => 
       } catch {
         return undefined
       }
-      return getAssetVersion(path.join(contentRoot, rel)) ?? undefined
+      const diskPath = path.join(contentRoot, rel)
+      if (!diskPath.startsWith(contentRoot)) return undefined
+      return (await getAssetVersion(diskPath)) ?? undefined
     }
 
-    function processUrl(src: string): string {
+    async function processUrl(src: string): Promise<string> {
       const { base, params } = parseImageParams(src)
       const resolved = resolveUrl(base, dir)
-      const version = versionFor(resolved)
+      const version = await versionFor(resolved)
       collect(version ? `${resolved}?v=${version}` : resolved)
       return finalizeUrl(appendParams(resolved, params), optimize, version)
     }
 
+    const imageNodes: Image[] = []
+    const htmlNodes: Html[] = []
+    const srcAttrs: MdxJsxAttribute[] = []
+    const imgElements: Element[] = []
+
     visit(tree, 'image', (node: Image) => {
-      if (!node.url) return
-      node.url = processUrl(node.url)
+      if (node.url) imageNodes.push(node)
     })
 
     visit(tree, 'html', (node: Html) => {
-      node.value = node.value.replace(
-        /(<img\b[^>]*\bsrc=["'])([^"']+)(["'])/gi,
-        (_, before, src, after) => `${before}${processUrl(src)}${after}`
-      )
+      htmlNodes.push(node)
     })
 
     visit(tree, (node) => {
@@ -113,16 +118,36 @@ const remarkResolveImages: Plugin<[RemarkResolveImagesOptions?]> = (options) => 
       const jsx = node as MdxJsxFlowElement | MdxJsxTextElement
       if (jsx.name !== 'img') return
       const srcAttr = jsx.attributes.find((a): a is MdxJsxAttribute => a.type === 'mdxJsxAttribute' && a.name === 'src')
-      if (!srcAttr?.value || typeof srcAttr.value !== 'string') return
-      srcAttr.value = processUrl(srcAttr.value)
+      if (srcAttr?.value && typeof srcAttr.value === 'string') srcAttrs.push(srcAttr)
     })
 
     visit(tree, 'element', (node: Element) => {
       if (node.tagName !== 'img') return
-      const src = node.properties?.src
-      if (typeof src !== 'string') return
-      node.properties.src = processUrl(src)
+      if (typeof node.properties?.src === 'string') imgElements.push(node)
     })
+
+    for (const node of imageNodes) {
+      node.url = await processUrl(node.url)
+    }
+
+    for (const node of htmlNodes) {
+      let result = ''
+      let last = 0
+      for (const match of node.value.matchAll(IMG_SRC_PATTERN)) {
+        const [full, before, src, after] = match
+        result += node.value.slice(last, match.index) + before + (await processUrl(src)) + after
+        last = match.index + full.length
+      }
+      node.value = result + node.value.slice(last)
+    }
+
+    for (const attr of srcAttrs) {
+      attr.value = await processUrl(attr.value as string)
+    }
+
+    for (const node of imgElements) {
+      node.properties.src = await processUrl(node.properties.src as string)
+    }
 
     file.data.images = images
   }

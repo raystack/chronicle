@@ -28,7 +28,7 @@ export default defineHandler(async event => {
   try { filePath = safePath(contentDir, pathname); } catch { /* malformed URL encoding */ }
   if (!filePath) throw new HTTPError({ status: 404, message: 'Not Found' });
 
-  const currentVersion = getAssetVersion(filePath);
+  const currentVersion = await getAssetVersion(filePath);
   if (!currentVersion) throw new HTTPError({ status: 404, message: 'Not Found' });
 
   const requestedVersion = event.url.searchParams.get('v');

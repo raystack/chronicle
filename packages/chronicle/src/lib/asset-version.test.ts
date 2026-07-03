@@ -26,28 +26,42 @@ describe('hashContent', () => {
 });
 
 describe('getAssetVersion', () => {
-  test('returns the content hash of a file', () => {
+  test('returns the content hash of a file', async () => {
     const file = tempFile('image-bytes-v1');
-    expect(getAssetVersion(file)).toBe(hashContent('image-bytes-v1'));
+    expect(await getAssetVersion(file)).toBe(hashContent('image-bytes-v1'));
   });
 
-  test('returns the same hash on repeated calls', () => {
+  test('returns the same hash on repeated calls', async () => {
     const file = tempFile('image-bytes-v1');
-    expect(getAssetVersion(file)).toBe(getAssetVersion(file));
+    expect(await getAssetVersion(file)).toBe(await getAssetVersion(file));
   });
 
-  test('returns a new hash when the file content changes', () => {
+  test('returns a new hash when the file content changes', async () => {
     const file = tempFile('image-bytes-v1');
-    const before = getAssetVersion(file);
+    const before = await getAssetVersion(file);
     fs.writeFileSync(file, 'image-bytes-v2');
     const future = new Date(Date.now() + 5000);
     fs.utimesSync(file, future, future);
-    const after = getAssetVersion(file);
+    const after = await getAssetVersion(file);
     expect(after).toBe(hashContent('image-bytes-v2'));
     expect(after).not.toBe(before);
   });
 
-  test('returns null for a missing file', () => {
-    expect(getAssetVersion('/nonexistent/path/image.png')).toBeNull();
+  test('detects replace-by-rename with same size and mtime', async () => {
+    const file = tempFile('same-size-A');
+    const before = await getAssetVersion(file);
+    const mtime = fs.statSync(file).mtime;
+    const replacement = `${file}.tmp`;
+    fs.writeFileSync(replacement, 'same-size-B');
+    fs.utimesSync(replacement, mtime, mtime);
+    fs.renameSync(replacement, file);
+    fs.utimesSync(file, mtime, mtime);
+    const after = await getAssetVersion(file);
+    expect(after).toBe(hashContent('same-size-B'));
+    expect(after).not.toBe(before);
+  });
+
+  test('returns null for a missing file', async () => {
+    expect(await getAssetVersion('/nonexistent/path/image.png')).toBeNull();
   });
 });
