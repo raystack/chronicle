@@ -54,6 +54,18 @@ describe('cacheKey', () => {
     expect(a).not.toBe(b);
   });
 
+  test('returns different keys for different content hashes', () => {
+    const a = cacheKey('/_content/img.png', 640, 75, 'webp', 'aaaa111111');
+    const b = cacheKey('/_content/img.png', 640, 75, 'webp', 'bbbb222222');
+    expect(a).not.toBe(b);
+  });
+
+  test('returns same key for same content hash', () => {
+    const a = cacheKey('/_content/img.png', 640, 75, 'webp', 'aaaa111111');
+    const b = cacheKey('/_content/img.png', 640, 75, 'webp', 'aaaa111111');
+    expect(a).toBe(b);
+  });
+
   test('key ends with format extension', () => {
     expect(cacheKey('/_content/img.png', 640, 75, 'webp')).toMatch(/\.webp$/);
     expect(cacheKey('/_content/img.png', 640, 75, 'avif')).toMatch(/\.avif$/);

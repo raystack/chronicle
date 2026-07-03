@@ -6,7 +6,9 @@ import { useStorage } from 'nitro/storage'
 import sharp from 'sharp'
 import { StatusCodes } from 'http-status-codes'
 import { safePath } from '@/server/utils/safe-path'
-import { ALLOWED_WIDTHS, ALLOWED_QUALITIES, DEFAULT_WIDTH, DEFAULT_QUALITY, isLocalImage, isSvg } from '@/lib/image-utils'
+import { assetCacheControl, etagFor, isNotModified, REVALIDATE_CACHE } from '@/server/utils/asset-cache'
+import { getAssetVersion } from '@/lib/asset-version'
+import { ALLOWED_WIDTHS, ALLOWED_QUALITIES, DEFAULT_WIDTH, DEFAULT_QUALITY, isLocalImage, isSvg, splitVersion } from '@/lib/image-utils'
 
 export const STORAGE_KEY = 'image-cache'
 
@@ -28,8 +30,8 @@ export const MIME: Record<string, string> = {
   '.webp': 'image/webp',
 }
 
-export function cacheKey(url: string, w: number, q: number, format: OutputFormat, mtime?: number): string {
-  const hash = crypto.createHash('sha256').update(`${url}:${w}:${q}:${format}:${mtime ?? 0}`).digest('hex').slice(0, 16)
+export function cacheKey(url: string, w: number, q: number, format: OutputFormat, version?: string | number): string {
+  const hash = crypto.createHash('sha256').update(`${url}:${w}:${q}:${format}:${version ?? 0}`).digest('hex').slice(0, 16)
   return `${hash}.${format}`
 }
 
@@ -99,29 +101,34 @@ export default defineHandler(async event => {
   if (!stat) {
     throw new HTTPError({ status: StatusCodes.NOT_FOUND, message: 'Not Found' })
   }
-  const key = cacheKey(url, w, q, format, stat.mtimeMs)
+  const currentVersion = getAssetVersion(filePath)
+  const key = cacheKey(url, w, q, format, currentVersion ?? stat.mtimeMs)
+
+  const requestedVersion = event.url.searchParams.get('v')
+  const cacheControl = import.meta.dev
+    ? REVALIDATE_CACHE
+    : assetCacheControl(requestedVersion, currentVersion)
+  const etag = etagFor(currentVersion ?? String(stat.mtimeMs), String(w), String(q), format)
+  const headers = {
+    'Content-Type': contentType,
+    'Cache-Control': cacheControl,
+    'ETag': etag,
+    'Vary': 'Accept',
+  }
+
+  if (isNotModified(event.headers.get('if-none-match'), etag)) {
+    return new Response(null, { status: StatusCodes.NOT_MODIFIED, headers })
+  }
 
   const cached = await storage.getItemRaw<Buffer>(key)
   if (cached) {
-    return new Response(cached, {
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
-        'Vary': 'Accept',
-      },
-    })
+    return new Response(cached, { headers })
   }
 
   const existing = inflight.get(key)
   if (existing) {
     const optimized = await existing
-    return new Response(optimized, {
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
-        'Vary': 'Accept',
-      },
-    })
+    return new Response(optimized, { headers })
   }
 
   const work = (async () => {
@@ -133,13 +140,7 @@ export default defineHandler(async event => {
   inflight.set(key, work)
   try {
     const optimized = await work
-    return new Response(optimized, {
-      headers: {
-        'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=31536000, immutable',
-        'Vary': 'Accept',
-      },
-    })
+    return new Response(optimized, { headers })
   } catch {
     const source = await fs.readFile(filePath).catch(() => null)
     if (!source) {
@@ -148,7 +149,7 @@ export default defineHandler(async event => {
     return new Response(source, {
       headers: {
         'Content-Type': 'application/octet-stream',
-        'Cache-Control': 'public, max-age=86400',
+        'Cache-Control': REVALIDATE_CACHE,
       },
     })
   } finally {
@@ -171,17 +172,18 @@ export async function warmupImageCache() {
 
   for (const page of pages) {
     for (const url of getPageImages(page)) {
-      if (!isLocalImage(url) || isSvg(url) || seen.has(url)) continue;
-      seen.add(url);
+      const { base } = splitVersion(url);
+      if (!isLocalImage(base) || isSvg(base) || seen.has(base)) continue;
+      seen.add(base);
 
-      const relativePath = url.replace(/^\/_content\//, '');
+      const relativePath = base.replace(/^\/_content\//, '');
       const filePath = safePath(contentDir, `/${relativePath}`);
       if (!filePath) continue;
 
       const stat = await fs.stat(filePath).catch(() => null);
       if (!stat) continue;
 
-      const key = cacheKey(url, w, q, format, stat.mtimeMs);
+      const key = cacheKey(base, w, q, format, getAssetVersion(filePath) ?? stat.mtimeMs);
       const cached = await storage.getItemRaw(key);
       if (cached) continue;
 

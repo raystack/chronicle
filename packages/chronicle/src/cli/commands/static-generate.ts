@@ -19,7 +19,8 @@ import {
 import { loadApiSpec, resolveDocument, type ApiSpec } from '@/lib/openapi';
 import { buildApiRoutes, getSpecSlug } from '@/lib/api-routes';
 import { buildLlmsTxt, type LlmsPage } from '@/lib/llms';
-import { DEFAULT_WIDTH, DEFAULT_QUALITY, isLocalImage, isSvg } from '@/lib/image-utils';
+import { DEFAULT_WIDTH, DEFAULT_QUALITY, isLocalImage, isSvg, splitVersion } from '@/lib/image-utils';
+import { getAssetVersion } from '@/lib/asset-version';
 import type { VersionContext } from '@/lib/version-source';
 import type { Frontmatter, PageNavLink } from '@/types';
 
@@ -169,9 +170,12 @@ async function scanContentDir(
         rawContent: content,
         images: extractImages(content).map(img => {
           if (img.startsWith('http')) return img;
-          if (img.startsWith('/')) return `/_content${img}`;
-          const dirRelative = path.dirname(normalizedRelative);
-          return `/_content/${path.join(dirRelative, img).replace(/\\/g, '/')}`;
+          const relative = img.startsWith('/')
+            ? img.slice(1)
+            : path.join(path.dirname(normalizedRelative), img).replace(/\\/g, '/');
+          const url = `/_content/${relative}`;
+          const version = getAssetVersion(path.join(contentMirrorRoot, relative));
+          return version ? `${url}?v=${version}` : url;
         }),
       });
     }
@@ -685,14 +689,15 @@ async function optimizeImages(
 
   for (const page of pages) {
     for (const imgUrl of page.images) {
-      if (!isLocalImage(imgUrl) || seen.has(imgUrl)) continue;
-      seen.add(imgUrl);
+      const { base } = splitVersion(imgUrl);
+      if (!isLocalImage(base) || seen.has(base)) continue;
+      seen.add(base);
 
-      const relativePath = imgUrl.replace(/^\/_content\//, '');
+      const relativePath = base.replace(/^\/_content\//, '');
       const srcPath = path.resolve(contentDir, relativePath);
       if (!srcPath.startsWith(contentDir + path.sep) && srcPath !== contentDir) continue;
 
-      if (isSvg(imgUrl)) {
+      if (isSvg(base)) {
         const destPath = path.join(outputDir, '_content', relativePath);
         try {
           await fs.mkdir(path.dirname(destPath), { recursive: true });
