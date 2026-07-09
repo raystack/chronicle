@@ -106,8 +106,23 @@ export async function renderMdxErrorResponse(err: unknown): Promise<Response | n
     <h1>${escapeHtml(info.message)}</h1>
     ${location ? `<div class="loc">${escapeHtml(location)}</div>` : ''}
     ${frame ? frameHtml(frame) : ''}
-    <p class="hint">Fix the file and refresh the page.</p>
+    <p class="hint">Fix the file and save — the page reloads automatically.</p>
   </div>
+  <script>
+    (function poll(last) {
+      setTimeout(async () => {
+        try {
+          const res = await fetch(location.href, { headers: { accept: 'text/html' } });
+          if (res.ok) return location.reload();
+          const body = await res.text();
+          if (last !== null && body !== last) return location.reload();
+          poll(body);
+        } catch {
+          poll(last);
+        }
+      }, 1000);
+    })(null);
+  </script>
 </body>
 </html>`
 
