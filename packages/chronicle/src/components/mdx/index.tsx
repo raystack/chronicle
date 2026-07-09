@@ -24,6 +24,8 @@ MdxTabs.List = Tabs.List
 MdxTabs.Tab = Tabs.Tab
 MdxTabs.Content = Tabs.Content
 
+// Capitalized keys must stay in sync with MDX_COMPONENT_NAMES in
+// src/lib/mdx-component-names.ts (used for compile-time validation).
 export const mdxComponents: MDXComponents = {
   p: MdxParagraph,
   img: MDXImage,
