@@ -193,6 +193,7 @@ export default {
         </body>
       </html>,
     );
+    await stream.allReady;
 
     const renderDuration = performance.now() - renderStart;
 
