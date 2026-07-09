@@ -4,6 +4,7 @@ import { ThemeProvider, Skeleton, Flex } from '@raystack/apsara';
 import { lazy, Suspense } from 'react';
 import { Navigate, useLocation } from 'react-router';
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
+import { SearchDialog, SearchProvider } from '@/components/ui/search';
 import { usePageContext } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import type { ChronicleConfig } from '@/types';
@@ -38,18 +39,21 @@ export function App() {
       forcedTheme={themeConfig.forcedTheme}
     >
       <AnalyticsProvider config={config.analytics ?? { enabled: false }} appName={config.site.title}>
-        <RootHead config={config} />
-        <Suspense fallback={<PageFallback />}>
-          {isApi ? (
-            <ApiLayout>
-              <ApiPage slug={apiSlug} />
-            </ApiLayout>
-          ) : (
-            <DocsLayout hideSidebar={isLanding}>
-              {isLanding ? <LandingPage /> : <DocsPage slug={docsSlug} />}
-            </DocsLayout>
-          )}
-        </Suspense>
+        <SearchProvider>
+          <RootHead config={config} />
+          {config.search?.enabled && <SearchDialog />}
+          <Suspense fallback={<PageFallback />}>
+            {isApi ? (
+              <ApiLayout>
+                <ApiPage slug={apiSlug} />
+              </ApiLayout>
+            ) : (
+              <DocsLayout hideSidebar={isLanding}>
+                {isLanding ? <LandingPage /> : <DocsPage slug={docsSlug} />}
+              </DocsLayout>
+            )}
+          </Suspense>
+        </SearchProvider>
       </AnalyticsProvider>
     </ThemeProvider>
   );
