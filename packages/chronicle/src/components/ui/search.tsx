@@ -10,7 +10,16 @@ import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import GithubSlugger from 'github-slugger';
 import { debounce } from 'lodash-es';
 import MiniSearch from 'minisearch';
-import { useCallback, useEffect, useMemo, useState, type ChangeEvent } from 'react';
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type ReactNode
+} from 'react';
 import { useNavigate } from 'react-router';
 import { MethodBadge } from '@/components/api/method-badge';
 import { usePageContext } from '@/lib/page-context';
@@ -162,8 +171,43 @@ function buildSearchUrl(query: string, tag?: string): string {
   return qs ? `/api/search?${qs}` : '/api/search';
 }
 
-export function Search({ classNames }: SearchProps) {
+interface SearchContextValue {
+  open: boolean;
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+const SearchContext = createContext<SearchContextValue | null>(null);
+
+export function SearchProvider({ children }: { children: ReactNode }) {
   const [open, setOpen] = useState(false);
+  const value = useMemo(() => ({ open, setOpen }), [open]);
+  return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;
+}
+
+function useSearch(): SearchContextValue {
+  const ctx = useContext(SearchContext);
+  if (!ctx) throw new Error('Search components must be used within <SearchProvider>');
+  return ctx;
+}
+
+export function Search({ classNames }: SearchProps) {
+  const { setOpen } = useSearch();
+
+  return (
+    <IconButton
+      size={3}
+      aria-label='Search'
+      title='Search (Ctrl/⌘K)'
+      onClick={() => setOpen(true)}
+      className={classNames?.trigger}
+    >
+      <MagnifyingGlassIcon width={16} height={16} />
+    </IconButton>
+  );
+}
+
+export function SearchDialog() {
+  const { open, setOpen } = useSearch();
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const navigate = useNavigate();
@@ -228,67 +272,55 @@ export function Search({ classNames }: SearchProps) {
   const displayResults = deduplicateByUrl(data);
 
   return (
-    <>
-      <IconButton
-        size={3}
-        aria-label='Search'
-        title='Search (Ctrl/⌘K)'
-        onClick={() => setOpen(true)}
-        className={classNames?.trigger}
-      >
-        <MagnifyingGlassIcon width={16} height={16} />
-      </IconButton>
+    <Command.Dialog open={open} onOpenChange={setOpen}>
+      <Command.DialogContent className={styles.dialogContent}>
+        <Command items={displayResults}>
+          <Command.Input
+            placeholder='Search'
+            leadingIcon={<MagnifyingGlassIcon width={16} height={16} />}
+            value={search}
+            onChange={onSearchChange}
+            className={styles.input}
+          />
 
-      <Command.Dialog open={open} onOpenChange={setOpen}>
-        <Command.DialogContent className={styles.dialogContent}>
-          <Command items={displayResults}>
-            <Command.Input
-              placeholder='Search'
-              leadingIcon={<MagnifyingGlassIcon width={16} height={16} />}
-              value={search}
-              onChange={onSearchChange}
-              className={styles.input}
-            />
-
-            <Command.Content className={styles.list}>
-              {isLoading && displayResults.length === 0 && <Command.Empty>Loading...</Command.Empty>}
-              {!isLoading &&
-                search.length > 0 &&
-                displayResults.length === 0 && (
-                  <Command.Empty>No results found.</Command.Empty>
-                )}
-              {search.length === 0 &&
-                displayResults.length > 0 && (
-                  <Command.Group>
-                    <Command.Label>Suggestions</Command.Label>
-                    {displayResults.slice(0, 8).map((result) => (
-                      <Command.Item
-                        key={result.id}
-                        value={result.id}
-                        onClick={() => onSelect(result.url)}
-                        className={styles.item}
-                      >
-                        <SearchResultItem result={result} query="" />
-                      </Command.Item>
-                    ))}
-                  </Command.Group>
-                )}
-              {search.length > 0 &&
-                displayResults.map((result) => (
-                  <Command.Item
-                    key={result.id}
-                    value={result.id}
-                    onClick={() => onSelect(result.url)}
-                    className={styles.item}
-                  >
-                    <SearchResultItem result={result} query={search} />
-                  </Command.Item>
-                ))}
-            </Command.Content>
-          </Command>
-        </Command.DialogContent>
-      </Command.Dialog>
-    </>
+          <Command.Content className={styles.list}>
+            {isLoading && displayResults.length === 0 && <Command.Empty>Loading...</Command.Empty>}
+            {!isLoading &&
+              search.length > 0 &&
+              displayResults.length === 0 && (
+                <Command.Empty>No results found.</Command.Empty>
+              )}
+            {search.length === 0 &&
+              displayResults.length > 0 && (
+                <Command.Group>
+                  <Command.Label>Suggestions</Command.Label>
+                  {displayResults.slice(0, 8).map((result) => (
+                    <Command.Item
+                      key={result.id}
+                      value={result.id}
+                      onClick={() => onSelect(result.url)}
+                      className={styles.item}
+                    >
+                      <SearchResultItem result={result} query="" />
+                    </Command.Item>
+                  ))}
+                </Command.Group>
+              )}
+            {search.length > 0 &&
+              displayResults.map((result) => (
+                <Command.Item
+                  key={result.id}
+                  value={result.id}
+                  onClick={() => onSelect(result.url)}
+                  className={styles.item}
+                >
+                  <SearchResultItem result={result} query={search} />
+                </Command.Item>
+              ))}
+          </Command.Content>
+        </Command>
+      </Command.DialogContent>
+    </Command.Dialog>
   );
 }
 
