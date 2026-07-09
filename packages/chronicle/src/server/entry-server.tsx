@@ -207,6 +207,11 @@ export default {
     });
     } catch (err) {
       console.error(`[chronicle] SSR error for ${pathname}:`, err);
+      if (import.meta.env.DEV) {
+        const { renderMdxErrorResponse } = await import('./dev-error-page');
+        const mdxError = await renderMdxErrorResponse(err);
+        if (mdxError) return mdxError;
+      }
       return errorResponse(500, 'Internal Server Error', err instanceof Error ? err.message : String(err));
     }
   },
