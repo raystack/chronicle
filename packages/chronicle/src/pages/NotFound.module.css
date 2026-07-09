@@ -1,3 +1,13 @@
 .emptyState {
   justify-content: center;
 }
+
+.errorDetail {
+  max-width: 640px;
+  margin: 0;
+  white-space: pre-wrap;
+  text-align: left;
+  font-family: var(--rs-font-mono);
+  font-size: var(--rs-font-size-small);
+  color: var(--rs-color-foreground-base-secondary);
+}
