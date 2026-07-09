@@ -11,6 +11,7 @@ import remarkResolveImages from '../lib/remark-resolve-images';
 import remarkResolveLinks from '../lib/remark-resolve-links';
 import remarkReadingTime from 'remark-reading-time';
 import remarkUnusedDirectives from '../lib/remark-unused-directives';
+import remarkValidateMdx from '../lib/remark-validate-mdx';
 
 function getDatabaseConnector(preset?: string): { connector: string; options?: Record<string, unknown> } {
   switch (preset) {
@@ -105,6 +106,7 @@ export async function createViteConfig(
               [remarkResolveImages, { optimize: !isStaticPreset(preset) }],
               remarkMdxMermaid,
               remarkReadingTime,
+              remarkValidateMdx,
             ],
           },
         }),

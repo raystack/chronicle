@@ -26,6 +26,8 @@ interface PageContextValue {
   page: Page | null;
   isLoading: boolean;
   errorStatus: number | null;
+  /** Render/load failure detail (e.g. MDX compile error) — non-status errors only. */
+  errorMessage: string | null;
   apiSpecs: ApiSpec[];
   version: VersionContext;
 }
@@ -45,6 +47,7 @@ export function usePageContext(): PageContextValue {
       page: null,
       isLoading: false,
       errorStatus: null,
+      errorMessage: null,
       apiSpecs: [],
       version: LATEST_CONTEXT,
     };
@@ -85,6 +88,7 @@ export function PageProvider({
   const [tree] = useState<Root>(initialTree);
   const [page, setPage] = useState<Page | null>(initialPage);
   const [errorStatus, setErrorStatus] = useState<number | null>(getInitialErrorStatus(initialPage, initialConfig, pathname));
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [apiSpecs, setApiSpecs] = useState<ApiSpec[]>(initialApiSpecs);
   const [version, setVersion] = useState<VersionContext>(initialVersion);
   const [isLoading, setIsLoading] = useState(false);
@@ -140,6 +144,7 @@ export function PageProvider({
       const { content, toc } = await loadMdx(data.originalPath || data.relativePath);
       if (cancelled.current) return;
       setErrorStatus(null);
+      setErrorMessage(null);
       setPage({
         slug,
         frontmatter: data.frontmatter,
@@ -150,9 +155,11 @@ export function PageProvider({
       });
     } catch (err) {
       if (cancelled.current) return;
-      const status = Number((err as Error).message) || 500;
+      const raw = (err as Error).message;
+      const status = Number(raw) || 500;
       setPage(null);
       setErrorStatus(status);
+      setErrorMessage(Number(raw) ? null : raw);
     } finally {
       if (!cancelled.current) setIsLoading(false);
     }
@@ -170,6 +177,7 @@ export function PageProvider({
     if (route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage) {
       setPage(null);
       setErrorStatus(null);
+      setErrorMessage(null);
       fetchApiSpecs(route, cancelled);
       return () => { cancelled.current = true; };
     }
@@ -177,6 +185,7 @@ export function PageProvider({
     if (route.type !== RouteType.DocsPage) {
       setPage(null);
       setErrorStatus(null);
+      setErrorMessage(null);
       return () => { cancelled.current = true; };
     }
 
@@ -190,13 +199,14 @@ export function PageProvider({
 
     setPage(null);
     setErrorStatus(null);
+    setErrorMessage(null);
     loadDocsPage(route.slug, cancelled);
     return () => { cancelled.current = true; };
   }, [pathname, initialConfig, fetchApiSpecs, loadDocsPage, navigate]);
 
   return (
     <PageContext.Provider
-      value={{ config: initialConfig, tree, page, isLoading, errorStatus, apiSpecs, version }}
+      value={{ config: initialConfig, tree, page, isLoading, errorStatus, errorMessage, apiSpecs, version }}
     >
       {children}
     </PageContext.Provider>

@@ -4,6 +4,7 @@ import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
 import { resolveDocsRedirect } from '@/lib/tree-utils';
 import { NotFound } from '@/pages/NotFound';
+import { RenderError } from '@/pages/RenderError';
 import { getTheme } from '@/themes/registry';
 
 interface DocsPageProps {
@@ -11,7 +12,7 @@ interface DocsPageProps {
 }
 
 export function DocsPage({ slug }: DocsPageProps) {
-  const { config, tree, page, isLoading, errorStatus } = usePageContext();
+  const { config, tree, page, isLoading, errorStatus, errorMessage } = usePageContext();
 
   if (errorStatus === StatusCodes.NOT_FOUND) {
     const contentConfig = config.content?.find(c => c.dir === slug[0]);
@@ -19,7 +20,7 @@ export function DocsPage({ slug }: DocsPageProps) {
     if (redirectUrl) return <Navigate to={redirectUrl} replace />;
     return <NotFound />;
   }
-  if (errorStatus) return <NotFound />;
+  if (errorStatus) return <RenderError message={errorMessage} />;
   const { Page, Skeleton } = getTheme(config.theme?.name);
 
   if (isLoading || !page) return <Skeleton />;

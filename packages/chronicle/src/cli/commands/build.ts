@@ -30,28 +30,37 @@ export const buildCommand = new Command('build')
       preset
     });
 
-    if (isStaticPreset(preset)) {
-      await build(viteConfig);
-    } else {
-      const builder = await createBuilder({ ...viteConfig, builder: {} });
-      await builder.buildApp();
-    }
+    try {
+      if (isStaticPreset(preset)) {
+        await build(viteConfig);
+      } else {
+        const builder = await createBuilder({ ...viteConfig, builder: {} });
+        await builder.buildApp();
+      }
 
-    if (isStaticPreset(preset)) {
-      const { generateStaticSite } = await import('@/cli/commands/static-generate');
-      const outputDir = path.resolve(projectRoot, '.output/public');
+      if (isStaticPreset(preset)) {
+        const { generateStaticSite } = await import('@/cli/commands/static-generate');
+        const outputDir = path.resolve(projectRoot, '.output/public');
 
-      await generateStaticSite({
-        projectRoot,
-        config,
-        outputDir,
-        packageRoot: PACKAGE_ROOT,
-      });
+        await generateStaticSite({
+          projectRoot,
+          config,
+          outputDir,
+          packageRoot: PACKAGE_ROOT,
+        });
 
-      console.log(chalk.green('Static build complete'));
-      console.log(chalk.cyan(`Output: ${outputDir}`));
-    } else {
-      console.log(chalk.green('Build complete'));
-      console.log(chalk.cyan('Run `chronicle start` to start the server'));
+        console.log(chalk.green('Static build complete'));
+        console.log(chalk.cyan(`Output: ${outputDir}`));
+      } else {
+        console.log(chalk.green('Build complete'));
+        console.log(chalk.cyan('Run `chronicle start` to start the server'));
+      }
+    } catch (err) {
+      const { printMdxBuildError } = await import('@/cli/utils/mdx-error-report');
+      if (await printMdxBuildError(err, PACKAGE_ROOT)) {
+        console.error(chalk.red('Build failed'));
+        process.exit(1);
+      }
+      throw err;
     }
   });
