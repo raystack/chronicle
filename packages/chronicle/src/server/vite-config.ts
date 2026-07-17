@@ -56,13 +56,10 @@ export interface ViteConfigOptions {
  */
 async function resolveRuntimeDepDirs(seeds: string[]): Promise<string[]> {
   const dirs = new Set<string>();
-  const seen = new Set<string>();
   const queue = seeds.map(name => ({ name, from: import.meta.url }));
 
   while (queue.length > 0) {
     const { name, from } = queue.pop()!;
-    if (seen.has(name)) continue;
-    seen.add(name);
 
     const require = createRequire(from);
     let dir: string | null = null;
@@ -80,7 +77,9 @@ async function resolveRuntimeDepDirs(seeds: string[]): Promise<string[]> {
         // optional or unresolvable dependency — skip
       }
     }
-    if (!dir) continue;
+    // dedupe by resolved dir, not name — isolated layouts (pnpm) can host
+    // multiple versions of the same package in different directories
+    if (!dir || dirs.has(dir)) continue;
     dirs.add(dir);
 
     try {

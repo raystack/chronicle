@@ -47,46 +47,12 @@ async function linkDir(source: string, dest: string): Promise<void> {
   } catch {
     throw new Error(`Content directory not found: ${source}`);
   }
+  await fs.mkdir(path.dirname(dest), { recursive: true });
   const type = process.platform === 'win32' ? 'junction' : 'dir';
   await fs.symlink(source, dest, type);
 }
 
-async function removeMirror(mirrorRoot: string): Promise<void> {
-  try {
-    const stat = await fs.lstat(mirrorRoot);
-    if (stat.isSymbolicLink() || stat.isFile()) {
-      await fs.unlink(mirrorRoot);
-    } else if (stat.isDirectory()) {
-      const entries = await fs.readdir(mirrorRoot, { withFileTypes: true });
-      for (const entry of entries) {
-        const entryPath = path.join(mirrorRoot, entry.name);
-        const entryStat = await fs.lstat(entryPath);
-        if (entryStat.isSymbolicLink()) {
-          await fs.unlink(entryPath);
-        } else if (entryStat.isDirectory()) {
-          await cleanDirSymlinks(entryPath);
-          await fs.rm(entryPath, { recursive: true, force: true });
-        } else {
-          await fs.unlink(entryPath);
-        }
-      }
-      await fs.rm(mirrorRoot, { recursive: true, force: true });
-    }
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
-    throw error;
-  }
-}
-
-async function cleanDirSymlinks(dir: string): Promise<void> {
-  const entries = await fs.readdir(dir, { withFileTypes: true });
-  for (const entry of entries) {
-    const entryPath = path.join(dir, entry.name);
-    const entryStat = await fs.lstat(entryPath);
-    if (entryStat.isSymbolicLink()) {
-      await fs.unlink(entryPath);
-    } else if (entryStat.isDirectory()) {
-      await cleanDirSymlinks(entryPath);
-    }
-  }
+// fs.rm removes symlinks without following them, so linked content is untouched
+function removeMirror(mirrorRoot: string): Promise<void> {
+  return fs.rm(mirrorRoot, { recursive: true, force: true });
 }
