@@ -106,8 +106,20 @@ function contentMirrorHmr(contentMirror: string): Plugin {
 
   return {
     name: 'chronicle:content-mirror-hmr',
-    async configureServer() {
+    async configureServer(server) {
       links = await collectMirrorLinks(contentMirror);
+      // Re-emit add/unlink events at the mirror path so Vite re-evaluates
+      // the .content/** glob importers (new/deleted pages) in every environment
+      const remap = (event: 'add' | 'unlink') => (file: string) => {
+        if (file.startsWith(contentMirror + path.sep)) return;
+        for (const [real, mirror] of links) {
+          if (!file.startsWith(real + path.sep)) continue;
+          server.watcher.emit(event, path.join(mirror, file.slice(real.length + 1)));
+          return;
+        }
+      };
+      server.watcher.on('add', remap('add'));
+      server.watcher.on('unlink', remap('unlink'));
     },
     hotUpdate({ file }) {
       if (this.environment.name !== 'client') return;
