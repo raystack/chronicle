@@ -3,6 +3,7 @@ import { remarkDirectiveAdmonition, remarkMdxMermaid } from 'fumadocs-core/mdx-p
 import { defineConfig as defineFumadocsConfig } from 'fumadocs-mdx/config';
 import mdx from 'fumadocs-mdx/vite';
 import { nitro } from 'nitro/vite';
+import { createRequire } from 'node:module';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import remarkDirective from 'remark-directive';
@@ -28,6 +29,8 @@ function getDatabaseConnector(preset?: string): { connector: string; options?: R
 
 const STATIC_PRESETS = new Set(['static', 'vercel-static', 'cloudflare-pages', 'github-pages']);
 
+const SSR_NO_EXTERNAL = ['@raystack/apsara', 'dayjs', 'fumadocs-core'];
+
 export function isStaticPreset(preset?: string): boolean {
   return !!preset && STATIC_PRESETS.has(preset);
 }
@@ -42,6 +45,55 @@ export interface ViteConfigOptions {
   projectRoot: string;
   configPath?: string;
   preset?: string;
+}
+
+/**
+ * Vite 8.1 enforces server.fs.allow on SSR module-runner imports. Nitro's dev
+ * runtime and our ssr.noExternal packages are loaded by absolute path from
+ * wherever the package manager hoisted them, which can be outside the allowed
+ * roots. Resolve those packages plus their transitive runtime dependencies so
+ * fs.allow stays scoped to exactly what the dev server needs.
+ */
+async function resolveRuntimeDepDirs(seeds: string[]): Promise<string[]> {
+  const dirs = new Set<string>();
+  const seen = new Set<string>();
+  const queue = seeds.map(name => ({ name, from: import.meta.url }));
+
+  while (queue.length > 0) {
+    const { name, from } = queue.pop()!;
+    if (seen.has(name)) continue;
+    seen.add(name);
+
+    const require = createRequire(from);
+    let dir: string | null = null;
+    try {
+      dir = path.dirname(require.resolve(`${name}/package.json`));
+    } catch {
+      // package.json not in the exports map — locate the package root from
+      // the resolved entry path instead
+      try {
+        const entry = require.resolve(name);
+        const marker = path.join('node_modules', ...name.split('/')) + path.sep;
+        const idx = entry.lastIndexOf(marker);
+        if (idx !== -1) dir = entry.slice(0, idx + marker.length - 1);
+      } catch {
+        // optional or unresolvable dependency — skip
+      }
+    }
+    if (!dir) continue;
+    dirs.add(dir);
+
+    try {
+      const pkg = JSON.parse(await fs.readFile(path.join(dir, 'package.json'), 'utf-8'));
+      for (const dep of Object.keys(pkg.dependencies ?? {})) {
+        queue.push({ name: dep, from: path.join(dir, 'package.json') });
+      }
+    } catch {
+      // unreadable package.json — allow the dir itself and move on
+    }
+  }
+
+  return [...dirs];
 }
 
 async function readChronicleConfig(projectRoot: string, configPath?: string): Promise<string | null> {
@@ -65,6 +117,7 @@ export async function createViteConfig(
   const { packageRoot, projectRoot, configPath, preset } = options;
   const rawConfig = await readChronicleConfig(projectRoot, configPath);
   const contentMirror = path.resolve(packageRoot, '.content');
+  const runtimeDepDirs = await resolveRuntimeDepDirs(['nitro', 'tslib', ...SSR_NO_EXTERNAL]);
 
   return {
     root: packageRoot,
@@ -128,7 +181,7 @@ export async function createViteConfig(
     },
     server: {
       fs: {
-        allow: [packageRoot, projectRoot, contentMirror]
+        allow: [packageRoot, projectRoot, contentMirror, ...runtimeDepDirs]
       }
     },
     define: {
@@ -143,7 +196,7 @@ export async function createViteConfig(
       }
     },
     ssr: {
-      noExternal: ['@raystack/apsara', 'dayjs', 'fumadocs-core'],
+      noExternal: SSR_NO_EXTERNAL,
       external: ['analytics', 'use-analytics', '@analytics/google-analytics'],
     },
     environments: {
