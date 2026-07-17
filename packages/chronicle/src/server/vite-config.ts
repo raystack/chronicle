@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import remarkDirective from 'remark-directive';
-import { type InlineConfig } from 'vite';
+import { type InlineConfig, type Plugin } from 'vite';
 import remarkResolveImages from '../lib/remark-resolve-images';
 import remarkResolveLinks from '../lib/remark-resolve-links';
 import remarkReadingTime from 'remark-reading-time';
@@ -95,6 +95,51 @@ async function resolveRuntimeDepDirs(seeds: string[]): Promise<string[]> {
   return [...dirs];
 }
 
+/**
+ * Content is mirrored into .content via directory symlinks. The client
+ * environment keys modules by the mirror path (the glob import id), but the
+ * watcher reports edits under the real path — so without remapping, changes
+ * never invalidate client modules and the browser is not reloaded.
+ */
+function contentMirrorHmr(contentMirror: string): Plugin {
+  let links: Array<[real: string, mirror: string]> = [];
+
+  return {
+    name: 'chronicle:content-mirror-hmr',
+    async configureServer() {
+      links = await collectMirrorLinks(contentMirror);
+    },
+    hotUpdate({ file }) {
+      if (this.environment.name !== 'client') return;
+      for (const [real, mirror] of links) {
+        if (!file.startsWith(real + path.sep)) continue;
+        const mirrored = path.join(mirror, file.slice(real.length + 1));
+        const modules = this.environment.moduleGraph.getModulesByFile(mirrored);
+        if (modules?.size) return [...modules];
+      }
+    },
+  };
+}
+
+async function collectMirrorLinks(dir: string): Promise<Array<[string, string]>> {
+  const links: Array<[string, string]> = [];
+  let entries;
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true });
+  } catch {
+    return links;
+  }
+  for (const entry of entries) {
+    const entryPath = path.join(dir, entry.name);
+    if ((await fs.lstat(entryPath)).isSymbolicLink()) {
+      links.push([await fs.realpath(entryPath), entryPath]);
+    } else if (entry.isDirectory()) {
+      links.push(...(await collectMirrorLinks(entryPath)));
+    }
+  }
+  return links;
+}
+
 async function readChronicleConfig(projectRoot: string, configPath?: string): Promise<string | null> {
   if (configPath) {
     try {
@@ -163,7 +208,8 @@ export async function createViteConfig(
           },
         }),
       }, { index: false }),
-      react()
+      react(),
+      contentMirrorHmr(contentMirror)
     ],
     resolve: {
       alias: {
