@@ -52,6 +52,10 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Test
+        run: bun test
+        working-directory: ./packages/chronicle
+
       - name: Build CLI
         run: bun run build:cli
         working-directory: ./packages/chronicle
@@ -76,6 +80,8 @@ jobs:
           done
           curl -sf http://localhost:3001/api/health | grep -q '"ok"'
           echo "Dev server health check passed"
+          curl -sfL http://localhost:3001/ | grep -q 'getting-started'
+          echo "Dev server content check passed"
           kill $DEV_PID 2>/dev/null || true
 
       - name: Smoke test start server
@@ -92,4 +98,8 @@ jobs:
           done
           curl -sf http://localhost:3002/api/health | grep -q '"ok"'
           echo "Start server health check passed"
+          curl -sfL http://localhost:3002/ | grep -q 'getting-started'
+          echo "Start server content check passed"
+          curl -sf "http://localhost:3002/api/page?slug=docs,getting-started" | grep -q '"title"'
+          echo "Page API check passed"
           kill $START_PID 2>/dev/null || true

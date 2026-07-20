@@ -3,10 +3,11 @@ import { remarkDirectiveAdmonition, remarkMdxMermaid } from 'fumadocs-core/mdx-p
 import { defineConfig as defineFumadocsConfig } from 'fumadocs-mdx/config';
 import mdx from 'fumadocs-mdx/vite';
 import { nitro } from 'nitro/vite';
+import { createRequire } from 'node:module';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import remarkDirective from 'remark-directive';
-import { type InlineConfig } from 'vite';
+import { type InlineConfig, type Plugin } from 'vite';
 import remarkResolveImages from '../lib/remark-resolve-images';
 import remarkResolveLinks from '../lib/remark-resolve-links';
 import remarkReadingTime from 'remark-reading-time';
@@ -28,6 +29,8 @@ function getDatabaseConnector(preset?: string): { connector: string; options?: R
 
 const STATIC_PRESETS = new Set(['static', 'vercel-static', 'cloudflare-pages', 'github-pages']);
 
+const SSR_NO_EXTERNAL = ['@raystack/apsara', 'dayjs', 'fumadocs-core'];
+
 export function isStaticPreset(preset?: string): boolean {
   return !!preset && STATIC_PRESETS.has(preset);
 }
@@ -42,6 +45,111 @@ export interface ViteConfigOptions {
   projectRoot: string;
   configPath?: string;
   preset?: string;
+}
+
+/**
+ * Vite 8.1 enforces server.fs.allow on SSR module-runner imports. Nitro's dev
+ * runtime and our ssr.noExternal packages are loaded by absolute path from
+ * wherever the package manager hoisted them, which can be outside the allowed
+ * roots. Resolve those packages plus their transitive runtime dependencies so
+ * fs.allow stays scoped to exactly what the dev server needs.
+ */
+async function resolveRuntimeDepDirs(seeds: string[]): Promise<string[]> {
+  const dirs = new Set<string>();
+  const queue = seeds.map(name => ({ name, from: import.meta.url }));
+
+  while (queue.length > 0) {
+    const { name, from } = queue.pop()!;
+
+    const require = createRequire(from);
+    let dir: string | null = null;
+    try {
+      dir = path.dirname(require.resolve(`${name}/package.json`));
+    } catch {
+      // package.json not in the exports map — locate the package root from
+      // the resolved entry path instead
+      try {
+        const entry = require.resolve(name);
+        const marker = path.join('node_modules', ...name.split('/')) + path.sep;
+        const idx = entry.lastIndexOf(marker);
+        if (idx !== -1) dir = entry.slice(0, idx + marker.length - 1);
+      } catch {
+        // optional or unresolvable dependency — skip
+      }
+    }
+    // dedupe by resolved dir, not name — isolated layouts (pnpm) can host
+    // multiple versions of the same package in different directories
+    if (!dir || dirs.has(dir)) continue;
+    dirs.add(dir);
+
+    try {
+      const pkg = JSON.parse(await fs.readFile(path.join(dir, 'package.json'), 'utf-8'));
+      for (const dep of Object.keys(pkg.dependencies ?? {})) {
+        queue.push({ name: dep, from: path.join(dir, 'package.json') });
+      }
+    } catch {
+      // unreadable package.json — allow the dir itself and move on
+    }
+  }
+
+  return [...dirs];
+}
+
+/**
+ * Content is mirrored into .content via directory symlinks. The client
+ * environment keys modules by the mirror path (the glob import id), but the
+ * watcher reports edits under the real path — so without remapping, changes
+ * never invalidate client modules and the browser is not reloaded.
+ */
+function contentMirrorHmr(contentMirror: string): Plugin {
+  let links: Array<[real: string, mirror: string]> = [];
+
+  return {
+    name: 'chronicle:content-mirror-hmr',
+    async configureServer(server) {
+      links = await collectMirrorLinks(contentMirror);
+      // Re-emit add/unlink events at the mirror path so Vite re-evaluates
+      // the .content/** glob importers (new/deleted pages) in every environment
+      const remap = (event: 'add' | 'unlink') => (file: string) => {
+        if (file.startsWith(contentMirror + path.sep)) return;
+        for (const [real, mirror] of links) {
+          if (!file.startsWith(real + path.sep)) continue;
+          server.watcher.emit(event, path.join(mirror, file.slice(real.length + 1)));
+          return;
+        }
+      };
+      server.watcher.on('add', remap('add'));
+      server.watcher.on('unlink', remap('unlink'));
+    },
+    hotUpdate({ file }) {
+      if (this.environment.name !== 'client') return;
+      for (const [real, mirror] of links) {
+        if (!file.startsWith(real + path.sep)) continue;
+        const mirrored = path.join(mirror, file.slice(real.length + 1));
+        const modules = this.environment.moduleGraph.getModulesByFile(mirrored);
+        if (modules?.size) return [...modules];
+      }
+    },
+  };
+}
+
+async function collectMirrorLinks(dir: string): Promise<Array<[string, string]>> {
+  const links: Array<[string, string]> = [];
+  let entries;
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true });
+  } catch {
+    return links;
+  }
+  for (const entry of entries) {
+    const entryPath = path.join(dir, entry.name);
+    if ((await fs.lstat(entryPath)).isSymbolicLink()) {
+      links.push([await fs.realpath(entryPath), entryPath]);
+    } else if (entry.isDirectory()) {
+      links.push(...(await collectMirrorLinks(entryPath)));
+    }
+  }
+  return links;
 }
 
 async function readChronicleConfig(projectRoot: string, configPath?: string): Promise<string | null> {
@@ -65,6 +173,7 @@ export async function createViteConfig(
   const { packageRoot, projectRoot, configPath, preset } = options;
   const rawConfig = await readChronicleConfig(projectRoot, configPath);
   const contentMirror = path.resolve(packageRoot, '.content');
+  const runtimeDepDirs = await resolveRuntimeDepDirs(['nitro', 'tslib', ...SSR_NO_EXTERNAL]);
 
   return {
     root: packageRoot,
@@ -111,7 +220,8 @@ export async function createViteConfig(
           },
         }),
       }, { index: false }),
-      react()
+      react(),
+      contentMirrorHmr(contentMirror)
     ],
     resolve: {
       alias: {
@@ -128,7 +238,7 @@ export async function createViteConfig(
     },
     server: {
       fs: {
-        allow: [packageRoot, projectRoot, contentMirror]
+        allow: [packageRoot, projectRoot, contentMirror, ...runtimeDepDirs]
       }
     },
     define: {
@@ -143,7 +253,7 @@ export async function createViteConfig(
       }
     },
     ssr: {
-      noExternal: ['@raystack/apsara', 'dayjs', 'fumadocs-core'],
+      noExternal: SSR_NO_EXTERNAL,
       external: ['analytics', 'use-analytics', '@analytics/google-analytics'],
     },
     environments: {

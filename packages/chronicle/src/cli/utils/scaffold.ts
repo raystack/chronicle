@@ -15,7 +15,7 @@ export async function buildContentMirror(
   for (const root of getLatestContentRoots(config)) {
     const source = path.resolve(projectRoot, root.fsPath);
     const dest = path.join(mirrorRoot, root.contentDir);
-    await mirrorTree(source, dest);
+    await linkDir(source, dest);
   }
 
   for (const version of config.versions ?? []) {
@@ -25,7 +25,7 @@ export async function buildContentMirror(
     for (const root of getVersionContentRoots(config, version.dir)) {
       const source = path.resolve(projectRoot, root.fsPath);
       const dest = path.join(versionMirror, root.contentDir);
-      await mirrorTree(source, dest);
+      await linkDir(source, dest);
     }
   }
 }
@@ -41,39 +41,18 @@ export function linkContent(
   );
 }
 
-async function mirrorTree(source: string, dest: string): Promise<void> {
-  let entries: import('node:fs').Dirent[];
+async function linkDir(source: string, dest: string): Promise<void> {
   try {
-    entries = await fs.readdir(source, { withFileTypes: true });
-  } catch (error) {
-    const err = error as NodeJS.ErrnoException;
-    if (err.code === 'ENOENT') {
-      throw new Error(`Content directory not found: ${source}`);
-    }
-    throw error;
+    await fs.access(source);
+  } catch {
+    throw new Error(`Content directory not found: ${source}`);
   }
-  await fs.mkdir(dest, { recursive: true });
-  for (const entry of entries) {
-    const sourcePath = path.join(source, entry.name);
-    const destPath = path.join(dest, entry.name);
-    if (entry.isDirectory()) {
-      await mirrorTree(sourcePath, destPath);
-    } else if (entry.isFile() || entry.isSymbolicLink()) {
-      await fs.symlink(sourcePath, destPath);
-    }
-  }
+  await fs.mkdir(path.dirname(dest), { recursive: true });
+  const type = process.platform === 'win32' ? 'junction' : 'dir';
+  await fs.symlink(source, dest, type);
 }
 
-async function removeMirror(mirrorRoot: string): Promise<void> {
-  try {
-    const stat = await fs.lstat(mirrorRoot);
-    if (stat.isSymbolicLink() || stat.isFile()) {
-      await fs.unlink(mirrorRoot);
-    } else if (stat.isDirectory()) {
-      await fs.rm(mirrorRoot, { recursive: true, force: true });
-    }
-  } catch (error) {
-    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return;
-    throw error;
-  }
+// fs.rm removes symlinks without following them, so linked content is untouched
+function removeMirror(mirrorRoot: string): Promise<void> {
+  return fs.rm(mirrorRoot, { recursive: true, force: true });
 }

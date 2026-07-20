@@ -15,11 +15,14 @@ async function seedContent(relPath: string, file = 'index.mdx'): Promise<void> {
   await fs.writeFile(path.join(dir, file), `---\ntitle: ${relPath}\n---\n`)
 }
 
-async function isDir(p: string): Promise<boolean> {
-  return (await fs.lstat(p)).isDirectory()
+async function isDirSymlink(p: string): Promise<boolean> {
+  const st = await fs.lstat(p)
+  if (!st.isSymbolicLink()) return false
+  const target = await fs.stat(p)
+  return target.isDirectory()
 }
 
-async function fileSymlinkTarget(p: string): Promise<string> {
+async function symlinkTarget(p: string): Promise<string> {
   const st = await fs.lstat(p)
   expect(st.isSymbolicLink()).toBe(true)
   return fs.readlink(p)
@@ -37,7 +40,7 @@ afterEach(async () => {
 })
 
 describe('buildContentMirror', () => {
-  test('single-content latest: mirrors as real dirs with per-file symlinks', async () => {
+  test('single-content latest: creates directory symlink to content source', async () => {
     await seedContent('content/docs', 'index.mdx')
     await seedContent('content/docs', 'guide.mdx')
     const config = chronicleConfigSchema.parse({
@@ -47,16 +50,15 @@ describe('buildContentMirror', () => {
 
     await buildContentMirror(mirrorRoot, projectRoot, config)
 
-    expect(await isDir(path.join(mirrorRoot, 'docs'))).toBe(true)
-    expect(await fileSymlinkTarget(path.join(mirrorRoot, 'docs/index.mdx'))).toBe(
-      path.join(projectRoot, 'content/docs/index.mdx'),
+    expect(await isDirSymlink(path.join(mirrorRoot, 'docs'))).toBe(true)
+    expect(await symlinkTarget(path.join(mirrorRoot, 'docs'))).toBe(
+      path.join(projectRoot, 'content/docs'),
     )
-    expect(await fileSymlinkTarget(path.join(mirrorRoot, 'docs/guide.mdx'))).toBe(
-      path.join(projectRoot, 'content/docs/guide.mdx'),
-    )
+    const content = await fs.readFile(path.join(mirrorRoot, 'docs/index.mdx'), 'utf-8')
+    expect(content).toContain('title:')
   })
 
-  test('preserves nested subdirectories via recursive mirror', async () => {
+  test('files within symlinked directory are accessible', async () => {
     await seedContent('content/docs/guides', 'install.mdx')
     const config = chronicleConfigSchema.parse({
       site: { title: 'x' },
@@ -66,13 +68,11 @@ describe('buildContentMirror', () => {
     await buildContentMirror(mirrorRoot, projectRoot, config)
 
     const nested = path.join(mirrorRoot, 'docs/guides/install.mdx')
-    expect(await fileSymlinkTarget(nested)).toBe(
-      path.join(projectRoot, 'content/docs/guides/install.mdx'),
-    )
-    expect(await isDir(path.join(mirrorRoot, 'docs/guides'))).toBe(true)
+    const content = await fs.readFile(nested, 'utf-8')
+    expect(content).toContain('title:')
   })
 
-  test('multi-content latest produces one real dir per content entry', async () => {
+  test('multi-content latest produces one symlink per content entry', async () => {
     await seedContent('content/docs', 'index.mdx')
     await seedContent('content/dev', 'index.mdx')
     const config = chronicleConfigSchema.parse({
@@ -85,14 +85,14 @@ describe('buildContentMirror', () => {
 
     await buildContentMirror(mirrorRoot, projectRoot, config)
 
-    expect(await isDir(path.join(mirrorRoot, 'docs'))).toBe(true)
-    expect(await isDir(path.join(mirrorRoot, 'dev'))).toBe(true)
-    expect(
-      await fileSymlinkTarget(path.join(mirrorRoot, 'dev/index.mdx')),
-    ).toBe(path.join(projectRoot, 'content/dev/index.mdx'))
+    expect(await isDirSymlink(path.join(mirrorRoot, 'docs'))).toBe(true)
+    expect(await isDirSymlink(path.join(mirrorRoot, 'dev'))).toBe(true)
+    expect(await symlinkTarget(path.join(mirrorRoot, 'dev'))).toBe(
+      path.join(projectRoot, 'content/dev'),
+    )
   })
 
-  test('versioned mirror nests version dir then content dir', async () => {
+  test('versioned mirror nests version dir then content symlink', async () => {
     await seedContent('content/docs', 'index.mdx')
     await seedContent('versions/v1/docs', 'index.mdx')
     await seedContent('versions/v1/dev', 'api.mdx')
@@ -114,13 +114,13 @@ describe('buildContentMirror', () => {
 
     await buildContentMirror(mirrorRoot, projectRoot, config)
 
-    expect(await isDir(path.join(mirrorRoot, 'v1/docs'))).toBe(true)
-    expect(
-      await fileSymlinkTarget(path.join(mirrorRoot, 'v1/docs/index.mdx')),
-    ).toBe(path.join(projectRoot, 'versions/v1/docs/index.mdx'))
-    expect(
-      await fileSymlinkTarget(path.join(mirrorRoot, 'v1/dev/api.mdx')),
-    ).toBe(path.join(projectRoot, 'versions/v1/dev/api.mdx'))
+    expect(await isDirSymlink(path.join(mirrorRoot, 'v1/docs'))).toBe(true)
+    expect(await symlinkTarget(path.join(mirrorRoot, 'v1/docs'))).toBe(
+      path.join(projectRoot, 'versions/v1/docs'),
+    )
+    expect(await symlinkTarget(path.join(mirrorRoot, 'v1/dev'))).toBe(
+      path.join(projectRoot, 'versions/v1/dev'),
+    )
   })
 
   test('is idempotent — re-running yields the same tree', async () => {
@@ -133,9 +133,10 @@ describe('buildContentMirror', () => {
     await buildContentMirror(mirrorRoot, projectRoot, config)
     await buildContentMirror(mirrorRoot, projectRoot, config)
 
-    expect(
-      await fileSymlinkTarget(path.join(mirrorRoot, 'docs/index.mdx')),
-    ).toBe(path.join(projectRoot, 'content/docs/index.mdx'))
+    expect(await isDirSymlink(path.join(mirrorRoot, 'docs'))).toBe(true)
+    expect(await symlinkTarget(path.join(mirrorRoot, 'docs'))).toBe(
+      path.join(projectRoot, 'content/docs'),
+    )
   })
 
   test('wipes stale entries when config shrinks', async () => {
@@ -171,9 +172,18 @@ describe('buildContentMirror', () => {
     })
     await buildContentMirror(mirrorRoot, projectRoot, config)
 
-    expect(await isDir(mirrorRoot)).toBe(true)
-    expect(
-      await fileSymlinkTarget(path.join(mirrorRoot, 'docs/index.mdx')),
-    ).toBe(path.join(projectRoot, 'content/docs/index.mdx'))
+    expect((await fs.lstat(mirrorRoot)).isDirectory()).toBe(true)
+    expect(await isDirSymlink(path.join(mirrorRoot, 'docs'))).toBe(true)
+  })
+
+  test('throws when content directory does not exist', async () => {
+    const config = chronicleConfigSchema.parse({
+      site: { title: 'x' },
+      content: [{ dir: 'docs', label: 'Docs' }],
+    })
+
+    await expect(
+      buildContentMirror(mirrorRoot, projectRoot, config),
+    ).rejects.toThrow('Content directory not found')
   })
 })
