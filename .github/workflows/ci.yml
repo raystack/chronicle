@@ -66,8 +66,6 @@ jobs:
 
       - name: Smoke test dev server
         shell: bash
-        env:
-          NITRO_DEV_RUNNER: ${{ matrix.os == 'windows-latest' && 'self' || '' }}
         run: ./scripts/smoke-test.sh dev 3001
 
       - name: Smoke test start server
