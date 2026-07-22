@@ -53,3 +53,28 @@ if ! curl -sf --max-time 30 "${BASE}/api/page?slug=docs,getting-started" | grep 
   fail "page API did not return page metadata"
 fi
 echo "${MODE} server page API check passed"
+
+# Crawl pages from the sitemap; in dev mode each request exercises SSR compile
+CRAWL_LIMIT="${CRAWL_LIMIT:-15}"
+BODY_FILE="smoke-${MODE}-page.html"
+
+paths=$(curl -sf --max-time 30 "${BASE}/sitemap.xml" \
+  | grep -o '<loc>[^<]*</loc>' \
+  | sed -E -e 's|</?loc>||g' -e 's|^https?://[^/]*||' -e 's|^$|/|' \
+  | head -n "$CRAWL_LIMIT")
+if [[ -z "$paths" ]]; then
+  fail "sitemap.xml returned no URLs"
+fi
+
+crawled=0
+while IFS= read -r page_path; do
+  status=$(curl -sL -o "$BODY_FILE" -w '%{http_code}' --max-time 60 "${BASE}${page_path}") || status=000
+  if [[ "$status" != "200" ]]; then
+    fail "GET ${page_path} returned HTTP ${status}"
+  fi
+  if ! grep -q '</html>' "$BODY_FILE"; then
+    fail "GET ${page_path} returned truncated or incomplete HTML"
+  fi
+  crawled=$((crawled + 1))
+done <<<"$paths"
+echo "${MODE} server crawl passed (${crawled} pages)"
