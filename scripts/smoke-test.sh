@@ -28,8 +28,10 @@ fail() {
   exit 1
 }
 
+# Wall-clock deadline; SECONDS counts from script start, which includes server spawn
+HEALTH_BUDGET="${HEALTH_BUDGET:-120}"
 healthy=0
-for _ in $(seq 1 60); do
+while (( SECONDS < HEALTH_BUDGET )); do
   if ! kill -0 "$SERVER_PID" 2>/dev/null; then
     fail "${MODE} server exited before becoming healthy"
   fi
@@ -40,7 +42,7 @@ for _ in $(seq 1 60); do
   sleep 2
 done
 if [[ "$healthy" -ne 1 ]]; then
-  fail "${MODE} server not healthy after 120s"
+  fail "${MODE} server not healthy after ${HEALTH_BUDGET}s"
 fi
 echo "${MODE} server health check passed"
 
@@ -49,17 +51,15 @@ FIRST_LOAD_BUDGET="${FIRST_LOAD_BUDGET:-60}"
 WARM_LOAD_BUDGET="${WARM_LOAD_BUDGET:-10}"
 BODY_FILE="smoke-${MODE}-page.html"
 
-first_time=$(curl -sL -o "$BODY_FILE" -w '%{time_total}' --max-time "$FIRST_LOAD_BUDGET" "${BASE}/") \
+first_time=$(curl -sfL -o "$BODY_FILE" -w '%{time_total}' --max-time "$FIRST_LOAD_BUDGET" "${BASE}/") \
   || fail "first page load failed or exceeded ${FIRST_LOAD_BUDGET}s budget"
 if ! grep -q 'getting-started' "$BODY_FILE"; then
   fail "homepage does not contain expected content"
 fi
 echo "${MODE} server content check passed (first load ${first_time}s, budget ${FIRST_LOAD_BUDGET}s)"
 
-warm_time=$(curl -sL -o /dev/null -w '%{time_total}' --max-time 30 "${BASE}/") \
-  || fail "warm page load failed"
-awk -v t="$warm_time" -v b="$WARM_LOAD_BUDGET" 'BEGIN { exit (t <= b) ? 0 : 1 }' \
-  || fail "warm page load took ${warm_time}s, budget ${WARM_LOAD_BUDGET}s"
+warm_time=$(curl -sfL -o /dev/null -w '%{time_total}' --max-time "$WARM_LOAD_BUDGET" "${BASE}/") \
+  || fail "warm page load failed or exceeded ${WARM_LOAD_BUDGET}s budget"
 echo "${MODE} server warm load check passed (${warm_time}s, budget ${WARM_LOAD_BUDGET}s)"
 
 if ! curl -sf --max-time 30 "${BASE}/api/page?slug=docs,getting-started" | grep -q '"title"'; then
@@ -69,18 +69,25 @@ echo "${MODE} server page API check passed"
 
 # Crawl pages from the sitemap; in dev mode each request exercises SSR compile
 CRAWL_LIMIT="${CRAWL_LIMIT:-15}"
+CRAWL_BUDGET="${CRAWL_BUDGET:-300}"
 
+# `|| true`: an empty sitemap makes grep exit 1, which must reach the
+# explicit fail below instead of killing the script under pipefail
 paths=$(curl -sf --max-time 30 "${BASE}/sitemap.xml" \
   | grep -o '<loc>[^<]*</loc>' \
   | sed -E -e 's|</?loc>||g' -e 's|^https?://[^/]*||' -e 's|^$|/|' \
-  | awk -v n="$CRAWL_LIMIT" 'NR <= n')
+  | awk -v n="$CRAWL_LIMIT" 'NR <= n' || true)
 if [[ -z "$paths" ]]; then
   fail "sitemap.xml returned no URLs"
 fi
 
 crawled=0
+crawl_start=$SECONDS
 while IFS= read -r page_path; do
-  status=$(curl -sL -o "$BODY_FILE" -w '%{http_code}' --max-time 60 "${BASE}${page_path}") || status=000
+  if (( SECONDS - crawl_start > CRAWL_BUDGET )); then
+    fail "crawl exceeded ${CRAWL_BUDGET}s budget after ${crawled} pages"
+  fi
+  status=$(curl -sL -o "$BODY_FILE" -w '%{http_code}' --max-time 30 "${BASE}${page_path}") || status=000
   if [[ "$status" != "200" ]]; then
     fail "GET ${page_path} returned HTTP ${status}"
   fi
