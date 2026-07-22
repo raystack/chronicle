@@ -73,7 +73,7 @@ CRAWL_LIMIT="${CRAWL_LIMIT:-15}"
 paths=$(curl -sf --max-time 30 "${BASE}/sitemap.xml" \
   | grep -o '<loc>[^<]*</loc>' \
   | sed -E -e 's|</?loc>||g' -e 's|^https?://[^/]*||' -e 's|^$|/|' \
-  | head -n "$CRAWL_LIMIT")
+  | awk -v n="$CRAWL_LIMIT" 'NR <= n')
 if [[ -z "$paths" ]]; then
   fail "sitemap.xml returned no URLs"
 fi
