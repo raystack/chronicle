@@ -44,10 +44,23 @@ if [[ "$healthy" -ne 1 ]]; then
 fi
 echo "${MODE} server health check passed"
 
-if ! curl -sfL --max-time 90 "${BASE}/" | grep -q 'getting-started'; then
+# Load-time budgets (seconds); first load includes SSR compile in dev mode
+FIRST_LOAD_BUDGET="${FIRST_LOAD_BUDGET:-60}"
+WARM_LOAD_BUDGET="${WARM_LOAD_BUDGET:-10}"
+BODY_FILE="smoke-${MODE}-page.html"
+
+first_time=$(curl -sL -o "$BODY_FILE" -w '%{time_total}' --max-time "$FIRST_LOAD_BUDGET" "${BASE}/") \
+  || fail "first page load failed or exceeded ${FIRST_LOAD_BUDGET}s budget"
+if ! grep -q 'getting-started' "$BODY_FILE"; then
   fail "homepage does not contain expected content"
 fi
-echo "${MODE} server content check passed"
+echo "${MODE} server content check passed (first load ${first_time}s, budget ${FIRST_LOAD_BUDGET}s)"
+
+warm_time=$(curl -sL -o /dev/null -w '%{time_total}' --max-time 30 "${BASE}/") \
+  || fail "warm page load failed"
+awk -v t="$warm_time" -v b="$WARM_LOAD_BUDGET" 'BEGIN { exit (t <= b) ? 0 : 1 }' \
+  || fail "warm page load took ${warm_time}s, budget ${WARM_LOAD_BUDGET}s"
+echo "${MODE} server warm load check passed (${warm_time}s, budget ${WARM_LOAD_BUDGET}s)"
 
 if ! curl -sf --max-time 30 "${BASE}/api/page?slug=docs,getting-started" | grep -q '"title"'; then
   fail "page API did not return page metadata"
@@ -56,7 +69,6 @@ echo "${MODE} server page API check passed"
 
 # Crawl pages from the sitemap; in dev mode each request exercises SSR compile
 CRAWL_LIMIT="${CRAWL_LIMIT:-15}"
-BODY_FILE="smoke-${MODE}-page.html"
 
 paths=$(curl -sf --max-time 30 "${BASE}/sitemap.xml" \
   | grep -o '<loc>[^<]*</loc>' \
