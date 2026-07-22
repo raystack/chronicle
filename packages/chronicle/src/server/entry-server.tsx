@@ -14,9 +14,7 @@ import { getPage, getPageTree, isDraft, getPageNav, loadPageModule, extractFront
 import { getFirstApiUrl } from '@/lib/api-routes';
 import { StatusCodes } from 'http-status-codes';
 import { resolvePageAndSlug, resolveDocsRedirect, compactTree } from '@/lib/tree-utils';
-import { filterPageTreeByVersion, filterPageTreeByContentDir } from '@/lib/version-source';
-import { getActiveContentDir } from '@/lib/navigation';
-import { getLatestContentRoots, getVersionContentRoots } from '@/lib/config';
+import { filterPageTreeByVersion } from '@/lib/version-source';
 import { isLocalImage, isSvg, buildOptimizedUrl, splitVersion, DEFAULT_WIDTH } from '@/lib/image-utils';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { useNitroApp } from 'nitro/app';
@@ -82,14 +80,11 @@ export default {
 
     const fullTree = await getPageTree();
     const versionTree = filterPageTreeByVersion(fullTree, route.version, config);
-    const contentDirs = route.version.dir
-      ? getVersionContentRoots(config, route.version.dir)
-      : getLatestContentRoots(config);
-    const activeDir = getActiveContentDir(pathname, config);
-    const scopedTree = contentDirs.length === 1 && activeDir
-      ? filterPageTreeByContentDir(versionTree, route.version, activeDir)
-      : versionTree;
-    const tree = compactTree(scopedTree);
+    // Content-dir scoping is DocsLayout's job — it runs during both SSR and
+    // client rendering. Scoping here as well applies the filter twice: the
+    // second pass unwraps the first section folder and the sidebar loses
+    // every other page.
+    const tree = compactTree(versionTree);
 
     // SSR redirects for index pages
     if (route.type === RouteType.ApiIndex) {
