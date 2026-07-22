@@ -68,38 +68,8 @@ jobs:
         shell: bash
         env:
           NITRO_DEV_RUNNER: ${{ matrix.os == 'windows-latest' && 'self' || '' }}
-        run: |
-          ./packages/chronicle/bin/chronicle.js dev --config examples/basic/chronicle.yaml --port 3001 &
-          DEV_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:3001/api/health > /dev/null 2>&1; then
-              echo "Dev server ready"
-              break
-            fi
-            sleep 2
-          done
-          curl -sf http://localhost:3001/api/health | grep -q '"ok"'
-          echo "Dev server health check passed"
-          curl -sfL http://localhost:3001/ | grep -q 'getting-started'
-          echo "Dev server content check passed"
-          kill $DEV_PID 2>/dev/null || true
+        run: ./scripts/smoke-test.sh dev 3001
 
       - name: Smoke test start server
         shell: bash
-        run: |
-          ./packages/chronicle/bin/chronicle.js start --config examples/basic/chronicle.yaml --port 3002 &
-          START_PID=$!
-          for i in $(seq 1 30); do
-            if curl -sf http://localhost:3002/api/health > /dev/null 2>&1; then
-              echo "Start server ready"
-              break
-            fi
-            sleep 2
-          done
-          curl -sf http://localhost:3002/api/health | grep -q '"ok"'
-          echo "Start server health check passed"
-          curl -sfL http://localhost:3002/ | grep -q 'getting-started'
-          echo "Start server content check passed"
-          curl -sf "http://localhost:3002/api/page?slug=docs,getting-started" | grep -q '"title"'
-          echo "Page API check passed"
-          kill $START_PID 2>/dev/null || true
+        run: ./scripts/smoke-test.sh start 3002
