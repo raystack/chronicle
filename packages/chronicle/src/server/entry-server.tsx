@@ -16,7 +16,7 @@ import { resolvePageAndSlug, resolveDocsRedirect, compactTree } from '@/lib/tree
 import { filterPageTreeByVersion, filterPageTreeByContentDir } from '@/lib/version-source';
 import { getActiveContentDir } from '@/lib/navigation';
 import { getLatestContentRoots, getVersionContentRoots } from '@/lib/config';
-import { isLocalImage, isSvg, buildOptimizedUrl, DEFAULT_WIDTH } from '@/lib/image-utils';
+import { isLocalImage, isSvg, buildOptimizedUrl, splitVersion, DEFAULT_WIDTH } from '@/lib/image-utils';
 import { QueryClientProvider, QueryClient } from '@tanstack/react-query';
 import { useNitroApp } from 'nitro/app';
 import { App } from './App';
@@ -155,7 +155,10 @@ export default {
             <link key={attr.href} rel="modulepreload" {...attr} />
           ))}
           {[...new Set(pageImages)].map((src: string) => {
-            const href = isLocalImage(src) && !isSvg(src) ? buildOptimizedUrl(src, DEFAULT_WIDTH) : src;
+            const { base, version } = splitVersion(src);
+            const href = isLocalImage(base) && !isSvg(base)
+              ? buildOptimizedUrl(base, DEFAULT_WIDTH, undefined, version)
+              : src;
             return <link key={src} rel="preload" as="image" href={href} />;
           })}
           {isApiRoute && (

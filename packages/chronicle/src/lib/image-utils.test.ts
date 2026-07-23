@@ -3,6 +3,8 @@ import {
   isLocalImage,
   isSvg,
   buildOptimizedUrl,
+  webpUrl,
+  splitVersion,
   ALLOWED_WIDTHS,
   DEFAULT_WIDTH,
   DEFAULT_QUALITY,
@@ -50,6 +52,55 @@ describe('buildOptimizedUrl', () => {
   test('encodes special characters in URL', () => {
     const url = buildOptimizedUrl('/_content/my image (1).png', 640);
     expect(url).toContain('my%20image%20(1).png');
+  });
+});
+
+describe('buildOptimizedUrl with version', () => {
+  test('appends v param when version is provided', () => {
+    const url = buildOptimizedUrl('/_content/img.png', 640, 75, 'abc123def0');
+    expect(url).toBe('/api/image?url=%2F_content%2Fimg.png&w=640&q=75&v=abc123def0');
+  });
+
+  test('omits v param when version is undefined', () => {
+    const url = buildOptimizedUrl('/_content/img.png', 640, 75);
+    expect(url).toBe('/api/image?url=%2F_content%2Fimg.png&w=640&q=75');
+  });
+});
+
+describe('webpUrl', () => {
+  test('replaces the extension with .webp', () => {
+    expect(webpUrl('/_content/photo.png')).toBe('/_content/photo.webp');
+  });
+
+  test('preserves the query string', () => {
+    expect(webpUrl('/_content/photo.png?v=abc123def0')).toBe('/_content/photo.webp?v=abc123def0');
+  });
+
+  test('handles dots in directory names', () => {
+    expect(webpUrl('/_content/v1.2/photo.jpeg?v=abc')).toBe('/_content/v1.2/photo.webp?v=abc');
+  });
+});
+
+describe('splitVersion', () => {
+  test('separates the base URL from the v param', () => {
+    expect(splitVersion('/_content/img.png?v=abc123')).toEqual({
+      base: '/_content/img.png',
+      version: 'abc123',
+    });
+  });
+
+  test('returns undefined version when there is no query', () => {
+    expect(splitVersion('/_content/img.png')).toEqual({
+      base: '/_content/img.png',
+      version: undefined,
+    });
+  });
+
+  test('returns undefined version when query has no v param', () => {
+    expect(splitVersion('/_content/img.png?w=640')).toEqual({
+      base: '/_content/img.png',
+      version: undefined,
+    });
   });
 });
 

@@ -1,12 +1,8 @@
 import type { ComponentProps } from 'react';
-import { isLocalImage, isSvg, buildOptimizedUrl, DEFAULT_WIDTH } from '@/lib/image-utils';
+import { isLocalImage, isSvg, buildOptimizedUrl, webpUrl, splitVersion, DEFAULT_WIDTH } from '@/lib/image-utils';
 import { isStaticMode } from '@/lib/static-mode';
 
 type MDXImageProps = ComponentProps<'img'>;
-
-function webpUrl(src: string): string {
-  return src.replace(/\.[^.]+$/, '.webp');
-}
 
 export function MDXImage({ src, alt, ...props }: MDXImageProps) {
   if (!src) return null;
@@ -22,6 +18,11 @@ export function MDXImage({ src, alt, ...props }: MDXImageProps) {
     );
   }
 
-  const imgSrc = optimize ? buildOptimizedUrl(src, DEFAULT_WIDTH) : src;
-  return <img src={imgSrc} alt={alt ?? ''} loading='lazy' decoding='async' {...props} />;
+  if (optimize) {
+    const { base, version } = splitVersion(src);
+    const imgSrc = buildOptimizedUrl(base, DEFAULT_WIDTH, undefined, version);
+    return <img src={imgSrc} alt={alt ?? ''} loading='lazy' decoding='async' {...props} />;
+  }
+
+  return <img src={src} alt={alt ?? ''} loading='lazy' decoding='async' {...props} />;
 }
