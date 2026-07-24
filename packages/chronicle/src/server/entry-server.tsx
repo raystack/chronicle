@@ -1,7 +1,7 @@
 import '@raystack/apsara/normalize.css';
 import '@raystack/apsara/style.css';
 import React from 'react';
-import { renderToReadableStream } from 'react-dom/server.edge';
+import { prerender } from 'react-dom/static.edge';
 import { StaticRouter } from 'react-router';
 import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
 import { mdxComponents } from '@/components/mdx';
@@ -23,6 +23,14 @@ import { App } from './App';
 
 import clientAssets from './entry-client?assets=client';
 import serverAssets from './entry-server?assets=ssr';
+// Page modules are lazy-loaded (React.lazy), so their CSS is normally injected
+// by Vite only when the JS chunk loads. Link the active route's page CSS in the
+// SSR head so pages are fully styled before hydration (and without JavaScript).
+import docsLayoutAssets from '@/pages/DocsLayout?assets=client';
+import docsPageAssets from '@/pages/DocsPage?assets=client';
+import landingPageAssets from '@/pages/LandingPage?assets=client';
+import apiLayoutAssets from '@/pages/ApiLayout?assets=client';
+import apiPageAssets from '@/pages/ApiPage?assets=client';
 
 function errorResponse(status: number, title: string, message: string): Response {
   const safe = message.replace(/[<>&"]/g, '');
@@ -138,10 +146,19 @@ export default {
     };
     const safeJson = JSON.stringify(embeddedData).replace(/</g, '\\u003c');
 
-    const assets = clientAssets.merge(serverAssets);
+    const routeAssets = isApiRoute
+      ? [apiLayoutAssets, apiPageAssets]
+      : route.type === RouteType.DocsIndex
+        ? [docsLayoutAssets, landingPageAssets]
+        : [docsLayoutAssets, docsPageAssets];
+    const assets = clientAssets.merge(serverAssets, ...routeAssets);
 
     const renderStart = performance.now();
-    const stream = await renderToReadableStream(
+    // prerender (vs renderToReadableStream) waits for all Suspense content;
+    // the huge progressiveChunkSize stops React from "outlining" large completed
+    // boundaries into hidden divs revealed by inline scripts — together they make
+    // pages render fully without JavaScript enabled
+    const { prelude } = await prerender(
       <html lang="en">
         <head>
           <meta charSet="UTF-8" />
@@ -195,8 +212,8 @@ export default {
           </div>
         </body>
       </html>,
+      { progressiveChunkSize: Number.MAX_SAFE_INTEGER },
     );
-    await stream.allReady;
 
     const renderDuration = performance.now() - renderStart;
 
@@ -205,7 +222,7 @@ export default {
     // biome-ignore lint/correctness/useHookAtTopLevel: useNitroApp is a Nitro DI accessor, not a React hook
     useNitroApp().hooks.callHook('chronicle:ssr-rendered', pathname, status, renderDuration);
 
-    return new Response(stream, {
+    return new Response(prelude, {
       status,
       headers: { 'Content-Type': 'text/html;charset=utf-8' },
     });
