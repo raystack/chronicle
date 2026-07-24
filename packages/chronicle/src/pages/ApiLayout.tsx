@@ -13,7 +13,7 @@ interface ApiLayoutProps {
 export function ApiLayout({ children }: ApiLayoutProps) {
   const { config, apiSpecs, isLoading } = usePageContext();
 
-  if (isLoading) return <ApiFullSkeleton />;
+  if (isLoading && apiSpecs.length === 0) return <ApiFullSkeleton />;
 
   const { Layout, className } = getTheme(config.theme?.name);
   const tree = buildApiPageTree(apiSpecs);
