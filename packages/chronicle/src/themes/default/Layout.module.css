@@ -7,7 +7,9 @@
   flex: 1;
 }
 
-.sidebar {
+/* .layout aside.sidebar outranks Apsara's .root[data-open] rules; bundler
+   CSS order is not guaranteed, so theme overrides must win on specificity */
+.layout aside.sidebar {
   width: 262px;
   flex: 0 0 262px;
   display: flex;
@@ -15,6 +17,7 @@
   position: sticky;
   top: 0;
   height: 100vh;
+  min-height: 100vh;
   background: var(--rs-color-background-base-secondary);
 }
 
@@ -39,7 +42,7 @@
   display: block;
 }
 
-.sidebar[data-position='left'] {
+.layout aside.sidebar[data-position='left'] {
   border-right: none;
   padding: 0;
 }
@@ -66,7 +69,7 @@
   gap: var(--rs-space-3);
 }
 
-.sidebarMain {
+.layout .sidebarMain {
   padding: var(--rs-space-7) var(--rs-space-5);
   gap: 0;
   min-height: 0;
@@ -114,7 +117,7 @@
   display: none;
 }
 
-.sidebarHeader {
+.layout .sidebarHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -127,6 +130,7 @@
   border-bottom: 0.5px solid var(--rs-color-border-base-primary);
   border-radius: 0;
   backdrop-filter: blur(1px);
+  overflow: visible;
 }
 
 .mainArea {
@@ -155,6 +159,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
   height: var(--navbar-height);
   padding: var(--rs-space-4) var(--rs-space-8);
   background: var(--rs-color-background-base-primary);
