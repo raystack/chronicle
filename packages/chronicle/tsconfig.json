@@ -17,7 +17,6 @@
     "target": "es6",
     "outDir": "dist",
     "rootDir": ".",
-    "baseUrl": ".",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "moduleResolution": "bundler",
     "paths": {

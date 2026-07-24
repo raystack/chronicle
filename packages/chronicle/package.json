@@ -34,7 +34,7 @@
     "@types/unist": "^3.0.3",
     "mdast-util-mdx-jsx": "^3.2.0",
     "semver": "^7.7.4",
-    "typescript": "5.9.3",
+    "typescript": "6.0.3",
     "vfile": "^6.0.3"
   },
   "dependencies": {
