@@ -105,13 +105,18 @@ export function PageProvider({
     try {
       const url = specsUrl(route.version.dir);
       const res = await fetch(url);
+      if (!res.ok) throw new Error(String(res.status));
       const specs = await res.json();
       if (!cancelled.current) {
         setApiSpecs(specs);
         specsVersionRef.current = route.version.dir;
       }
-    } catch {
-      // best-effort on client nav
+    } catch (err) {
+      if (!cancelled.current) {
+        const raw = (err as Error).message;
+        setErrorStatus(Number(raw) || 500);
+        setErrorMessage(Number(raw) ? null : raw);
+      }
     } finally {
       setIsLoading(false);
     }
