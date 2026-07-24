@@ -1,4 +1,7 @@
 import '@vitejs/plugin-react/preamble';
+// see entry-client.tsx — Apsara CSS must load from the entry, before theme CSS
+import '@raystack/apsara/normalize.css';
+import '@raystack/apsara/style.css';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';

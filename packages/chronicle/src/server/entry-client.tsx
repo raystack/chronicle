@@ -1,4 +1,10 @@
 import '@vitejs/plugin-react/preamble';
+// Apsara CSS is imported in the entry (not App.tsx) so it lands only in the
+// entry chunk's CSS, which links FIRST — theme CSS must cascade over it.
+// Importing it from App.tsx bundled a duplicate copy into the shared index
+// chunk, which links last and overrode theme styles.
+import '@raystack/apsara/normalize.css';
+import '@raystack/apsara/style.css';
 import React from 'react';
 import { hydrateRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router';

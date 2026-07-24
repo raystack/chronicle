@@ -260,6 +260,12 @@ export async function createViteConfig(
       client: {
         build: {
           manifest: isStaticPreset(preset),
+          // Single stylesheet: per-chunk CSS splitting emitted Apsara's CSS
+          // into a shared chunk that linked after theme CSS and overrode it
+          // (equal specificity, later order wins). One file makes the cascade
+          // follow module import order — Apsara base first, themes after —
+          // and guarantees lazy page chunks never render unstyled without JS.
+          cssCodeSplit: false,
           rollupOptions: {
             input: path.resolve(
               packageRoot,

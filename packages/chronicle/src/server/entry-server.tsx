@@ -151,7 +151,14 @@ export default {
       : route.type === RouteType.DocsIndex
         ? [docsLayoutAssets, landingPageAssets]
         : [docsLayoutAssets, docsPageAssets];
-    const assets = clientAssets.merge(serverAssets, ...routeAssets);
+    // Dev needs serverAssets: client CSS is collected per-module there. In
+    // production the client build is a single stylesheet (cssCodeSplit:
+    // false) that already contains everything in import order — the SSR
+    // build's per-chunk CSS would duplicate it and, linking later, override
+    // theme rules with Apsara's base styles.
+    const assets = import.meta.dev
+      ? clientAssets.merge(serverAssets, ...routeAssets)
+      : clientAssets.merge(...routeAssets);
 
     const renderStart = performance.now();
     // prerender (vs renderToReadableStream) waits for all Suspense content;
@@ -224,7 +231,12 @@ export default {
 
     return new Response(prelude, {
       status,
-      headers: { 'Content-Type': 'text/html;charset=utf-8' },
+      headers: {
+        'Content-Type': 'text/html;charset=utf-8',
+        // Hashed asset URLs change on every deploy; force browsers to
+        // revalidate the HTML so it never references deleted assets
+        'Cache-Control': 'no-cache',
+      },
     });
     } catch (err) {
       console.error(`[chronicle] SSR error for ${pathname}:`, err);
