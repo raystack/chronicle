@@ -95,9 +95,9 @@ export function PageProvider({
   const currentPathRef = useRef(pathname);
   // Version dir the current apiSpecs were loaded for — skips redundant
   // refetches (and skeleton flashes) when navigating between API pages.
-  // null means specs were never loaded.
-  const specsVersionRef = useRef<string | undefined | null>(
-    initialApiSpecs.length ? initialVersion.dir : null
+  // undefined means specs were never loaded (dir itself is string | null).
+  const specsVersionRef = useRef<string | null | undefined>(
+    initialApiSpecs.length ? initialVersion.dir : undefined
   );
 
   const fetchApiSpecs = useCallback(async (route: { version: VersionContext }, cancelled: { current: boolean }) => {
