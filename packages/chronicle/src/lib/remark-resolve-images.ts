@@ -60,7 +60,7 @@ const IMG_SRC_PATTERN = /(<img\b[^>]*\bsrc=["'])([^"']+)(["'])/gi
 const remarkResolveImages: Plugin<[RemarkResolveImagesOptions?]> = (options) => {
   const optimize = options?.optimize ?? true
   return async (tree, file) => {
-    const filePath = file.path
+    const filePath = file.path?.replace(/\\/g, '/')
     if (!filePath) return
 
     const contentIdx = filePath.lastIndexOf('/content/')
@@ -87,7 +87,9 @@ const remarkResolveImages: Plugin<[RemarkResolveImagesOptions?]> = (options) => 
       } catch {
         return undefined
       }
-      const diskPath = path.join(contentRoot, rel)
+      // Decoded backslashes (%5C) are separators on Windows — normalize so
+      // posix.join collapses any `..` and the containment check below holds
+      const diskPath = path.posix.join(contentRoot, rel.replace(/\\/g, '/'))
       if (!diskPath.startsWith(contentRoot)) return undefined
       return (await getAssetVersion(diskPath)) ?? undefined
     }

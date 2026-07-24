@@ -23,10 +23,15 @@ function setupContentDir(): string {
   return contentDir;
 }
 
-async function transform(markdown: string, options?: { optimize?: boolean }, contentDir = setupContentDir()) {
+async function transform(
+  markdown: string,
+  options?: { optimize?: boolean },
+  contentDir = setupContentDir(),
+  filePath = path.join(contentDir, 'docs', 'page.mdx')
+) {
   const processor = unified().use(remarkParse).use(remarkResolveImages, options);
   const file: { path: string; data: { images?: string[] } } = {
-    path: path.join(contentDir, 'docs', 'page.mdx'),
+    path: filePath,
     data: {},
   };
   const tree = processor.parse(markdown);
@@ -116,5 +121,23 @@ describe('remark-resolve-images version stamping', () => {
     fs.writeFileSync(path.join(contentDir, 'docs', 'my image.png'), PNG_BYTES);
     const { tree } = await transform('![alt](./my%20image.png)', { optimize: false }, contentDir);
     expect(firstImageUrl(tree)).toBe(`/_content/docs/my%20image.png?v=${PNG_HASH}`);
+  });
+
+  test('never hashes encoded-backslash traversal outside the content root', async () => {
+    const contentDir = setupContentDir();
+    fs.writeFileSync(path.join(contentDir, '..', 'secret.png'), 'outside-bytes');
+    const { tree } = await transform(
+      '![alt](/_content/docs/%5C..%5C..%5Csecret.png)',
+      { optimize: false },
+      contentDir
+    );
+    expect(firstImageUrl(tree)).not.toContain('?v=');
+  });
+
+  test('resolves images when the vfile path uses Windows separators', async () => {
+    const contentDir = setupContentDir();
+    const winPath = path.win32.join(contentDir.replace(/\//g, '\\'), 'docs', 'page.mdx');
+    const { tree } = await transform('![alt](./img.png)', { optimize: false }, contentDir, winPath);
+    expect(firstImageUrl(tree)).toBe(`/_content/docs/img.png?v=${PNG_HASH}`);
   });
 });

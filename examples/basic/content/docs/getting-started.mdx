@@ -88,6 +88,16 @@ bunx chronicle dev
 
 Visit [http://localhost:3000](http://localhost:3000) to see your docs.
 
+## Add Images
+
+Local images referenced with relative paths are resolved, optimized, and cache-busted automatically:
+
+```mdx
+![Test image](./test-image.png)
+```
+
+![Test image](./test-image.png)
+
 ## Add API Reference
 
 Add an OpenAPI spec to your project and update `chronicle.yaml`:
