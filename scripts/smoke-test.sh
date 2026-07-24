@@ -51,8 +51,22 @@ FIRST_LOAD_BUDGET="${FIRST_LOAD_BUDGET:-60}"
 WARM_LOAD_BUDGET="${WARM_LOAD_BUDGET:-10}"
 BODY_FILE="smoke-${MODE}-page.html"
 
-first_time=$(curl -sfL -o "$BODY_FILE" -w '%{time_total}' --max-time "$FIRST_LOAD_BUDGET" "${BASE}/") \
-  || fail "first page load failed or exceeded ${FIRST_LOAD_BUDGET}s budget"
+# The health endpoint comes up before Vite's SSR environment in dev mode, so
+# early page loads can 503 while the environment warms — retry within budget
+first_time=""
+first_start=$SECONDS
+while (( SECONDS - first_start < FIRST_LOAD_BUDGET )); do
+  result=$(curl -sL -o "$BODY_FILE" -w '%{http_code} %{time_total}' \
+    --max-time "$FIRST_LOAD_BUDGET" "${BASE}/") || result="000 0"
+  status="${result%% *}"
+  if [[ "$status" == "200" ]]; then
+    first_time="${result##* }"
+    break
+  fi
+  sleep 2
+done
+[[ -n "$first_time" ]] \
+  || fail "first page load failed or exceeded ${FIRST_LOAD_BUDGET}s budget (last status ${status})"
 if ! grep -q 'getting-started' "$BODY_FILE"; then
   fail "homepage does not contain expected content"
 fi
