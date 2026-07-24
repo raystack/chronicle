@@ -93,16 +93,30 @@ export function PageProvider({
   const [version, setVersion] = useState<VersionContext>(initialVersion);
   const [isLoading, setIsLoading] = useState(false);
   const currentPathRef = useRef(pathname);
+  // Version dir the current apiSpecs were loaded for — skips redundant
+  // refetches (and skeleton flashes) when navigating between API pages.
+  // undefined means specs were never loaded (dir itself is string | null).
+  const specsVersionRef = useRef<string | null | undefined>(
+    initialApiSpecs.length ? initialVersion.dir : undefined
+  );
 
   const fetchApiSpecs = useCallback(async (route: { version: VersionContext }, cancelled: { current: boolean }) => {
     setIsLoading(true);
     try {
       const url = specsUrl(route.version.dir);
       const res = await fetch(url);
+      if (!res.ok) throw new Error(String(res.status));
       const specs = await res.json();
-      if (!cancelled.current) setApiSpecs(specs);
-    } catch {
-      // best-effort on client nav
+      if (!cancelled.current) {
+        setApiSpecs(specs);
+        specsVersionRef.current = route.version.dir;
+      }
+    } catch (err) {
+      if (!cancelled.current) {
+        const raw = (err as Error).message;
+        setErrorStatus(Number(raw) || 500);
+        setErrorMessage(Number(raw) ? null : raw);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -185,7 +199,9 @@ export function PageProvider({
       setPage(null);
       setErrorStatus(null);
       setErrorMessage(null);
-      fetchApiSpecs(route, cancelled);
+      if (specsVersionRef.current !== route.version.dir) {
+        fetchApiSpecs(route, cancelled);
+      }
       return () => { cancelled.current = true; };
     }
 
