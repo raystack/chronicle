@@ -1,5 +1,3 @@
-import '@raystack/apsara/normalize.css';
-import '@raystack/apsara/style.css';
 import { ThemeProvider, Skeleton, Flex } from '@raystack/apsara';
 import { lazy, Suspense } from 'react';
 import { Navigate, useLocation } from 'react-router';
