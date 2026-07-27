@@ -284,8 +284,8 @@ describe('compactTree', () => {
         children: [{
           type: 'folder', name: 'L2', $ref: 'l2',
           children: [{ type: 'page', name: 'Deep', url: '/l1/l2/deep', $ref: 'deep.mdx', $id: 'deep' } as Node],
-        } as Node],
-      } as Node],
+        } as unknown as Node],
+      } as unknown as Node],
     }
     const result = compactTree(tree)
     const l1 = result.children[0] as any

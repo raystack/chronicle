@@ -1,7 +1,7 @@
 {
   "name": "chronicle",
   "dependencies": {
-    "std-env": "^4.0.0"
+    "std-env": "^4.2.0"
   },
   "engines": {
     "node": ">=22"
