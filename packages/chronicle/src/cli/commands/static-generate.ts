@@ -20,6 +20,7 @@ import { loadApiSpec, resolveDocument, type ApiSpec } from '@/lib/openapi';
 import { buildApiRoutes, getSpecSlug } from '@/lib/api-routes';
 import { buildLlmsTxt, type LlmsPage } from '@/lib/llms';
 import { DEFAULT_WIDTH, DEFAULT_QUALITY, isLocalImage, isSvg, splitVersion } from '@/lib/image-utils';
+import { isAnimatedImage } from '@/lib/image-animation';
 import { getAssetVersion } from '@/lib/asset-version';
 import type { VersionContext } from '@/lib/version-source';
 import type { Frontmatter, PageNavLink } from '@/types';
@@ -717,7 +718,11 @@ async function optimizeImages(
       try {
         await fs.mkdir(path.dirname(destPath), { recursive: true });
         const source = await fs.readFile(srcPath);
-        const optimizedBuf = await sharp(source)
+        // Animated sources must keep every frame — the <picture> element in
+        // MDXImage always prefers this .webp, so a flattened one would render
+        // an animated GIF as a still image
+        const animated = await isAnimatedImage(srcPath);
+        const optimizedBuf = await sharp(source, { animated })
           .resize({ width: DEFAULT_WIDTH, withoutEnlargement: true })
           .webp({ quality: DEFAULT_QUALITY })
           .toBuffer();

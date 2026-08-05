@@ -9,6 +9,7 @@ import { safePath } from '@/server/utils/safe-path'
 import { assetCacheControl, etagFor, isNotModified, REVALIDATE_CACHE } from '@/server/utils/asset-cache'
 import { getAssetVersion } from '@/lib/asset-version'
 import { ALLOWED_WIDTHS, ALLOWED_QUALITIES, DEFAULT_WIDTH, DEFAULT_QUALITY, isLocalImage, isSvg, splitVersion } from '@/lib/image-utils'
+import { isAnimatedImage } from '@/lib/image-animation'
 
 export const STORAGE_KEY = 'image-cache'
 
@@ -16,9 +17,14 @@ const inflight = new Map<string, Promise<Buffer>>()
 
 export type OutputFormat = 'avif' | 'webp' | 'original'
 
-export function negotiateFormat(accept: string | null): OutputFormat {
-  if (accept?.includes('image/avif')) return 'avif'
-  if (accept?.includes('image/webp')) return 'webp'
+export function negotiateFormat(accept: string | null, animated = false): OutputFormat {
+  const wantsAvif = accept?.includes('image/avif') ?? false
+  const wantsWebp = accept?.includes('image/webp') ?? false
+  // sharp flattens animated sources to a single frame on AVIF output, so
+  // animated images fall back to WebP — every AVIF-capable browser decodes
+  // animated WebP
+  if (wantsAvif && !animated) return 'avif'
+  if (wantsWebp || (animated && wantsAvif)) return 'webp'
   return 'original'
 }
 
@@ -30,8 +36,11 @@ export const MIME: Record<string, string> = {
   '.webp': 'image/webp',
 }
 
-export function cacheKey(url: string, w: number, q: number, format: OutputFormat, version?: string | number): string {
-  const hash = crypto.createHash('sha256').update(`${url}:${w}:${q}:${format}:${version ?? 0}`).digest('hex').slice(0, 16)
+export function cacheKey(url: string, w: number, q: number, format: OutputFormat, version?: string | number, animated = false): string {
+  // The animated marker is only appended when set, so keys for still images
+  // stay stable across the animation fix and the on-disk cache survives
+  const suffix = animated ? ':animated' : ''
+  const hash = crypto.createHash('sha256').update(`${url}:${w}:${q}:${format}:${version ?? 0}${suffix}`).digest('hex').slice(0, 16)
   return `${hash}.${format}`
 }
 
@@ -48,9 +57,10 @@ export async function optimizeImage(
   w: number,
   q: number,
   format: OutputFormat,
+  animated = false,
 ): Promise<Buffer> {
   const source = await fs.readFile(filePath);
-  const pipeline = sharp(source).resize({ width: w, withoutEnlargement: true });
+  const pipeline = sharp(source, { animated }).resize({ width: w, withoutEnlargement: true });
   if (format === 'avif') return pipeline.avif({ quality: q }).toBuffer();
   if (format === 'webp') return pipeline.webp({ quality: q }).toBuffer();
   return pipeline.toBuffer();
@@ -91,24 +101,28 @@ export default defineHandler(async event => {
     throw new HTTPError({ status: StatusCodes.NOT_FOUND, message: 'Not Found' })
   }
 
-  const accept = event.headers.get('accept')
-  const format = negotiateFormat(accept)
-  const ext = path.extname(filePath).toLowerCase()
-  const originalMime = MIME[ext] ?? 'application/octet-stream'
-  const contentType = format === 'original' ? originalMime : `image/${format}`
-
   const stat = await fs.stat(filePath).catch(() => null)
   if (!stat) {
     throw new HTTPError({ status: StatusCodes.NOT_FOUND, message: 'Not Found' })
   }
+
+  const animated = await isAnimatedImage(filePath)
+  const accept = event.headers.get('accept')
+  const format = negotiateFormat(accept, animated)
+  const ext = path.extname(filePath).toLowerCase()
+  const originalMime = MIME[ext] ?? 'application/octet-stream'
+  const contentType = format === 'original' ? originalMime : `image/${format}`
+
   const currentVersion = await getAssetVersion(filePath)
-  const key = cacheKey(url, w, q, format, currentVersion ?? stat.mtimeMs)
+  const key = cacheKey(url, w, q, format, currentVersion ?? stat.mtimeMs, animated)
 
   const requestedVersion = event.url.searchParams.get('v')
   const cacheControl = import.meta.dev
     ? REVALIDATE_CACHE
     : assetCacheControl(requestedVersion, currentVersion)
-  const etag = etagFor(currentVersion ?? String(stat.mtimeMs), String(w), String(q), format)
+  // `animated` is part of the ETag so browsers holding a pre-fix single-frame
+  // response revalidate instead of getting a 304
+  const etag = etagFor(currentVersion ?? String(stat.mtimeMs), String(w), String(q), format, ...(animated ? ['animated'] : []))
   const headers = {
     'Content-Type': contentType,
     'Cache-Control': cacheControl,
@@ -132,7 +146,7 @@ export default defineHandler(async event => {
   }
 
   const work = (async () => {
-    const optimized = await optimizeImage(filePath, w, q, format)
+    const optimized = await optimizeImage(filePath, w, q, format, animated)
     await storage.setItemRaw(key, optimized)
     return optimized
   })()
@@ -183,12 +197,13 @@ export async function warmupImageCache() {
       const stat = await fs.stat(filePath).catch(() => null);
       if (!stat) continue;
 
-      const key = cacheKey(base, w, q, format, (await getAssetVersion(filePath)) ?? stat.mtimeMs);
+      const animated = await isAnimatedImage(filePath);
+      const key = cacheKey(base, w, q, format, (await getAssetVersion(filePath)) ?? stat.mtimeMs, animated);
       const cached = await storage.getItemRaw(key);
       if (cached) continue;
 
       try {
-        const optimized = await optimizeImage(filePath, w, q, format);
+        const optimized = await optimizeImage(filePath, w, q, format, animated);
         await storage.setItemRaw(key, optimized);
         warmed++;
       } catch { /* skip unprocessable */ }
