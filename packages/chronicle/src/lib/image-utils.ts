@@ -11,6 +11,13 @@ export function isSvg(url: string): boolean {
   return url.split('?')[0].endsWith('.svg');
 }
 
+// Only these formats can hold multiple frames — everything else skips the
+// metadata probe in isAnimatedImage()
+export function isAnimatable(url: string): boolean {
+  const base = url.split('?')[0].toLowerCase();
+  return base.endsWith('.gif') || base.endsWith('.webp');
+}
+
 export function buildOptimizedUrl(url: string, width: number, quality = DEFAULT_QUALITY, version?: string): string {
   const base = `/api/image?url=${encodeURIComponent(url)}&w=${width}&q=${quality}`;
   return version ? `${base}&v=${version}` : base;

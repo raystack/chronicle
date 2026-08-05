@@ -2,6 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import {
   isLocalImage,
   isSvg,
+  isAnimatable,
   buildOptimizedUrl,
   webpUrl,
   splitVersion,
@@ -35,6 +36,27 @@ describe('isSvg', () => {
 
   test('returns false for .png files', () => {
     expect(isSvg('/_content/photo.png')).toBe(false);
+  });
+});
+
+describe('isAnimatable', () => {
+  test('returns true for .gif and .webp', () => {
+    expect(isAnimatable('/_content/tour.gif')).toBe(true);
+    expect(isAnimatable('/_content/tour.webp')).toBe(true);
+  });
+
+  test('ignores case and query strings', () => {
+    expect(isAnimatable('/_content/TOUR.GIF?v=abc123')).toBe(true);
+  });
+
+  test('returns false for still-only formats', () => {
+    expect(isAnimatable('/_content/photo.png')).toBe(false);
+    expect(isAnimatable('/_content/photo.jpg')).toBe(false);
+    expect(isAnimatable('/_content/logo.svg')).toBe(false);
+  });
+
+  test('works on filesystem paths', () => {
+    expect(isAnimatable('/abs/path/.content/docs/tour.gif')).toBe(true);
   });
 });
 
