@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react';
-import { remarkDirectiveAdmonition, remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
+import { rehypeCodeDefaultOptions, remarkDirectiveAdmonition, remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
 import { defineConfig as defineFumadocsConfig } from 'fumadocs-mdx/config';
 import mdx from 'fumadocs-mdx/vite';
 import { nitro } from 'nitro/vite';
@@ -191,6 +191,13 @@ export async function createViteConfig(
           mdxOptions: {
             remarkImageOptions: false,
             valueToExport: ['readingTime', 'images'],
+            // Render fences in languages Shiki doesn't bundle (e.g. logql) as
+            // plain text instead of throwing. Defaults are spread because the
+            // config type isn't Partial — the factory merges them anyway.
+            rehypeCodeOptions: {
+              ...rehypeCodeDefaultOptions,
+              fallbackLanguage: 'text',
+            },
             remarkPlugins: [
               remarkDirective,
               [remarkDirectiveAdmonition, {
