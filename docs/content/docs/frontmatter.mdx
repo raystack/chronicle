@@ -105,12 +105,14 @@ A single author can be written without the list:
 authors: Jane Doe <jane@example.com>
 ```
 
-Authors appear as a byline under the page title, in the page's `Article`
-structured data, and on the generated social card. Every author also gets a page
-at `/authors/<slug>` listing everything they wrote, linked from the `/authors`
-index. When an email is given, the
-byline links to it with `mailto:`. The avatar beside each name is drawn from the
-author's initials unless the author has an `avatar` in the
+Authors appear as a byline on the page, in the page's `Article` structured data,
+and on the generated social card. Every author also gets a page at
+`/authors/<slug>` listing everything they wrote, and byline names link there. Any
+`url` or `email` an author has is shown on that page rather than in the byline.
+
+A byline shows two authors at most, collapsing the rest into a `+N` counter that
+names them on hover. The avatar beside each name is drawn from the author's
+initials unless the author has an `avatar` in the
 [authors registry](/docs/configuration).
 
 Registry keys work here too, and bring the author's bio, avatar, and profile

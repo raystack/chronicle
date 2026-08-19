@@ -1,9 +1,11 @@
 'use client'
 
 import { Avatar, getAvatarColor } from '@raystack/apsara'
+import { Link } from 'react-router'
 import type { Author } from '@/types'
 import { authorInitials, resolveAuthors } from '@/lib/authors'
 import { usePageContext } from '@/lib/page-context'
+import { authorPageUrl } from '@/lib/route-resolver'
 import styles from './author-byline.module.css'
 
 /** Beyond this, the remainder is collapsed into a `+N` counter. */
@@ -20,28 +22,22 @@ interface AuthorBylineProps {
   className?: string
 }
 
-/** The name, linked to a profile url or email when the author has one. */
-function AuthorName({ author }: { author: Author }) {
-  if (author.url) {
-    return (
-      <a className={styles.name} href={author.url} rel='noreferrer' target='_blank'>
-        {author.name}
-      </a>
-    )
-  }
-  if (author.email) {
-    return (
-      <a className={styles.name} href={`mailto:${author.email}`}>
-        {author.name}
-      </a>
-    )
-  }
-  return <span className={styles.name}>{author.name}</span>
+/**
+ * The name, linked to the author's page. Their `url` and `email` are left to that
+ * page rather than competing with it here.
+ */
+function AuthorName({ author, href }: { author: Author; href: string | null }) {
+  if (!href) return <span className={styles.name}>{author.name}</span>
+  return (
+    <Link className={styles.name} to={href}>
+      {author.name}
+    </Link>
+  )
 }
 
 /** Byline for the authors declared in a page's frontmatter. */
 export function AuthorByline({ authors, variant = 'block', className }: AuthorBylineProps) {
-  const { config } = usePageContext()
+  const { config, version } = usePageContext()
   const parsed = resolveAuthors(authors, config)
   if (parsed.length === 0) return null
 
@@ -62,7 +58,7 @@ export function AuthorByline({ authors, variant = 'block', className }: AuthorBy
             color={getAvatarColor(author.name)}
             aria-hidden={author.avatar ? undefined : 'true'}
           />
-          <AuthorName author={author} />
+          <AuthorName author={author} href={authorPageUrl(author.slug, config, version)} />
         </span>
       ))}
       {hidden.length > 0 && (

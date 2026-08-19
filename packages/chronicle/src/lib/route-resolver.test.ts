@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { type ChronicleConfig, chronicleConfigSchema } from '@/types'
-import { resolveRoute, RouteType } from './route-resolver'
+import { authorPageUrl, resolveRoute, RouteType } from './route-resolver'
 import { LATEST_CONTEXT } from './version-source'
 
 function singleContent(): ChronicleConfig {
@@ -221,5 +221,23 @@ describe('resolveRoute — authors', () => {
       version: LATEST_CONTEXT,
       slug: ['authors', 'jane'],
     })
+  })
+})
+
+describe('authorPageUrl', () => {
+  test('points at the author page', () => {
+    expect(authorPageUrl('jane', singleContent(), LATEST_CONTEXT)).toBe('/authors/jane')
+  })
+
+  test('keeps the version prefix', () => {
+    expect(authorPageUrl('jane', versioned(), { dir: 'v1', urlPrefix: '/v1' })).toBe('/v1/authors/jane')
+  })
+
+  test('encodes the slug', () => {
+    expect(authorPageUrl('ana ruiz', singleContent(), LATEST_CONTEXT)).toBe('/authors/ana%20ruiz')
+  })
+
+  test('is null when a content dir owns the authors segment', () => {
+    expect(authorPageUrl('jane', authorsAsContentDir(), LATEST_CONTEXT)).toBeNull()
   })
 })

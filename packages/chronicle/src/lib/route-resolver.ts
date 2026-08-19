@@ -46,6 +46,19 @@ function hasAuthorRoutes(config: ChronicleConfig, version: VersionContext): bool
   return !contentDirsFor(config, version).includes(AUTHORS_SEGMENT)
 }
 
+/**
+ * Url of an author's page, or null when author routes are unavailable because a
+ * content dir owns the `authors` segment.
+ */
+export function authorPageUrl(
+  slug: string,
+  config: ChronicleConfig,
+  version: VersionContext,
+): string | null {
+  if (!hasAuthorRoutes(config, version)) return null
+  return `${version.urlPrefix}/${AUTHORS_SEGMENT}/${encodeURIComponent(slug)}`
+}
+
 function isLandingEnabled(
   config: ChronicleConfig,
   version: VersionContext,
