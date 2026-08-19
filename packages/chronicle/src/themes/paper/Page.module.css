@@ -260,3 +260,8 @@
 .navbarLoaderWrapper {
     width: 30%;
 }
+
+.byline {
+  justify-content: center;
+  margin-top: var(--rs-space-5);
+}

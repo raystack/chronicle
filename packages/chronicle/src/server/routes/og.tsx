@@ -11,6 +11,7 @@ export default defineHandler(async event => {
   const config = loadConfig();
   const title = event.url.searchParams.get('title') ?? config.site.title;
   const description = event.url.searchParams.get('description') ?? '';
+  const authors = event.url.searchParams.get('authors') ?? '';
   const siteName = config.site.title;
 
   if (!fontData) fontData = await loadFont(__CHRONICLE_PACKAGE_ROOT__);
@@ -59,6 +60,11 @@ export default defineHandler(async event => {
       {description && (
         <div style={{ fontSize: 24, color: '#999', lineHeight: 1.4 }}>
           {description}
+        </div>
+      )}
+      {authors && (
+        <div style={{ fontSize: 22, color: '#777', marginTop: 24 }}>
+          {`By ${authors}`}
         </div>
       )}
     </div>,

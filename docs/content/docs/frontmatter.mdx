@@ -16,6 +16,8 @@ title: Getting Started
 description: A quick guide to set up your project
 order: 2
 icon: rectangle-stack
+authors:
+  - Jane Doe <jane@example.com>
 ---
 
 # Getting Started
@@ -85,6 +87,28 @@ Optional date string indicating when the page was last updated.
 ```yaml
 lastModified: "2026-03-30"
 ```
+
+### authors
+
+Optional list of the people who wrote the page. Each entry is a plain string —
+either `Name <email>` or just a name.
+
+```yaml
+authors:
+  - Jane Doe <jane@example.com>
+  - Sam Patel
+```
+
+A single author can be written without the list:
+
+```yaml
+authors: Jane Doe <jane@example.com>
+```
+
+Authors appear as a byline under the page title, in the page's `Article`
+structured data, and on the generated social card. When an email is given, the
+byline links to it with `mailto:`. The avatar beside each name is drawn from the
+author's initials — no image is fetched.
 
 ## Navigation Ordering
 

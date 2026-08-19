@@ -13,6 +13,7 @@ import { IconButton, useTheme } from '@raystack/apsara';
 import { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router';
 import { flattenTree } from 'fumadocs-core/page-tree';
+import { AuthorByline } from '@/components/common/author-byline';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import type { ThemePageProps } from '@/types';
 import styles from './Page.module.css';
@@ -104,6 +105,7 @@ export function Page({ page, tree }: ThemePageProps) {
             {page.frontmatter.description && (
               <p className={styles.articleDescription}>{page.frontmatter.description}</p>
             )}
+            <AuthorByline authors={page.frontmatter.authors} className={styles.byline} />
             <hr className={styles.articleSeparator} />
           </header>
           <article className={styles.article} data-article-content>

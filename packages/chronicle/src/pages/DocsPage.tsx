@@ -1,5 +1,6 @@
 import { Navigate } from 'react-router';
 import { StatusCodes } from 'http-status-codes';
+import { parseAuthors } from '@/lib/authors';
 import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
 import { resolveDocsRedirect } from '@/lib/tree-utils';
@@ -26,12 +27,14 @@ export function DocsPage({ slug }: DocsPageProps) {
   if (isLoading || !page) return <Skeleton />;
   const pageUrl = config.url ? `${config.url}/${slug.join('/')}` : undefined;
   const markdownHref = `/${slug.join('/')}.md`;
+  const authors = parseAuthors(page.frontmatter.authors);
 
   return (
     <>
       <Head
         title={page.frontmatter.title}
         description={page.frontmatter.description}
+        authors={authors.map(author => author.name)}
         config={config}
         markdownHref={markdownHref}
         jsonLd={{
@@ -41,6 +44,13 @@ export function DocsPage({ slug }: DocsPageProps) {
           description: page.frontmatter.description,
           ...(pageUrl && { url: pageUrl }),
           ...(page.frontmatter.lastModified && { dateModified: new Date(page.frontmatter.lastModified).toISOString() }),
+          ...(authors.length > 0 && {
+            author: authors.map(author => ({
+              '@type': 'Person',
+              name: author.name,
+              ...(author.email && { email: author.email }),
+            })),
+          }),
         }}
       />
       <Page

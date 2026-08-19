@@ -2,6 +2,7 @@
 
 import { Flex, Headline } from '@raystack/apsara';
 import { lazy, Suspense } from 'react';
+import { AuthorByline } from '@/components/common/author-byline';
 import type { ThemePageProps } from '@/types';
 import styles from './Page.module.css';
 
@@ -16,6 +17,7 @@ export function Page({ page }: ThemePageProps) {
             {page.frontmatter.title}
           </Headline>
         )}
+        <AuthorByline authors={page.frontmatter.authors} className={styles.byline} />
         <div className={styles.content}>{page.content}</div>
       </article>
       <Suspense fallback={null}>

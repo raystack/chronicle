@@ -24,6 +24,7 @@ import { isAnimatedImage } from '@/lib/image-animation';
 import { getAssetVersion } from '@/lib/asset-version';
 import type { VersionContext } from '@/lib/version-source';
 import type { Frontmatter, PageNavLink } from '@/types';
+import { normalizeAuthorList, parseAuthors } from '@/lib/authors';
 
 export interface StaticGenerateOptions {
   projectRoot: string;
@@ -166,6 +167,7 @@ async function scanContentDir(
           order: fm.order as number | undefined,
           icon: fm.icon as string | undefined,
           lastModified: fm.lastModified as string | undefined,
+          authors: normalizeAuthorList(fm.authors),
           draft: fm.draft as boolean | undefined,
         },
         rawContent: content,
@@ -631,6 +633,9 @@ async function generateOgImages(
   for (const page of pages) {
     const title = page.frontmatter.title;
     const description = page.frontmatter.description ?? '';
+    const authors = parseAuthors(page.frontmatter.authors)
+      .map(author => author.name)
+      .join(', ');
     const slugKey = page.slugs.join(',') || 'index';
 
     try {
@@ -662,6 +667,9 @@ async function generateOgImages(
           }, title),
           description
             ? h('div', { style: { fontSize: 24, color: '#999', lineHeight: 1.4 } }, description)
+            : null,
+          authors
+            ? h('div', { style: { fontSize: 22, color: '#777', marginTop: 24 } }, `By ${authors}`)
             : null,
         ),
         {
