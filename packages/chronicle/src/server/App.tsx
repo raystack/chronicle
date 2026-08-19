@@ -4,7 +4,7 @@ import { Navigate, useLocation } from 'react-router';
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
 import { SearchDialog, SearchProvider } from '@/components/ui/search';
 import { usePageContext } from '@/lib/page-context';
-import { resolveRoute, RouteType } from '@/lib/route-resolver';
+import { isAuthorRoute, resolveRoute, RouteType } from '@/lib/route-resolver';
 import type { ChronicleConfig } from '@/types';
 import { getThemeConfig } from '@/themes/registry';
 import styles from './App.module.css';
@@ -32,8 +32,7 @@ export function App() {
   const apiSlug = route.type === RouteType.ApiPage ? route.slug : [];
   const docsSlug = route.type === RouteType.DocsPage ? route.slug : [];
   const isLanding = route.type === RouteType.DocsIndex;
-  const isAuthors =
-    route.type === RouteType.AuthorIndex || route.type === RouteType.AuthorPage;
+  const isAuthors = isAuthorRoute(route);
 
   return (
     <ThemeProvider

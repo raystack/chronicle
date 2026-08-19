@@ -24,6 +24,7 @@ import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir } from '@/lib/navigation';
 import { usePageContext } from '@/lib/page-context';
+import { isAuthorRoute, resolveRoute } from '@/lib/route-resolver';
 import type { Node, Root } from 'fumadocs-core/page-tree';
 import { NodeType } from '@/lib/tree-utils';
 import type { ThemeLayoutProps } from '@/types';
@@ -75,6 +76,8 @@ export function Layout({
   const scrollRef = useRef<HTMLDivElement>(null);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const isApiRoute = pathname === '/apis' || pathname.startsWith('/apis/');
+  // Author pages aren't MDX, so they have no `.md` for the AI menu to hand over.
+  const isAuthorsRoute = isAuthorRoute(resolveRoute(pathname, config));
   const isApiBase = (basePath: string) =>
     pathname === basePath || pathname.startsWith(`${basePath}/`);
   const docNav = page ?? { prev: null, next: null };
@@ -286,7 +289,7 @@ export function Layout({
                 <Flex align='center' gap={3}>
                   {isApiRoute && <TestRequestButton />}
                   {isApiRoute && <ViewDocsButton />}
-                  <OpenInAI />
+                  {!isAuthorsRoute && <OpenInAI />}
                 </Flex>
               </nav>
               <main className={cx(styles.content, classNames?.content)}>

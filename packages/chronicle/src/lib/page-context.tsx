@@ -76,7 +76,7 @@ function getInitialErrorStatus(page: Page | null, config: ChronicleConfig, pathn
   if (route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage) return null;
   if (route.type === RouteType.Redirect) return null;
   if (route.type === RouteType.DocsIndex) return null;
-  if (route.type === RouteType.AuthorIndex || route.type === RouteType.AuthorPage) return null;
+  if (isAuthorRoute(route)) return null;
   return 404;
 }
 

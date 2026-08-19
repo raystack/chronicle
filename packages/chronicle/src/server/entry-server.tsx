@@ -9,7 +9,7 @@ import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
 import { buildAuthorIndex } from '@/lib/author-index';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
-import { resolveRoute, RouteType } from '@/lib/route-resolver';
+import { isAuthorRoute, resolveRoute, RouteType } from '@/lib/route-resolver';
 import { getPage, getPageTree, isDraft, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath, getPageImages, getPages } from '@/lib/source';
 import { getFirstApiUrl } from '@/lib/api-routes';
 import { StatusCodes } from 'http-status-codes';
@@ -112,8 +112,7 @@ export default {
       });
     }
 
-    const isAuthorRoute =
-      route.type === RouteType.AuthorIndex || route.type === RouteType.AuthorPage;
+    const isAuthorsRoute = isAuthorRoute(route);
     const nav = page ? await getPageNav(resolvedSlug) : { prev: null, next: null };
 
     const relativePath = page ? getRelativePath(page) : null;
@@ -137,7 +136,7 @@ export default {
         }
       : null;
 
-    const authorIndex = isAuthorRoute
+    const authorIndex = isAuthorsRoute
       ? buildAuthorIndex(
           (await getPages()).map(p => ({ url: p.url, frontmatter: extractFrontmatter(p) })),
           config,
@@ -160,7 +159,7 @@ export default {
 
     const routeAssets = isApiRoute
       ? [apiLayoutAssets, apiPageAssets]
-      : isAuthorRoute
+      : isAuthorsRoute
         ? [docsLayoutAssets, authorsPageAssets]
         : route.type === RouteType.DocsIndex
           ? [docsLayoutAssets, landingPageAssets]

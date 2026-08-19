@@ -24,6 +24,11 @@ export type Route =
   | { type: typeof RouteType.AuthorIndex; version: VersionContext }
   | { type: typeof RouteType.AuthorPage; version: VersionContext; authorSlug: string }
 
+/** True for `/authors` and `/authors/<slug>`. */
+export function isAuthorRoute(route: Route): boolean {
+  return route.type === RouteType.AuthorIndex || route.type === RouteType.AuthorPage
+}
+
 function contentDirsFor(
   config: ChronicleConfig,
   version: VersionContext,
