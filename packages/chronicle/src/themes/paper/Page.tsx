@@ -98,14 +98,21 @@ export function Page({ page, tree }: ThemePageProps) {
         </div>
         <div className={styles.content}>
           <header className={styles.articleHeader}>
-            {page.frontmatter._readingTime && (
-              <span className={styles.readingTime}>{page.frontmatter._readingTime}min Read</span>
+            {(page.frontmatter._readingTime || page.frontmatter.authors?.length) && (
+              <div className={styles.articleMeta}>
+                {page.frontmatter._readingTime && (
+                  <span>{page.frontmatter._readingTime}min Read</span>
+                )}
+                {page.frontmatter._readingTime && page.frontmatter.authors?.length ? (
+                  <span className={styles.metaDivider} aria-hidden='true'>|</span>
+                ) : null}
+                <AuthorByline authors={page.frontmatter.authors} variant='inline' />
+              </div>
             )}
             <h1 className={styles.articleTitle}>{page.frontmatter.title}</h1>
             {page.frontmatter.description && (
               <p className={styles.articleDescription}>{page.frontmatter.description}</p>
             )}
-            <AuthorByline authors={page.frontmatter.authors} className={styles.byline} />
             <hr className={styles.articleSeparator} />
           </header>
           <article className={styles.article} data-article-content>

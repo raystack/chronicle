@@ -81,6 +81,35 @@
   margin: 0 auto;
 }
 
+.articleMeta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--rs-space-3);
+  font-family: var(--paper-font-mono);
+  font-size: var(--rs-font-size-small);
+  font-weight: var(--rs-font-weight-regular);
+  line-height: 1.67;
+  letter-spacing: var(--rs-letter-spacing-t1);
+  color: var(--rs-color-foreground-base-tertiary);
+  margin-bottom: var(--rs-space-5);
+}
+
+.metaDivider {
+  color: var(--rs-color-border-base-primary);
+}
+
+/* Inherit the meta line's face rather than the byline's own sizing. */
+.articleMeta a {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+.articleMeta a:hover {
+  color: var(--rs-color-foreground-base-primary);
+}
+
 .readingTime {
   display: block;
   font-family: var(--paper-font-mono);
@@ -259,9 +288,4 @@
 
 .navbarLoaderWrapper {
     width: 30%;
-}
-
-.byline {
-  justify-content: center;
-  margin-top: var(--rs-space-5);
 }
