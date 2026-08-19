@@ -50,6 +50,42 @@ function runPlugin(children: RootContent[]): { toc: TocItem[]; tree: Root } {
   return { toc, tree }
 }
 
+/** An ESM export node shaped like the ones MDX plugins append. */
+function esmExport(statements: unknown[]): RootContent {
+  return {
+    type: 'mdxjsEsm',
+    value: '',
+    data: { estree: { type: 'Program', sourceType: 'module', body: statements } },
+  } as unknown as RootContent
+}
+
+function namedExport(...names: string[]): unknown {
+  return {
+    type: 'ExportNamedDeclaration',
+    specifiers: [],
+    declaration: {
+      type: 'VariableDeclaration',
+      kind: 'const',
+      declarations: names.map(name => ({ type: 'VariableDeclarator', id: { type: 'Identifier', name } })),
+    },
+  }
+}
+
+/** Reads the binding names an ESM node still exports. */
+function exportedNames(node: RootContent): string[] {
+  const body = (node as unknown as { data?: { estree?: { body?: unknown[] } } }).data?.estree?.body ?? []
+  return body.flatMap(statement => {
+    const s = statement as {
+      specifiers?: Array<{ exported?: { name?: string } }>
+      declaration?: { declarations?: Array<{ id?: { name?: string } }> } | null
+    }
+    return [
+      ...(s.declaration?.declarations ?? []).map(d => d.id?.name ?? ''),
+      ...(s.specifiers ?? []).map(spec => spec.exported?.name ?? ''),
+    ]
+  })
+}
+
 describe('rehypeTocText', () => {
   test('exports headings as plain-text titles', () => {
     const { toc } = runPlugin([heading('h2', 'hello-world', [text('Hello world')])])
@@ -95,56 +131,54 @@ describe('rehypeTocText', () => {
   })
 
   test('replaces a toc already exported upstream', () => {
-    const upstream = {
-      type: 'mdxjsEsm',
-      value: '',
-      data: {
-        estree: {
-          type: 'Program',
-          sourceType: 'module',
-          body: [
-            {
-              type: 'ExportNamedDeclaration',
-              declaration: {
-                type: 'VariableDeclaration',
-                kind: 'let',
-                declarations: [{ type: 'VariableDeclarator', id: { type: 'Identifier', name: 'toc' } }],
-              },
-            },
-          ],
-        },
-      },
-    } as unknown as RootContent
-
-    const { toc, tree } = runPlugin([heading('h2', 'hello', [text('Hello')]), upstream])
+    const { toc, tree } = runPlugin([heading('h2', 'hello', [text('Hello')]), esmExport([namedExport('toc')])])
     expect(toc).toEqual([{ depth: 2, url: '#hello', title: 'Hello' }])
     expect(tree.children.filter(child => (child as { type: string }).type === 'mdxjsEsm')).toHaveLength(1)
   })
 
   test('leaves other ESM exports alone', () => {
-    const other = {
-      type: 'mdxjsEsm',
-      value: '',
-      data: {
-        estree: {
-          type: 'Program',
-          sourceType: 'module',
-          body: [
-            {
-              type: 'ExportNamedDeclaration',
-              declaration: {
-                type: 'VariableDeclaration',
-                kind: 'const',
-                declarations: [{ type: 'VariableDeclarator', id: { type: 'Identifier', name: 'readingTime' } }],
-              },
-            },
-          ],
-        },
-      },
-    } as unknown as RootContent
-
-    const { tree } = runPlugin([heading('h2', 'hello', [text('Hello')]), other])
+    const { tree } = runPlugin([heading('h2', 'hello', [text('Hello')]), esmExport([namedExport('readingTime')])])
     expect(tree.children.filter(child => (child as { type: string }).type === 'mdxjsEsm')).toHaveLength(2)
+  })
+
+  test('keeps bindings declared alongside an upstream toc', () => {
+    const { tree } = runPlugin([
+      heading('h2', 'hello', [text('Hello')]),
+      esmExport([namedExport('toc', 'structuredData')]),
+    ])
+    const esm = tree.children.filter(child => (child as { type: string }).type === 'mdxjsEsm')
+    expect(esm).toHaveLength(2)
+    expect(exportedNames(esm[0])).toEqual(['structuredData'])
+    expect(exportedNames(esm[1])).toEqual(['toc'])
+  })
+
+  test('removes a toc exported under an alias', () => {
+    const aliased = esmExport([
+      {
+        type: 'ExportNamedDeclaration',
+        declaration: null,
+        specifiers: [
+          { type: 'ExportSpecifier', local: { name: 'upstreamToc' }, exported: { name: 'toc' } },
+          { type: 'ExportSpecifier', local: { name: 'images' }, exported: { name: 'images' } },
+        ],
+      },
+    ])
+    const { tree } = runPlugin([heading('h2', 'hello', [text('Hello')]), aliased])
+    const esm = tree.children.filter(child => (child as { type: string }).type === 'mdxjsEsm')
+    expect(esm).toHaveLength(2)
+    expect(exportedNames(esm[0])).toEqual(['images'])
+  })
+
+  test('still collects the heading after a [toc]-only heading', () => {
+    const { toc, tree } = runPlugin([
+      heading('h2', 'toc-only', [text('Toc only [toc]')]),
+      heading('h2', 'next', [text('Next')]),
+    ])
+    expect(toc).toEqual([
+      { depth: 2, url: '#toc-only', title: 'Toc only' },
+      { depth: 2, url: '#next', title: 'Next' },
+    ])
+    expect(tree.children.filter(child => (child as { type: string }).type === 'element')).toHaveLength(1)
   })
 
   test('exports an empty toc when there are no headings', () => {
