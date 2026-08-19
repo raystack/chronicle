@@ -65,7 +65,7 @@ export function AuthorsPage() {
   return (
     <>
       <Head title='Authors' description={`People writing ${config.site.title}`} config={config} />
-      <div className={styles.root}>
+      <div className={styles.root} data-page-theme={config.theme?.name ?? 'default'}>
         <h1 className={styles.title}>Authors</h1>
         {isLoading ? null : authors.length === 0 ? (
           <p className={styles.empty}>No pages declare an author yet.</p>
@@ -118,12 +118,14 @@ export function AuthorDetailPage({ authorSlug }: AuthorDetailPageProps) {
         description={author.bio ?? `Pages written by ${author.name}`}
         config={config}
       />
-      <div className={styles.root}>
+      <div className={styles.root} data-page-theme={config.theme?.name ?? 'default'}>
         <header className={styles.profile}>
-          <AuthorAvatar author={author} size={6} />
-          <div className={styles.profileText}>
+          <div className={styles.identity}>
+            <AuthorAvatar author={author} size={6} />
             <h1 className={styles.title}>{author.name}</h1>
-            {author.bio && <p className={styles.bio}>{author.bio}</p>}
+          </div>
+          {author.bio && <p className={styles.bio}>{author.bio}</p>}
+          {(author.url || author.email) && (
             <div className={styles.links}>
               {author.url && (
                 <a className={styles.link} href={author.url} rel='noreferrer' target='_blank'>
@@ -136,7 +138,7 @@ export function AuthorDetailPage({ authorSlug }: AuthorDetailPageProps) {
                 </a>
               )}
             </div>
-          </div>
+          )}
         </header>
 
         {[...groups.entries()].map(([dirLabel, pages]) => (
