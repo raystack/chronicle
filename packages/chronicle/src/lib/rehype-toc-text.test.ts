@@ -94,6 +94,59 @@ describe('rehypeTocText', () => {
     expect(toc).toEqual([])
   })
 
+  test('replaces a toc already exported upstream', () => {
+    const upstream = {
+      type: 'mdxjsEsm',
+      value: '',
+      data: {
+        estree: {
+          type: 'Program',
+          sourceType: 'module',
+          body: [
+            {
+              type: 'ExportNamedDeclaration',
+              declaration: {
+                type: 'VariableDeclaration',
+                kind: 'let',
+                declarations: [{ type: 'VariableDeclarator', id: { type: 'Identifier', name: 'toc' } }],
+              },
+            },
+          ],
+        },
+      },
+    } as unknown as RootContent
+
+    const { toc, tree } = runPlugin([heading('h2', 'hello', [text('Hello')]), upstream])
+    expect(toc).toEqual([{ depth: 2, url: '#hello', title: 'Hello' }])
+    expect(tree.children.filter(child => (child as { type: string }).type === 'mdxjsEsm')).toHaveLength(1)
+  })
+
+  test('leaves other ESM exports alone', () => {
+    const other = {
+      type: 'mdxjsEsm',
+      value: '',
+      data: {
+        estree: {
+          type: 'Program',
+          sourceType: 'module',
+          body: [
+            {
+              type: 'ExportNamedDeclaration',
+              declaration: {
+                type: 'VariableDeclaration',
+                kind: 'const',
+                declarations: [{ type: 'VariableDeclarator', id: { type: 'Identifier', name: 'readingTime' } }],
+              },
+            },
+          ],
+        },
+      },
+    } as unknown as RootContent
+
+    const { tree } = runPlugin([heading('h2', 'hello', [text('Hello')]), other])
+    expect(tree.children.filter(child => (child as { type: string }).type === 'mdxjsEsm')).toHaveLength(2)
+  })
+
   test('exports an empty toc when there are no headings', () => {
     expect(runPlugin([{ type: 'element', tagName: 'p', properties: {}, children: [text('Body')] } as RootContent]).toc).toEqual([])
   })

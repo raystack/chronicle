@@ -27,6 +27,20 @@ function toText(node: unknown): string {
   return typeof n.value === 'string' ? n.value : ''
 }
 
+/** True for an ESM node that already exports a binding named `toc`. */
+function isTocExport(node: RootContent): boolean {
+  // `mdxjsEsm` isn't part of hast's own content union — MDX adds it.
+  const esm = node as unknown as { type: string; data?: { estree?: { body?: unknown[] } } }
+  if (esm.type !== 'mdxjsEsm') return false
+  const body = esm.data?.estree?.body ?? []
+  return body.some(statement => {
+    const declarations =
+      (statement as { declaration?: { declarations?: Array<{ id?: { name?: string } }> } }).declaration
+        ?.declarations ?? []
+    return declarations.some(declaration => declaration.id?.name === 'toc')
+  })
+}
+
 /** `export const toc = <items>` as an MDX ESM node. */
 function tocExportNode(items: TocItem[]): RootContent {
   return {
@@ -116,6 +130,13 @@ const rehypeTocText: Plugin<[], Root> = () => {
       if (isTocOnly && parent && typeof idx === 'number') parent.children.splice(idx, 1)
       return 'skip'
     })
+
+    // Drop any toc already exported upstream — two `export const toc` bindings
+    // fail the MDX parser, and fumadocs' rehypeToc slips back into the pipeline
+    // whenever its module resolves to a second instance (see isRehypeToc in
+    // server/vite-config.ts).
+    const existing = tree.children.findIndex(isTocExport)
+    if (existing !== -1) tree.children.splice(existing, 1)
 
     tree.children.push(tocExportNode(items))
   }

@@ -169,6 +169,17 @@ async function readChronicleConfig(projectRoot: string, configPath?: string): Pr
   }
 }
 
+/**
+ * fumadocs' `rehypeToc`, in either bare or `[plugin, options]` form. Matched by
+ * name as well as identity: the CLI and fumadocs-mdx can resolve
+ * `fumadocs-core/mdx-plugins` to separate module instances, in which case the
+ * imported function is not the same object as the one in the plugin list.
+ */
+function isRehypeToc(plugin: Pluggable): boolean {
+  const fn = Array.isArray(plugin) ? plugin[0] : plugin;
+  return fn === rehypeToc || (typeof fn === 'function' && fn.name === 'rehypeToc');
+}
+
 export async function createViteConfig(
   options: ViteConfigOptions
 ): Promise<InlineConfig> {
@@ -205,9 +216,7 @@ export async function createViteConfig(
             // heading fails to compile. Function form is required — an array
             // would be inserted before rehypeToc rather than replacing it.
             rehypePlugins: (plugins: Pluggable[]) => [
-              ...plugins.filter(
-                plugin => plugin !== rehypeToc && !(Array.isArray(plugin) && plugin[0] === rehypeToc)
-              ),
+              ...plugins.filter(plugin => !isRehypeToc(plugin)),
               rehypeTocText,
             ],
             remarkPlugins: [
