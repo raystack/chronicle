@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react';
-import { rehypeCodeDefaultOptions, remarkDirectiveAdmonition, remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
+import { rehypeCodeDefaultOptions, rehypeToc, remarkDirectiveAdmonition, remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
 import { defineConfig as defineFumadocsConfig } from 'fumadocs-mdx/config';
 import mdx from 'fumadocs-mdx/vite';
 import { nitro } from 'nitro/vite';
@@ -12,7 +12,9 @@ import remarkResolveImages from '../lib/remark-resolve-images';
 import remarkResolveLinks from '../lib/remark-resolve-links';
 import remarkReadingTime from 'remark-reading-time';
 import remarkUnusedDirectives from '../lib/remark-unused-directives';
+import type { Pluggable } from 'unified';
 import remarkValidateMdx from '../lib/remark-validate-mdx';
+import rehypeTocText from '../lib/rehype-toc-text';
 
 function getDatabaseConnector(preset?: string): { connector: string; options?: Record<string, unknown> } {
   switch (preset) {
@@ -167,6 +169,17 @@ async function readChronicleConfig(projectRoot: string, configPath?: string): Pr
   }
 }
 
+/**
+ * fumadocs' `rehypeToc`, in either bare or `[plugin, options]` form. Matched by
+ * name as well as identity: the CLI and fumadocs-mdx can resolve
+ * `fumadocs-core/mdx-plugins` to separate module instances, in which case the
+ * imported function is not the same object as the one in the plugin list.
+ */
+function isRehypeToc(plugin: Pluggable): boolean {
+  const fn = Array.isArray(plugin) ? plugin[0] : plugin;
+  return fn === rehypeToc || (typeof fn === 'function' && fn.name === 'rehypeToc');
+}
+
 export async function createViteConfig(
   options: ViteConfigOptions
 ): Promise<InlineConfig> {
@@ -198,6 +211,14 @@ export async function createViteConfig(
               ...rehypeCodeDefaultOptions,
               fallbackLanguage: 'text',
             },
+            // Swap fumadocs' rehypeToc for a text-only toc: it exports heading
+            // content as JSX evaluated at module scope, so any component in a
+            // heading fails to compile. Function form is required — an array
+            // would be inserted before rehypeToc rather than replacing it.
+            rehypePlugins: (plugins: Pluggable[]) => [
+              ...plugins.filter(plugin => !isRehypeToc(plugin)),
+              rehypeTocText,
+            ],
             remarkPlugins: [
               remarkDirective,
               [remarkDirectiveAdmonition, {

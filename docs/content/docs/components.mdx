@@ -98,6 +98,83 @@ Tabbed content panels using Apsara's `Tabs` component.
 </Tabs>
 ````
 
+## Badge
+
+Small inline labels for status, counts, or categories. Renders as a `<span>`, so it works inline in prose, headings, table cells, and list items.
+
+````mdx
+<Badge>Default</Badge>
+<Badge variant="success">Stable</Badge>
+<Badge variant="warning">Beta</Badge>
+<Badge variant="danger">Deprecated</Badge>
+<Badge variant="neutral">Internal</Badge>
+<Badge variant="gradient">New</Badge>
+
+### Rate limits <Badge variant="warning" size="micro">Beta</Badge>
+
+The `POST /users` endpoint <Badge variant="danger" size="micro">Deprecated</Badge> is removed in v3.
+````
+
+Badges work inside headings too. The table of contents lists such a heading by
+its plain text, so `### Rate limits <Badge>Beta</Badge>` shows as "Rate limits Beta".
+
+**Badge Props**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `'accent' \| 'warning' \| 'danger' \| 'success' \| 'neutral' \| 'gradient'` | `'accent'` | Color variant |
+| `size` | `'micro' \| 'small' \| 'regular'` | `'small'` | Badge size |
+| `icon` | `ReactNode` | — | Icon or emoji rendered before the label |
+| `screenReaderText` | `string` | — | Extra context announced by screen readers |
+| `className` | `string` | — | Additional CSS class |
+
+Emoji work as icons without an import:
+
+````mdx
+<Badge icon="🔥" variant="danger">Hot path</Badge>
+````
+
+## Avatar
+
+User or entity images with a text fallback.
+
+````mdx
+<Avatar src="/team/ada.png" alt="Ada Lovelace" fallback="AL" size={5} />
+<Avatar fallback="RS" size={5} color="indigo" variant="soft" />
+<Avatar fallback="RS" size={5} radius="full" />
+````
+
+**Avatar Props**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `src` | `string` | — | Image URL |
+| `alt` | `string` | — | Alternative text for the image |
+| `fallback` | `ReactNode` | — | Shown while loading or when `src` is missing |
+| `size` | `1`–`13` | `3` | Avatar size step |
+| `variant` | `'solid' \| 'soft'` | `'soft'` | Fallback fill style |
+| `color` | `'indigo' \| 'neutral' \| 'cyan' \| 'crimson' \| 'gold' \| 'lime' \| 'orange' \| 'pink' \| 'purple' \| 'mint' \| 'sky' \| 'grass' \| 'iris'` | `'indigo'` | Fallback color |
+| `radius` | `'small' \| 'full'` | `'small'` | Corner radius |
+| `className` | `string` | — | Additional CSS class |
+
+Group avatars with `AvatarGroup`, which overlaps children and collapses the overflow into a `+N` counter:
+
+````mdx
+<AvatarGroup max={3}>
+  <Avatar fallback="AL" color="indigo" />
+  <Avatar fallback="GH" color="mint" />
+  <Avatar fallback="RS" color="gold" />
+  <Avatar fallback="KT" color="pink" />
+</AvatarGroup>
+````
+
+**AvatarGroup Props**
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `max` | `number` | — | Maximum avatars shown before collapsing into `+N` |
+| `className` | `string` | — | Additional CSS class |
+
 ## Mermaid Diagrams
 
 Render diagrams using Mermaid syntax in fenced code blocks:
