@@ -14,6 +14,8 @@ const ApiPage = lazy(() => import('@/pages/ApiPage').then(m => ({ default: m.Api
 const DocsLayout = lazy(() => import('@/pages/DocsLayout').then(m => ({ default: m.DocsLayout })));
 const DocsPage = lazy(() => import('@/pages/DocsPage').then(m => ({ default: m.DocsPage })));
 const LandingPage = lazy(() => import('@/pages/LandingPage').then(m => ({ default: m.LandingPage })));
+const AuthorsPage = lazy(() => import('@/pages/AuthorsPage').then(m => ({ default: m.AuthorsPage })));
+const AuthorDetailPage = lazy(() => import('@/pages/AuthorsPage').then(m => ({ default: m.AuthorDetailPage })));
 
 export function App() {
   const { pathname } = useLocation();
@@ -30,6 +32,8 @@ export function App() {
   const apiSlug = route.type === RouteType.ApiPage ? route.slug : [];
   const docsSlug = route.type === RouteType.DocsPage ? route.slug : [];
   const isLanding = route.type === RouteType.DocsIndex;
+  const isAuthors =
+    route.type === RouteType.AuthorIndex || route.type === RouteType.AuthorPage;
 
   return (
     <ThemeProvider
@@ -45,6 +49,14 @@ export function App() {
               <ApiLayout>
                 <ApiPage slug={apiSlug} />
               </ApiLayout>
+            ) : isAuthors ? (
+              <DocsLayout hideSidebar>
+                {route.type === RouteType.AuthorPage ? (
+                  <AuthorDetailPage authorSlug={route.authorSlug} />
+                ) : (
+                  <AuthorsPage />
+                )}
+              </DocsLayout>
             ) : (
               <DocsLayout hideSidebar={isLanding}>
                 {isLanding ? <LandingPage /> : <DocsPage slug={docsSlug} />}

@@ -14,6 +14,7 @@ import { mdxComponents } from '@/components/mdx';
 import { getApiConfigsForVersion } from '@/lib/config';
 import { PageProvider } from '@/lib/page-context';
 import { prefetchSearchSuggestions, queryClient } from '@/lib/preload';
+import type { AuthorIndex } from '@/lib/author-index';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
 import { resolveVersionFromUrl, type VersionContext } from '@/lib/version-source';
 import type { ChronicleConfig, Frontmatter, PageNavLink, Root, TableOfContents } from '@/types';
@@ -31,6 +32,8 @@ interface EmbeddedData {
   originalPath: string | null;
   prev: PageNavLink | null;
   next: PageNavLink | null;
+  /** Only embedded for /authors routes. */
+  authorIndex?: AuthorIndex | null;
 }
 
 const defaultConfig: ChronicleConfig = {
@@ -110,6 +113,7 @@ async function hydrate() {
               initialTree={tree}
               initialPage={page}
               initialApiSpecs={apiSpecs}
+              initialAuthorIndex={embedded?.authorIndex ?? null}
               initialVersion={version}
               loadMdx={loadMdxModule}
             >

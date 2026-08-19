@@ -1,6 +1,6 @@
 import { Navigate } from 'react-router';
 import { StatusCodes } from 'http-status-codes';
-import { parseAuthors } from '@/lib/authors';
+import { resolveAuthors } from '@/lib/authors';
 import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
 import { resolveDocsRedirect } from '@/lib/tree-utils';
@@ -27,7 +27,7 @@ export function DocsPage({ slug }: DocsPageProps) {
   if (isLoading || !page) return <Skeleton />;
   const pageUrl = config.url ? `${config.url}/${slug.join('/')}` : undefined;
   const markdownHref = `/${slug.join('/')}.md`;
-  const authors = parseAuthors(page.frontmatter.authors);
+  const authors = resolveAuthors(page.frontmatter.authors, config);
 
   return (
     <>

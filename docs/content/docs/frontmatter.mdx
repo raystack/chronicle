@@ -106,9 +106,19 @@ authors: Jane Doe <jane@example.com>
 ```
 
 Authors appear as a byline under the page title, in the page's `Article`
-structured data, and on the generated social card. When an email is given, the
+structured data, and on the generated social card. Every author also gets a page
+at `/authors/<slug>` listing everything they wrote, linked from the `/authors`
+index. When an email is given, the
 byline links to it with `mailto:`. The avatar beside each name is drawn from the
-author's initials — no image is fetched.
+author's initials unless the author has an `avatar` in the
+[authors registry](/docs/configuration).
+
+Registry keys work here too, and bring the author's bio, avatar, and profile
+link along with them:
+
+```yaml
+authors: [jane]
+```
 
 ## Navigation Ordering
 

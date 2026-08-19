@@ -6,10 +6,11 @@ import { StaticRouter } from 'react-router';
 import { ReactRouterProvider } from 'fumadocs-core/framework/react-router';
 import { mdxComponents } from '@/components/mdx';
 import { getApiConfigsForVersion, loadConfig } from '@/lib/config';
+import { buildAuthorIndex } from '@/lib/author-index';
 import { loadApiSpecs } from '@/lib/openapi';
 import { PageProvider } from '@/lib/page-context';
 import { resolveRoute, RouteType } from '@/lib/route-resolver';
-import { getPage, getPageTree, isDraft, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath, getPageImages } from '@/lib/source';
+import { getPage, getPageTree, isDraft, getPageNav, loadPageModule, extractFrontmatter, getRelativePath, getOriginalPath, getPageImages, getPages } from '@/lib/source';
 import { getFirstApiUrl } from '@/lib/api-routes';
 import { StatusCodes } from 'http-status-codes';
 import { resolvePageAndSlug, resolveDocsRedirect, compactTree } from '@/lib/tree-utils';
@@ -29,6 +30,7 @@ import serverAssets from './entry-server?assets=ssr';
 import docsLayoutAssets from '@/pages/DocsLayout?assets=client';
 import docsPageAssets from '@/pages/DocsPage?assets=client';
 import landingPageAssets from '@/pages/LandingPage?assets=client';
+import authorsPageAssets from '@/pages/AuthorsPage?assets=client';
 import apiLayoutAssets from '@/pages/ApiLayout?assets=client';
 import apiPageAssets from '@/pages/ApiPage?assets=client';
 
@@ -110,6 +112,8 @@ export default {
       });
     }
 
+    const isAuthorRoute =
+      route.type === RouteType.AuthorIndex || route.type === RouteType.AuthorPage;
     const nav = page ? await getPageNav(resolvedSlug) : { prev: null, next: null };
 
     const relativePath = page ? getRelativePath(page) : null;
@@ -133,8 +137,16 @@ export default {
         }
       : null;
 
+    const authorIndex = isAuthorRoute
+      ? buildAuthorIndex(
+          (await getPages()).map(p => ({ url: p.url, frontmatter: extractFrontmatter(p) })),
+          config,
+        )
+      : null;
+
     const embeddedData = {
       config,
+      ...(authorIndex && { authorIndex }),
       tree,
       slug: resolvedSlug,
       version: route.version,
@@ -148,9 +160,11 @@ export default {
 
     const routeAssets = isApiRoute
       ? [apiLayoutAssets, apiPageAssets]
-      : route.type === RouteType.DocsIndex
-        ? [docsLayoutAssets, landingPageAssets]
-        : [docsLayoutAssets, docsPageAssets];
+      : isAuthorRoute
+        ? [docsLayoutAssets, authorsPageAssets]
+        : route.type === RouteType.DocsIndex
+          ? [docsLayoutAssets, landingPageAssets]
+          : [docsLayoutAssets, docsPageAssets];
     // Dev needs serverAssets: client CSS is collected per-module there. In
     // production the client build is a single stylesheet (cssCodeSplit:
     // false) that already contains everything in import order — the SSR
@@ -208,6 +222,7 @@ export default {
                     initialTree={tree}
                     initialPage={pageData}
                     initialApiSpecs={apiSpecs}
+                    initialAuthorIndex={authorIndex}
                     initialVersion={route.version}
                     loadMdx={async () => ({ content: null, toc: [] })}
                   >

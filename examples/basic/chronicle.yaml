@@ -13,6 +13,13 @@ content:
     label: Docs
     icon: /icons/docs.svg
 
+authors:
+  jane:
+    name: Jane Doe
+    bio: Writes about the parts of the system nobody else wants to document.
+    url: https://github.com/jane
+    email: jane@example.com
+
 theme:
   name: default
 

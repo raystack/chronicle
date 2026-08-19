@@ -363,6 +363,39 @@ analytics:
 | `enabled` | `boolean` | Enable/disable analytics | `false` |
 | `googleAnalytics.measurementId` | `string` | Google Analytics measurement ID | — |
 
+### authors
+
+Optional registry of the people who write your docs. Pages reference an entry by
+its key in their `authors` frontmatter, so the details live in one place.
+
+```yaml
+authors:
+  jane:
+    name: Jane Doe
+    bio: Writes about distributed systems.
+    avatar: /team/jane.png
+    url: https://github.com/jane
+    email: jane@example.com
+```
+
+| Field | Type | Description | Default |
+|-------|------|-------------|---------|
+| `name` | `string` | **Required.** Display name | — |
+| `bio` | `string` | Short description shown on the author's page | — |
+| `avatar` | `string` | Image path for the avatar; initials are used without it | — |
+| `url` | `string` | Profile link — the byline links here in preference to the email | — |
+| `email` | `string` | Contact address, linked with `mailto:` | — |
+
+```yaml
+# page.mdx frontmatter
+authors: [jane]
+```
+
+A frontmatter string that matches no key is still valid — it renders as a plain
+name, so occasional contributors need no registry entry. See
+[Frontmatter](/docs/frontmatter) for the field itself, and browse the people
+writing a site at `/authors`.
+
 ### telemetry
 
 Prometheus metrics export via OpenTelemetry. Served on a separate port.

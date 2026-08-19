@@ -1,7 +1,15 @@
-import type { Author } from '@/types'
+import type { Author, ChronicleConfig } from '@/types'
 
 /** `Name <email>` — the second half only counts as an email when it looks like one. */
 const SHORTHAND = /^(.*?)\s*<([^<>]*)>$/
+
+/** URL-safe identifier for an author who has no registry entry. */
+export function slugifyAuthorName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
 
 /**
  * Parses one frontmatter author string. `Jane Doe <jane@example.com>` splits into
@@ -13,15 +21,38 @@ export function parseAuthor(value: string): Author | null {
   if (!trimmed) return null
 
   const match = SHORTHAND.exec(trimmed)
-  if (!match) return { name: trimmed }
+  if (!match) return withSlug({ name: trimmed })
 
   const name = match[1].trim()
   const email = match[2].trim()
   // `<not an email>` isn't an address — keep the whole string as the name.
-  if (!email.includes('@')) return { name: trimmed }
+  if (!email.includes('@')) return withSlug({ name: trimmed })
   // `<jane@example.com>` alone has no name to show, so the address stands in.
-  if (!name) return { name: email, email }
-  return { name, email }
+  if (!name) return withSlug({ name: email, email })
+  return withSlug({ name, email })
+}
+
+function withSlug(author: Omit<Author, 'slug'>): Author {
+  return { slug: slugifyAuthorName(author.name), ...author }
+}
+
+/**
+ * Resolves one frontmatter author string against the config registry. A string that
+ * names a registry key carries that entry's full profile — bio, avatar, links —
+ * while anything else falls back to the `Name <email>` shorthand.
+ */
+export function resolveAuthor(value: string, config?: ChronicleConfig): Author | null {
+  const key = value.trim()
+  const entry = key ? config?.authors?.[key] : undefined
+  if (!entry) return parseAuthor(value)
+  return { ...entry, slug: key }
+}
+
+/** Resolves the whole `authors` frontmatter field against the registry. */
+export function resolveAuthors(value: unknown, config?: ChronicleConfig): Author[] {
+  return toAuthorStrings(value)
+    .map(entry => resolveAuthor(entry, config))
+    .filter((author): author is Author => author !== null)
 }
 
 /**
@@ -29,11 +60,14 @@ export function parseAuthor(value: string): Author | null {
  * strings, or a lone string for the common single-author case.
  */
 export function parseAuthors(value: unknown): Author[] {
-  const list = typeof value === 'string' ? [value] : Array.isArray(value) ? value : []
-  return list
-    .filter((entry): entry is string => typeof entry === 'string')
+  return toAuthorStrings(value)
     .map(parseAuthor)
     .filter((author): author is Author => author !== null)
+}
+
+function toAuthorStrings(value: unknown): string[] {
+  const list = typeof value === 'string' ? [value] : Array.isArray(value) ? value : []
+  return list.filter((entry): entry is string => typeof entry === 'string')
 }
 
 /**

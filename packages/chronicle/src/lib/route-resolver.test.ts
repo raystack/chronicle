@@ -171,3 +171,55 @@ describe('resolveRoute — edge cases', () => {
     })
   })
 })
+
+function authorsAsContentDir(): ChronicleConfig {
+  return chronicleConfigSchema.parse({
+    site: { title: 'x' },
+    content: [{ dir: 'authors', label: 'Authors' }],
+  })
+}
+
+describe('resolveRoute — authors', () => {
+  test('/authors is the author index', () => {
+    expect(resolveRoute('/authors', singleContent())).toEqual({
+      type: RouteType.AuthorIndex,
+      version: LATEST_CONTEXT,
+    })
+  })
+
+  test('/authors/<slug> is one author', () => {
+    expect(resolveRoute('/authors/jane', singleContent())).toEqual({
+      type: RouteType.AuthorPage,
+      version: LATEST_CONTEXT,
+      authorSlug: 'jane',
+    })
+  })
+
+  test('a deeper path under /authors falls through to docs', () => {
+    expect(resolveRoute('/authors/jane/extra', singleContent())).toEqual({
+      type: RouteType.DocsPage,
+      version: LATEST_CONTEXT,
+      slug: ['authors', 'jane', 'extra'],
+    })
+  })
+
+  test('resolves under a version prefix', () => {
+    expect(resolveRoute('/v1/authors', versioned())).toEqual({
+      type: RouteType.AuthorIndex,
+      version: { dir: 'v1', urlPrefix: '/v1' },
+    })
+  })
+
+  test('a content dir named authors keeps serving its own pages', () => {
+    expect(resolveRoute('/authors', authorsAsContentDir())).toEqual({
+      type: RouteType.DocsPage,
+      version: LATEST_CONTEXT,
+      slug: ['authors'],
+    })
+    expect(resolveRoute('/authors/jane', authorsAsContentDir())).toEqual({
+      type: RouteType.DocsPage,
+      version: LATEST_CONTEXT,
+      slug: ['authors', 'jane'],
+    })
+  })
+})

@@ -1,7 +1,8 @@
 'use client'
 
 import { Avatar, getAvatarColor } from '@raystack/apsara'
-import { authorInitials, parseAuthors } from '@/lib/authors'
+import { authorInitials, resolveAuthors } from '@/lib/authors'
+import { usePageContext } from '@/lib/page-context'
 import styles from './author-byline.module.css'
 
 interface AuthorBylineProps {
@@ -12,20 +13,27 @@ interface AuthorBylineProps {
 
 /** Avatar-and-name byline for the authors declared in a page's frontmatter. */
 export function AuthorByline({ authors, className }: AuthorBylineProps) {
-  const parsed = parseAuthors(authors)
+  const { config } = usePageContext()
+  const parsed = resolveAuthors(authors, config)
   if (parsed.length === 0) return null
 
   return (
     <div className={className ? `${styles.byline} ${className}` : styles.byline}>
       {parsed.map((author, index) => (
-        <span className={styles.author} key={`${author.name}-${index}`}>
+        <span className={styles.author} key={`${author.slug}-${index}`}>
           <Avatar
             size={2}
+            src={author.avatar}
+            alt={author.avatar ? author.name : undefined}
             fallback={authorInitials(author.name)}
             color={getAvatarColor(author.name)}
-            aria-hidden='true'
+            aria-hidden={author.avatar ? undefined : 'true'}
           />
-          {author.email ? (
+          {author.url ? (
+            <a className={styles.name} href={author.url} rel='noreferrer' target='_blank'>
+              {author.name}
+            </a>
+          ) : author.email ? (
             <a className={styles.name} href={`mailto:${author.email}`}>
               {author.name}
             </a>
