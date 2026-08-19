@@ -6,7 +6,7 @@ import { MdxPre, MdxCode } from './code'
 import { MdxDetails, MdxSummary } from './details'
 import { MdxParagraph } from './paragraph'
 import { CalloutContainer, CalloutTitle, CalloutDescription, MdxBlockquote } from '@/components/common/callout'
-import { Tabs } from '@raystack/apsara'
+import { Avatar, AvatarGroup, Badge, Tabs } from '@raystack/apsara'
 import { type ComponentProps, lazy, useEffect, useState, Suspense } from 'react'
 
 const LazyMermaid = lazy(() => import('./mermaid').then(m => ({ default: m.Mermaid })))
@@ -45,6 +45,9 @@ export const mdxComponents: MDXComponents = {
   CalloutTitle,
   CalloutDescription,
   Tabs: MdxTabs,
+  Badge,
+  Avatar,
+  AvatarGroup,
   Mermaid: (props: { chart: string }) => (
     <Suspense fallback={<pre><code>{props.chart}</code></pre>}>
       <LazyMermaid {...props} />

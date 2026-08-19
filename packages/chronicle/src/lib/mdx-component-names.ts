@@ -10,6 +10,9 @@ export const MDX_COMPONENT_NAMES = [
   'CalloutDescription',
   'Tabs',
   'Mermaid',
+  'Badge',
+  'Avatar',
+  'AvatarGroup',
 ] as const
 
 export const KNOWN_TAGS = new Set<string>([...htmlTagNames, ...svgTagNames])

@@ -1,5 +1,5 @@
 import react from '@vitejs/plugin-react';
-import { rehypeCodeDefaultOptions, remarkDirectiveAdmonition, remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
+import { rehypeCodeDefaultOptions, rehypeToc, remarkDirectiveAdmonition, remarkMdxMermaid } from 'fumadocs-core/mdx-plugins';
 import { defineConfig as defineFumadocsConfig } from 'fumadocs-mdx/config';
 import mdx from 'fumadocs-mdx/vite';
 import { nitro } from 'nitro/vite';
@@ -12,7 +12,9 @@ import remarkResolveImages from '../lib/remark-resolve-images';
 import remarkResolveLinks from '../lib/remark-resolve-links';
 import remarkReadingTime from 'remark-reading-time';
 import remarkUnusedDirectives from '../lib/remark-unused-directives';
+import type { Pluggable } from 'unified';
 import remarkValidateMdx from '../lib/remark-validate-mdx';
+import rehypeTocText from '../lib/rehype-toc-text';
 
 function getDatabaseConnector(preset?: string): { connector: string; options?: Record<string, unknown> } {
   switch (preset) {
@@ -198,6 +200,16 @@ export async function createViteConfig(
               ...rehypeCodeDefaultOptions,
               fallbackLanguage: 'text',
             },
+            // Swap fumadocs' rehypeToc for a text-only toc: it exports heading
+            // content as JSX evaluated at module scope, so any component in a
+            // heading fails to compile. Function form is required — an array
+            // would be inserted before rehypeToc rather than replacing it.
+            rehypePlugins: (plugins: Pluggable[]) => [
+              ...plugins.filter(
+                plugin => plugin !== rehypeToc && !(Array.isArray(plugin) && plugin[0] === rehypeToc)
+              ),
+              rehypeTocText,
+            ],
             remarkPlugins: [
               remarkDirective,
               [remarkDirectiveAdmonition, {

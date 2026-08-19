@@ -1,0 +1,45 @@
+---
+title: Components
+description: Live demo of Chronicle's built-in MDX components
+order: 3
+---
+
+# Components
+
+Live rendering of the MDX components Chronicle registers for content files.
+
+## Badge
+
+Inline labels for status, counts, and categories.
+
+<Badge>Accent</Badge> <Badge variant="success">Success</Badge> <Badge variant="warning">Warning</Badge> <Badge variant="danger">Danger</Badge> <Badge variant="neutral">Neutral</Badge> <Badge variant="gradient">Gradient</Badge>
+
+### Sizes
+
+<Badge size="micro">Micro</Badge> <Badge size="small">Small</Badge> <Badge size="regular">Regular</Badge>
+
+### With icons
+
+<Badge icon="🔥" variant="danger">Hot path</Badge> <Badge icon="✨" variant="gradient">New</Badge>
+
+### Rate limits <Badge variant="warning" size="micro">Beta</Badge>
+
+Badges sit inline in prose too: the `POST /users` endpoint <Badge variant="danger" size="micro">Deprecated</Badge> is removed in v3.
+
+| Endpoint | Status |
+|----------|--------|
+| `GET /users` | <Badge variant="success" size="micro">Stable</Badge> |
+| `POST /users` | <Badge variant="danger" size="micro">Deprecated</Badge> |
+
+## Avatar
+
+<Avatar fallback="AL" size={5} color="indigo" /> <Avatar fallback="GH" size={5} color="mint" variant="solid" /> <Avatar fallback="RS" size={5} color="gold" radius="full" />
+
+### Group
+
+<AvatarGroup max={3}>
+  <Avatar fallback="AL" color="indigo" />
+  <Avatar fallback="GH" color="mint" />
+  <Avatar fallback="RS" color="gold" />
+  <Avatar fallback="KT" color="pink" />
+</AvatarGroup>
