@@ -18,6 +18,10 @@ export function specsUrl(versionDir: string | null): string {
     : '/api/specs';
 }
 
+export function authorsUrl(): string {
+  return isStaticMode() ? '/data/authors.json' : '/api/authors';
+}
+
 export function searchIndexUrl(): string {
   return '/data/search.json';
 }

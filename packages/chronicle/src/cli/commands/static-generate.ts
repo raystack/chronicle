@@ -24,7 +24,8 @@ import { isAnimatedImage } from '@/lib/image-animation';
 import { getAssetVersion } from '@/lib/asset-version';
 import type { VersionContext } from '@/lib/version-source';
 import type { Frontmatter, PageNavLink } from '@/types';
-import { normalizeAuthorList, parseAuthors } from '@/lib/authors';
+import { buildAuthorIndex } from '@/lib/author-index';
+import { normalizeAuthorList, resolveAuthors } from '@/lib/authors';
 
 export interface StaticGenerateOptions {
   projectRoot: string;
@@ -439,6 +440,21 @@ async function generatePageDataFiles(
   }
 }
 
+/** `/data/authors.json` — what `/api/authors` serves in server mode. */
+async function generateAuthorsData(
+  pages: ScannedPage[],
+  config: ChronicleConfig,
+  outputDir: string,
+): Promise<void> {
+  const index = buildAuthorIndex(
+    pages.map(page => ({ url: page.url, frontmatter: page.frontmatter })),
+    config,
+  );
+  const dataDir = path.join(outputDir, 'data');
+  await fs.mkdir(dataDir, { recursive: true });
+  await fs.writeFile(path.join(dataDir, 'authors.json'), JSON.stringify(index));
+}
+
 async function generateSearchIndex(
   pages: ScannedPage[],
   config: ChronicleConfig,
@@ -633,7 +649,7 @@ async function generateOgImages(
   for (const page of pages) {
     const title = page.frontmatter.title;
     const description = page.frontmatter.description ?? '';
-    const authors = parseAuthors(page.frontmatter.authors)
+    const authors = resolveAuthors(page.frontmatter.authors, config)
       .map(author => author.name)
       .join(', ');
     const slugKey = page.slugs.join(',') || 'index';
@@ -1053,6 +1069,9 @@ export async function generateStaticSite(options: StaticGenerateOptions): Promis
   // Generate all static assets
   console.log(chalk.gray('  Generating page data files...'));
   await generatePageDataFiles(pages, navMap, outputDir);
+
+  console.log(chalk.gray('  Generating authors data...'));
+  await generateAuthorsData(pages, config, outputDir);
 
   console.log(chalk.gray('  Generating search index...'));
   await generateSearchIndex(pages, config, outputDir, projectRoot);

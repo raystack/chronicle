@@ -4,7 +4,7 @@ import { Navigate, useLocation } from 'react-router';
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
 import { SearchDialog, SearchProvider } from '@/components/ui/search';
 import { usePageContext } from '@/lib/page-context';
-import { resolveRoute, RouteType } from '@/lib/route-resolver';
+import { isAuthorRoute, resolveRoute, RouteType } from '@/lib/route-resolver';
 import type { ChronicleConfig } from '@/types';
 import { getThemeConfig } from '@/themes/registry';
 import styles from './App.module.css';
@@ -14,6 +14,8 @@ const ApiPage = lazy(() => import('@/pages/ApiPage').then(m => ({ default: m.Api
 const DocsLayout = lazy(() => import('@/pages/DocsLayout').then(m => ({ default: m.DocsLayout })));
 const DocsPage = lazy(() => import('@/pages/DocsPage').then(m => ({ default: m.DocsPage })));
 const LandingPage = lazy(() => import('@/pages/LandingPage').then(m => ({ default: m.LandingPage })));
+const AuthorsPage = lazy(() => import('@/pages/AuthorsPage').then(m => ({ default: m.AuthorsPage })));
+const AuthorDetailPage = lazy(() => import('@/pages/AuthorsPage').then(m => ({ default: m.AuthorDetailPage })));
 
 export function App() {
   const { pathname } = useLocation();
@@ -30,6 +32,7 @@ export function App() {
   const apiSlug = route.type === RouteType.ApiPage ? route.slug : [];
   const docsSlug = route.type === RouteType.DocsPage ? route.slug : [];
   const isLanding = route.type === RouteType.DocsIndex;
+  const isAuthors = isAuthorRoute(route);
 
   return (
     <ThemeProvider
@@ -45,6 +48,14 @@ export function App() {
               <ApiLayout>
                 <ApiPage slug={apiSlug} />
               </ApiLayout>
+            ) : isAuthors ? (
+              <DocsLayout hideSidebar>
+                {route.type === RouteType.AuthorPage ? (
+                  <AuthorDetailPage authorSlug={route.authorSlug} />
+                ) : (
+                  <AuthorsPage />
+                )}
+              </DocsLayout>
             ) : (
               <DocsLayout hideSidebar={isLanding}>
                 {isLanding ? <LandingPage /> : <DocsPage slug={docsSlug} />}

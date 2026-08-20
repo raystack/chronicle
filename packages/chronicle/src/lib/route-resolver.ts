@@ -9,6 +9,8 @@ export const RouteType = {
   DocsPage: 'docs-page',
   ApiIndex: 'api-index',
   ApiPage: 'api-page',
+  AuthorIndex: 'author-index',
+  AuthorPage: 'author-page',
 } as const
 
 export type RouteType = (typeof RouteType)[keyof typeof RouteType]
@@ -19,6 +21,13 @@ export type Route =
   | { type: typeof RouteType.DocsPage; version: VersionContext; slug: string[] }
   | { type: typeof RouteType.ApiIndex; version: VersionContext }
   | { type: typeof RouteType.ApiPage; version: VersionContext; slug: string[] }
+  | { type: typeof RouteType.AuthorIndex; version: VersionContext }
+  | { type: typeof RouteType.AuthorPage; version: VersionContext; authorSlug: string }
+
+/** True for `/authors` and `/authors/<slug>`. */
+export function isAuthorRoute(route: Route): boolean {
+  return route.type === RouteType.AuthorIndex || route.type === RouteType.AuthorPage
+}
 
 function contentDirsFor(
   config: ChronicleConfig,
@@ -30,6 +39,29 @@ function contentDirsFor(
   return getVersionContentRoots(config, version.dir).map(
     (root) => root.contentDir,
   )
+}
+
+const AUTHORS_SEGMENT = 'authors'
+
+/**
+ * Author routes are skipped when a content dir is literally named `authors`, so a
+ * site that already publishes pages there keeps serving them.
+ */
+function hasAuthorRoutes(config: ChronicleConfig, version: VersionContext): boolean {
+  return !contentDirsFor(config, version).includes(AUTHORS_SEGMENT)
+}
+
+/**
+ * Url of an author's page, or null when author routes are unavailable because a
+ * content dir owns the `authors` segment.
+ */
+export function authorPageUrl(
+  slug: string,
+  config: ChronicleConfig,
+  version: VersionContext,
+): string | null {
+  if (!hasAuthorRoutes(config, version)) return null
+  return `${version.urlPrefix}/${AUTHORS_SEGMENT}/${encodeURIComponent(slug)}`
 }
 
 function isLandingEnabled(
@@ -64,6 +96,12 @@ export function resolveRoute(
     const slug = remainder.slice(1)
     if (slug.length === 0) return { type: RouteType.ApiIndex, version }
     return { type: RouteType.ApiPage, version, slug }
+  }
+
+  if (remainder[0] === AUTHORS_SEGMENT && hasAuthorRoutes(config, version)) {
+    const rest = remainder.slice(1)
+    if (rest.length === 0) return { type: RouteType.AuthorIndex, version }
+    if (rest.length === 1) return { type: RouteType.AuthorPage, version, authorSlug: rest[0] }
   }
 
   if (remainder.length === 0) {

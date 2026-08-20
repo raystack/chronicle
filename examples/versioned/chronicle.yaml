@@ -2,6 +2,13 @@ site:
   title: Versioned Example
   description: Multi-content + multi-version sample
 
+authors:
+  jane:
+    name: Jane Doe
+    bio: Writes about the parts of the system nobody else wants to document.
+    url: https://github.com/jane
+    email: jane@example.com
+
 theme:
   name: paper
 

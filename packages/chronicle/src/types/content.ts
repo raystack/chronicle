@@ -4,10 +4,18 @@ import type { TableOfContents } from 'fumadocs-core/toc'
 export type { Root, Node, Item, Folder, Separator } from 'fumadocs-core/page-tree'
 export type { TOCItemType, TableOfContents } from 'fumadocs-core/toc'
 
-/** A page author, parsed from an `authors` frontmatter string. */
+/**
+ * A page author. Built either from an `authors` frontmatter string or, when that
+ * string names a key in the config registry, from that entry's full profile.
+ */
 export interface Author {
+  /** Stable identifier: the registry key, or the name slugified. */
+  slug: string
   name: string
   email?: string
+  bio?: string
+  avatar?: string
+  url?: string
 }
 
 export interface Frontmatter {

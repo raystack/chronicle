@@ -1,6 +1,6 @@
 import { describe, expect, test } from 'bun:test'
 import { type ChronicleConfig, chronicleConfigSchema } from '@/types'
-import { resolveRoute, RouteType } from './route-resolver'
+import { authorPageUrl, resolveRoute, RouteType } from './route-resolver'
 import { LATEST_CONTEXT } from './version-source'
 
 function singleContent(): ChronicleConfig {
@@ -169,5 +169,75 @@ describe('resolveRoute — edge cases', () => {
       version: LATEST_CONTEXT,
       slug: ['v9', 'docs'],
     })
+  })
+})
+
+function authorsAsContentDir(): ChronicleConfig {
+  return chronicleConfigSchema.parse({
+    site: { title: 'x' },
+    content: [{ dir: 'authors', label: 'Authors' }],
+  })
+}
+
+describe('resolveRoute — authors', () => {
+  test('/authors is the author index', () => {
+    expect(resolveRoute('/authors', singleContent())).toEqual({
+      type: RouteType.AuthorIndex,
+      version: LATEST_CONTEXT,
+    })
+  })
+
+  test('/authors/<slug> is one author', () => {
+    expect(resolveRoute('/authors/jane', singleContent())).toEqual({
+      type: RouteType.AuthorPage,
+      version: LATEST_CONTEXT,
+      authorSlug: 'jane',
+    })
+  })
+
+  test('a deeper path under /authors falls through to docs', () => {
+    expect(resolveRoute('/authors/jane/extra', singleContent())).toEqual({
+      type: RouteType.DocsPage,
+      version: LATEST_CONTEXT,
+      slug: ['authors', 'jane', 'extra'],
+    })
+  })
+
+  test('resolves under a version prefix', () => {
+    expect(resolveRoute('/v1/authors', versioned())).toEqual({
+      type: RouteType.AuthorIndex,
+      version: { dir: 'v1', urlPrefix: '/v1' },
+    })
+  })
+
+  test('a content dir named authors keeps serving its own pages', () => {
+    expect(resolveRoute('/authors', authorsAsContentDir())).toEqual({
+      type: RouteType.DocsPage,
+      version: LATEST_CONTEXT,
+      slug: ['authors'],
+    })
+    expect(resolveRoute('/authors/jane', authorsAsContentDir())).toEqual({
+      type: RouteType.DocsPage,
+      version: LATEST_CONTEXT,
+      slug: ['authors', 'jane'],
+    })
+  })
+})
+
+describe('authorPageUrl', () => {
+  test('points at the author page', () => {
+    expect(authorPageUrl('jane', singleContent(), LATEST_CONTEXT)).toBe('/authors/jane')
+  })
+
+  test('keeps the version prefix', () => {
+    expect(authorPageUrl('jane', versioned(), { dir: 'v1', urlPrefix: '/v1' })).toBe('/v1/authors/jane')
+  })
+
+  test('encodes the slug', () => {
+    expect(authorPageUrl('ana ruiz', singleContent(), LATEST_CONTEXT)).toBe('/authors/ana%20ruiz')
+  })
+
+  test('is null when a content dir owns the authors segment', () => {
+    expect(authorPageUrl('jane', authorsAsContentDir(), LATEST_CONTEXT)).toBeNull()
   })
 })

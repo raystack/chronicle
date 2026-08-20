@@ -1,5 +1,5 @@
 .byline {
-  display: flex;
+  display: inline-flex;
   flex-wrap: wrap;
   align-items: center;
   gap: var(--rs-space-4);
@@ -20,4 +20,33 @@
 a.name:hover {
   color: var(--rs-color-foreground-base-primary);
   text-decoration: underline;
+}
+
+.more {
+  font-size: var(--rs-font-size-small);
+  color: var(--rs-color-foreground-base-tertiary);
+  cursor: default;
+}
+
+/* Inherits the surrounding meta line's font, size, and color. */
+.inlineByline {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rs-space-4);
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+.inlineByline .more {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+}
+
+.inlineByline .name {
+  font: inherit;
+  letter-spacing: inherit;
+  color: inherit;
+  text-transform: uppercase;
 }

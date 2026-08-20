@@ -119,6 +119,15 @@ const versionSchema = z.object({
   api: z.array(apiSchema).optional(),
 })
 
+/** Profile details for an author referenced by key from a page's frontmatter. */
+const authorSchema = z.object({
+  name: z.string().min(1),
+  bio: z.string().optional(),
+  avatar: z.string().optional(),
+  url: z.string().optional(),
+  email: z.string().optional(),
+})
+
 const allUnique = <T>(items: T[], key: (item: T) => string): boolean =>
   uniqBy(items, key).length === items.length
 
@@ -148,6 +157,7 @@ export const chronicleConfigSchema = z
     logo: logoSchema.optional(),
     theme: themeSchema.optional(),
     navigation: navigationSchema.optional(),
+    authors: z.record(z.string().min(1), authorSchema).optional(),
     search: searchSchema.optional(),
     api: z.array(apiSchema).optional(),
     redirects: z.array(redirectSchema).optional(),

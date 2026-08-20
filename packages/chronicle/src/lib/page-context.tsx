@@ -11,6 +11,7 @@ import { useLocation, useNavigate } from 'react-router';
 import type { ApiSpec } from '@/lib/openapi';
 import { resolveRoute, resolveContentRootRedirect, RouteType } from '@/lib/route-resolver';
 import { isStaticMode } from '@/lib/static-mode';
+import type { AuthorIndex } from '@/lib/author-index';
 import { pageDataUrl, specsUrl } from '@/lib/data-urls';
 import type { VersionContext } from '@/lib/version-source';
 import { LATEST_CONTEXT } from '@/lib/version-source';
@@ -21,6 +22,8 @@ import { isLocalImage, isSvg, buildOptimizedUrl, splitVersion, webpUrl, DEFAULT_
 export type MdxLoader = (relativePath: string) => Promise<{ content: ReactNode; toc: TableOfContents }>;
 
 interface PageContextValue {
+  /** Author index embedded by the server for /authors routes; null elsewhere. */
+  authorIndex: AuthorIndex | null;
   config: ChronicleConfig;
   tree: Root;
   page: Page | null;
@@ -45,6 +48,7 @@ export function usePageContext(): PageContextValue {
       },
       tree: { name: 'root', children: [] } as Root,
       page: null,
+      authorIndex: null,
       isLoading: false,
       errorStatus: null,
       errorMessage: null,
@@ -60,6 +64,7 @@ interface PageProviderProps {
   initialTree: Root;
   initialPage: Page | null;
   initialApiSpecs: ApiSpec[];
+  initialAuthorIndex?: AuthorIndex | null;
   initialVersion: VersionContext;
   loadMdx: MdxLoader;
   children: ReactNode;
@@ -71,6 +76,7 @@ function getInitialErrorStatus(page: Page | null, config: ChronicleConfig, pathn
   if (route.type === RouteType.ApiIndex || route.type === RouteType.ApiPage) return null;
   if (route.type === RouteType.Redirect) return null;
   if (route.type === RouteType.DocsIndex) return null;
+  if (isAuthorRoute(route)) return null;
   return 404;
 }
 
@@ -79,6 +85,7 @@ export function PageProvider({
   initialTree,
   initialPage,
   initialApiSpecs,
+  initialAuthorIndex = null,
   initialVersion,
   loadMdx,
   children
@@ -229,7 +236,7 @@ export function PageProvider({
 
   return (
     <PageContext.Provider
-      value={{ config: initialConfig, tree, page, isLoading, errorStatus, errorMessage, apiSpecs, version }}
+      value={{ config: initialConfig, tree, page, authorIndex: initialAuthorIndex, isLoading, errorStatus, errorMessage, apiSpecs, version }}
     >
       {children}
     </PageContext.Provider>
