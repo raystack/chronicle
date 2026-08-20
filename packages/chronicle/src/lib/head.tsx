@@ -4,17 +4,20 @@ import type { ChronicleConfig } from '@/types';
 export interface HeadProps {
   title: string;
   description?: string;
+  /** Author names, already parsed out of frontmatter. */
+  authors?: string[];
   config: ChronicleConfig;
   jsonLd?: Record<string, unknown>;
   markdownHref?: string;
 }
 
-export function Head({ title, description: pageDescription, config, jsonLd, markdownHref }: HeadProps) {
+export function Head({ title, description: pageDescription, authors, config, jsonLd, markdownHref }: HeadProps) {
   const { pathname } = useLocation();
   const description = pageDescription || config.site.description;
   const fullTitle = `${title} | ${config.site.title}`;
   const ogParams = new URLSearchParams({ title });
   if (description) ogParams.set('description', description);
+  if (authors?.length) ogParams.set('authors', authors.join(', '));
   const siteUrl = config.url ? config.url.replace(/\/$/, '') : null;
   const canonical = siteUrl ? `${siteUrl}${pathname}` : null;
   const ogImage = siteUrl

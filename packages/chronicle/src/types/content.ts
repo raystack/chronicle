@@ -4,12 +4,19 @@ import type { TableOfContents } from 'fumadocs-core/toc'
 export type { Root, Node, Item, Folder, Separator } from 'fumadocs-core/page-tree'
 export type { TOCItemType, TableOfContents } from 'fumadocs-core/toc'
 
+/** A page author, parsed from an `authors` frontmatter string. */
+export interface Author {
+  name: string
+  email?: string
+}
+
 export interface Frontmatter {
   title: string
   description?: string
   order?: number
   icon?: string
   lastModified?: string
+  authors?: string[]
   draft?: boolean
   _readingTime?: number
 }

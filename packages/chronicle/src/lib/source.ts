@@ -1,5 +1,6 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { normalizeAuthorList } from './authors';
 import { loader } from 'fumadocs-core/source';
 import { flattenTree } from 'fumadocs-core/page-tree';
 import type { Root, Node, Folder } from 'fumadocs-core/page-tree';
@@ -274,6 +275,7 @@ export function extractFrontmatter(page: { data: unknown }, fallbackTitle?: stri
     order: d.order as number | undefined,
     icon: d.icon as string | undefined,
     lastModified: d.lastModified as string | undefined,
+    authors: normalizeAuthorList(d.authors),
     draft: d.draft as boolean | undefined,
     _readingTime: d._readingTime as number | undefined,
   };

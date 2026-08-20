@@ -1,0 +1,23 @@
+.byline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--rs-space-4);
+}
+
+.author {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--rs-space-2);
+}
+
+.name {
+  font-size: var(--rs-font-size-small);
+  color: var(--rs-color-foreground-base-secondary);
+  text-decoration: none;
+}
+
+a.name:hover {
+  color: var(--rs-color-foreground-base-primary);
+  text-decoration: underline;
+}
