@@ -269,6 +269,10 @@ export function PlaygroundDialog({
 
   const responseLines = responseJson ? responseJson.split('\n') : []
 
+  const responseHeadersText = responseData?.headers
+    ? Object.entries(responseData.headers).map(([k, v]) => `${k}: ${v}`).join('\n')
+    : ''
+
   const curlSnippet = useMemo(() => {
     const headers: Record<string, string> = { ...getAuthHeaders(), ...headerValues }
     if (body) headers['Content-Type'] = body.contentType ?? 'application/json'
@@ -467,15 +471,18 @@ export function PlaygroundDialog({
             <div className={styles.responseHeader}>
               <span className={styles.panelTitle}>Response</span>
               {responseData && (
-                <Menu>
-                  <Menu.Trigger render={<Button variant="text" color="neutral" size="small" trailingIcon={<ChevronDownIcon />} />}>
-                    {responseView === 'body' ? 'Body' : 'Headers'}
-                  </Menu.Trigger>
-                  <Menu.Content>
-                    <Menu.Item onClick={() => setResponseView('body')}>Body</Menu.Item>
-                    <Menu.Item onClick={() => setResponseView('headers')}>Headers</Menu.Item>
-                  </Menu.Content>
-                </Menu>
+                <div className={styles.responseHeaderActions}>
+                  <CopyButton text={responseView === 'body' ? responseJson : responseHeadersText} size={2} />
+                  <Menu>
+                    <Menu.Trigger render={<Button variant="text" color="neutral" size="small" trailingIcon={<ChevronDownIcon />} />}>
+                      {responseView === 'body' ? 'Body' : 'Headers'}
+                    </Menu.Trigger>
+                    <Menu.Content>
+                      <Menu.Item onClick={() => setResponseView('body')}>Body</Menu.Item>
+                      <Menu.Item onClick={() => setResponseView('headers')}>Headers</Menu.Item>
+                    </Menu.Content>
+                  </Menu>
+                </div>
               )}
             </div>
 
