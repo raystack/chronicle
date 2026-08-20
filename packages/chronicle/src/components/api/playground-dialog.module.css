@@ -198,6 +198,12 @@
   flex-shrink: 0;
 }
 
+.responseHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: var(--rs-space-2);
+}
+
 .statusBar {
   display: flex;
   align-items: center;
