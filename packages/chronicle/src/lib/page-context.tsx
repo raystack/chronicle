@@ -9,7 +9,7 @@ import {
 } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import type { ApiSpec } from '@/lib/openapi';
-import { resolveRoute, resolveContentRootRedirect, RouteType } from '@/lib/route-resolver';
+import { resolveRoute, resolveContentRootRedirect, RouteType, isAuthorRoute } from '@/lib/route-resolver';
 import { isStaticMode } from '@/lib/static-mode';
 import type { AuthorIndex } from '@/lib/author-index';
 import { pageDataUrl, specsUrl } from '@/lib/data-urls';
