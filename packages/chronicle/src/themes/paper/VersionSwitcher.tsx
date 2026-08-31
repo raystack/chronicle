@@ -1,5 +1,5 @@
 import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import { Badge, Button, Menu, Flex } from '@raystack/apsara';
+import { Badge, Button, Menu, Flex, Text } from '@raystack/apsara';
 import { useNavigate } from 'react-router';
 import { getAllVersions } from '@/lib/config';
 import { getVersionHomeHref } from '@/lib/navigation';
@@ -9,7 +9,18 @@ export function VersionSwitcher() {
   const { config, version } = usePageContext();
   const navigate = useNavigate();
 
-  if (!config.versions?.length) return null;
+  // No versions to switch between. Surface `latest.label` as a static label if
+  // one is configured — a dropdown with a single dead option would imply there
+  // is somewhere to switch to.
+  if (!config.versions?.length) {
+    const latestLabel = config.latest?.label;
+    if (!latestLabel) return null;
+    return (
+      <Text size='small' variant='secondary'>
+        {latestLabel}
+      </Text>
+    );
+  }
 
   const versions = getAllVersions(config);
   const active = versions.find(v =>

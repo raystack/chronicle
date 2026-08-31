@@ -75,7 +75,7 @@ function LayoutInner({
             <div className={styles.navScroll}>
               <ChapterNav tree={tree} />
             </div>
-            {config.versions?.length || config.links?.length ? (
+            {config.versions?.length || config.latest?.label || config.links?.length ? (
               <div className={styles.footer}>
                 <VersionSwitcher />
                 <SidebarLinks />

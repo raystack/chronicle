@@ -92,7 +92,9 @@ export function Layout({
   const activeContentDir = getActiveContentDir(pathname, config);
   const apiEntries = config.api ?? [];
   const showTopLinks = contentEntries.length + apiEntries.length > 1;
-  const showFooter = !!(config.versions?.length || config.links?.length);
+  const showFooter = !!(
+    config.versions?.length || config.latest?.label || config.links?.length
+  );
 
   const slug = useMemo(
     () => (pathname === '/' ? [] : pathname.split('/').filter(Boolean)),
