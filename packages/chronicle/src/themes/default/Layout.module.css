@@ -101,9 +101,13 @@
   color: var(--rs-color-foreground-base-primary);
 }
 
+/* Apsara's Sidebar.Footer is a column Flex — force a row so the version
+   switcher and links menu sit at opposite ends. */
 .sidebarFooter {
   display: flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   gap: var(--rs-space-3);
   height: var(--navbar-height);
   box-sizing: border-box;
@@ -332,6 +336,10 @@
 }
 
 .mobileMenuFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--rs-space-3);
   margin-top: var(--rs-space-7);
   padding-top: var(--rs-space-5);
   border-top: 0.5px solid var(--rs-color-border-base-primary);

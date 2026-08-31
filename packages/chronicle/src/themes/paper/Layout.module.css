@@ -70,6 +70,10 @@
 }
 
 .footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rs-space-3);
   flex-shrink: 0;
   padding: var(--rs-space-4) var(--rs-space-5);
   border-top: 1px solid var(--rs-color-border-base-primary);

@@ -26,6 +26,12 @@ const navigationSchema = z.object({
   social: z.array(socialLinkSchema).optional(),
 })
 
+/** A link surfaced from the sidebar footer menu. */
+const linkSchema = z.object({
+  label: z.string().min(1),
+  href: z.string().min(1),
+})
+
 const searchSchema = z.object({
   enabled: z.boolean().optional(),
   placeholder: z.string().optional(),
@@ -157,6 +163,7 @@ export const chronicleConfigSchema = z
     logo: logoSchema.optional(),
     theme: themeSchema.optional(),
     navigation: navigationSchema.optional(),
+    links: z.array(linkSchema).optional(),
     authors: z.record(z.string().min(1), authorSchema).optional(),
     search: searchSchema.optional(),
     api: z.array(apiSchema).optional(),
@@ -239,6 +246,7 @@ export type ThemeConfig = z.infer<typeof themeSchema>
 export type NavigationConfig = z.infer<typeof navigationSchema>
 export type NavLink = z.infer<typeof navLinkSchema>
 export type SocialLink = z.infer<typeof socialLinkSchema>
+export type LinkConfig = z.infer<typeof linkSchema>
 export type SearchConfig = z.infer<typeof searchSchema>
 export type ApiConfig = z.infer<typeof apiSchema>
 export type ApiServerConfig = z.infer<typeof apiServerSchema>

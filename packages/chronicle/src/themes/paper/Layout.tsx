@@ -3,6 +3,7 @@
 import { Flex, Select, Text } from '@raystack/apsara';
 import { cx } from 'class-variance-authority';
 import { useLocation, useNavigate } from 'react-router';
+import { SidebarLinks } from '@/components/ui/sidebar-links';
 import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir } from '@/lib/navigation';
 import { usePageContext } from '@/lib/page-context';
@@ -74,9 +75,10 @@ function LayoutInner({
             <div className={styles.navScroll}>
               <ChapterNav tree={tree} />
             </div>
-            {config.versions?.length ? (
+            {config.versions?.length || config.links?.length ? (
               <div className={styles.footer}>
                 <VersionSwitcher />
+                <SidebarLinks />
               </div>
             ) : null}
           </aside>

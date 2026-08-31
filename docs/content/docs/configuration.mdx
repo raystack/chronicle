@@ -83,6 +83,10 @@ navigation:
     - label: GitHub
       href: https://github.com/myorg/myproject
 
+links:
+  - label: Support
+    href: https://support.example.com
+
 search:
   enabled: true
   placeholder: Search docs...
@@ -278,6 +282,31 @@ navigation:
 |-------|------|-------------|
 | `type` | `string` | Icon type: `github`, `twitter`, `discord`, or custom |
 | `href` | `string` | URL |
+
+### links
+
+Links shown in the sidebar footer, behind a `?` menu button next to the version switcher. Available in both the `default` and `paper` themes.
+
+```yaml
+links:
+  - label: Go to app
+    href: https://app.example.com
+  - label: Support
+    href: https://support.example.com
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `label` | `string` | Menu item text |
+| `href` | `string` | URL. Absolute URLs open in a new tab; relative paths navigate in-app |
+
+Every link is tagged with a `ref` query param carrying the full URL of the page it was clicked from, so the destination can attribute the visit. External links open with `noopener` (not `noreferrer`), so the destination also receives a `Referer` header — but under the browser default referrer policy that header carries only the origin, so `ref` is what identifies the specific page.
+
+```
+https://support.example.com?ref=https%3A%2F%2Fdocs.example.com%2Fdocs%2Fguide
+```
+
+Any query string already on `href` is preserved. Non-web schemes (`mailto:`, `slack:`) are left untouched.
 
 ### search
 

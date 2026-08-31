@@ -20,6 +20,7 @@ import { useApiOperation } from '@/lib/use-api-operation';
 const PlaygroundDialog = lazy(() => import('@/components/api/playground-dialog').then(m => ({ default: m.PlaygroundDialog })));
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
 import { Search } from '@/components/ui/search';
+import { SidebarLinks } from '@/components/ui/sidebar-links';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir } from '@/lib/navigation';
@@ -91,6 +92,7 @@ export function Layout({
   const activeContentDir = getActiveContentDir(pathname, config);
   const apiEntries = config.api ?? [];
   const showTopLinks = contentEntries.length + apiEntries.length > 1;
+  const showFooter = !!(config.versions?.length || config.links?.length);
 
   const slug = useMemo(
     () => (pathname === '/' ? [] : pathname.split('/').filter(Boolean)),
@@ -181,8 +183,9 @@ export function Layout({
             />
           )
         ))}
-        {config.versions?.length ? (
+        {showFooter ? (
           <div className={styles.mobileMenuFooter}>
+            <SidebarLinks variant='list' />
             <VersionSwitcher />
           </div>
         ) : null}
@@ -254,9 +257,10 @@ export function Layout({
                 )
               ))}
             </Sidebar.Main>
-            {config.versions?.length ? (
+            {showFooter ? (
               <Sidebar.Footer className={styles.sidebarFooter}>
                 <VersionSwitcher />
+                <SidebarLinks />
               </Sidebar.Footer>
             ) : null}
           </Sidebar>
