@@ -130,3 +130,12 @@
 .container:hover .scrollMarkerText {
   opacity: 0;
 }
+
+/* The rail is a fixed 200px column pinned to the right edge. At 390px that is
+   half the viewport sitting on top of the article, so it is dropped on mobile
+   rather than shrunk — the page navbar already carries prev/next. */
+@media (max-width: 768px) {
+  .container {
+    display: none;
+  }
+}

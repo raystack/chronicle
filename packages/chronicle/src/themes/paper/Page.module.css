@@ -289,3 +289,50 @@
 .navbarLoaderWrapper {
     width: 30%;
 }
+
+@media (max-width: 768px) {
+  .main {
+    padding-top: 0;
+  }
+
+  /* Park below the layout's sticky mobile header instead of colliding with it. */
+  .navbar {
+    top: var(--paper-mobile-header-height);
+    padding: var(--rs-space-2) var(--rs-space-4);
+    gap: var(--rs-space-4);
+  }
+
+  /* Keep the settings button at full size; the breadcrumb yields instead. */
+  .navRight {
+    flex-shrink: 0;
+  }
+
+  /* A flex item defaults to min-width:auto, so a long breadcrumb ("Developer
+     Guide > Developer Guide (1.0)") refuses to shrink and stretches the whole
+     page past the viewport. Let it shrink and ellipsize instead. */
+  .navLeft {
+    min-width: 0;
+  }
+
+  .breadcrumb {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* The desktop "sheet of paper" — side borders, shadow and a wide gutter —
+     costs ~110px of a 390px viewport. Drop it to the screen edges so the
+     measure stays readable. */
+  .content {
+    padding: var(--rs-space-9) var(--rs-space-4) var(--rs-space-7);
+    margin: 0 0 var(--rs-space-7);
+    border-left: none;
+    border-right: none;
+    box-shadow: none;
+  }
+
+  .article {
+    padding: 0;
+  }
+}
