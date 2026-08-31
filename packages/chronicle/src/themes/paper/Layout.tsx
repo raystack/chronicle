@@ -1,8 +1,12 @@
 'use client';
 
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Flex, Select, Text } from '@raystack/apsara';
 import { cx } from 'class-variance-authority';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
+import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
+import { SidebarLinks } from '@/components/ui/sidebar-links';
 import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir } from '@/lib/navigation';
 import { usePageContext } from '@/lib/page-context';
@@ -61,10 +65,62 @@ function LayoutInner({
   classNames
 }: ThemeLayoutProps) {
   const { readerMode } = useReaderMode();
+  const { pathname } = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const showSidebar = !hideSidebar && !readerMode;
+  const showNavFooter = Boolean(
+    config.versions?.length || config.latest?.label || config.links?.length
+  );
+
+  // Navigating from inside the menu should reveal the page, not leave the
+  // full-screen overlay covering it. `pathname` is the effect's trigger rather
+  // than a value the body reads, so the exhaustive-deps check misreads it as
+  // surplus — dropping it, as its unsafe autofix suggests, would turn this into
+  // a mount-only effect and the menu would never close.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: pathname is the trigger
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [pathname]);
 
   return (
     <Flex direction='column' className={cx(styles.layout, classNames?.layout)}>
+      {showSidebar ? (
+        <>
+          <div className={styles.mobileHeader}>
+            <div className={styles.mobileHeaderTitle}>
+              <SidebarHeader config={config} />
+            </div>
+            <Flex align='center' gap={3} className={styles.mobileHeaderActions}>
+              <ClientThemeSwitcher size={16} />
+              <button
+                type='button'
+                className={styles.mobileMenuBtn}
+                onClick={() => setMobileMenuOpen(o => !o)}
+                aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+                aria-expanded={mobileMenuOpen}
+                aria-controls='paper-mobile-menu'
+              >
+                {mobileMenuOpen
+                  ? <XMarkIcon width={16} height={16} />
+                  : <Bars3Icon width={16} height={16} />}
+              </button>
+            </Flex>
+          </div>
+          <div
+            id='paper-mobile-menu'
+            className={styles.mobileMenu}
+            data-open={mobileMenuOpen}
+          >
+            <ChapterNav tree={tree} />
+            {showNavFooter ? (
+              <div className={styles.mobileMenuFooter}>
+                <SidebarLinks variant='list' />
+                <VersionSwitcher />
+              </div>
+            ) : null}
+          </div>
+        </>
+      ) : null}
       <Flex className={cx(styles.body, classNames?.body)}>
         {showSidebar ? (
           <aside className={cx(styles.sidebar, classNames?.sidebar)}>
@@ -74,9 +130,10 @@ function LayoutInner({
             <div className={styles.navScroll}>
               <ChapterNav tree={tree} />
             </div>
-            {config.versions?.length ? (
+            {showNavFooter ? (
               <div className={styles.footer}>
                 <VersionSwitcher />
+                <SidebarLinks />
               </div>
             ) : null}
           </aside>

@@ -1,0 +1,12 @@
+/* Pin the trigger to the far end of the footer, with or without a sibling
+   version switcher. */
+.trigger {
+  margin-left: auto;
+}
+
+/* List variant: full-width nav items in the mobile hamburger menu. */
+.list {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}

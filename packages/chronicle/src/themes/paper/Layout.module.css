@@ -10,6 +10,9 @@
 
 .layout {
   --paper-sidebar-width: 262px;
+  /* Consumed here and by Page.module.css, which parks the page navbar below
+     the mobile header so the two sticky bars don't stack on top of each other. */
+  --paper-mobile-header-height: 48px;
   --paper-font-mono: "Departure Mono", "SF Mono", "Fira Code", monospace;
   --paper-font-body: "Hanuman", sans-serif;
 
@@ -70,6 +73,10 @@
 }
 
 .footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rs-space-3);
   flex-shrink: 0;
   padding: var(--rs-space-4) var(--rs-space-5);
   border-top: 1px solid var(--rs-color-border-base-primary);
@@ -83,4 +90,111 @@
 
 .contentFull {
   margin-left: 0;
+}
+
+/* --- Mobile ---------------------------------------------------------------
+   Everything below is inert above the breakpoint: the header, the hamburger
+   and the menu are all `display: none` until the media query turns them on. */
+
+.mobileHeader {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--rs-space-3);
+  height: var(--paper-mobile-header-height);
+  padding: 0 var(--rs-space-5);
+  background: var(--rs-color-background-neutral-primary);
+  border-bottom: 0.5px solid var(--rs-color-border-base-primary);
+  position: sticky;
+  top: 0;
+  /* Above the page navbar (z-index 10) so the hamburger stays clickable. */
+  z-index: 20;
+}
+
+/* Let a long site title ellipsize instead of squeezing the icon buttons. */
+.mobileHeaderTitle {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* The title (or the content-dir select trigger) has to stay on one line — the
+   header is a fixed 48px, so a wrapped title spills out of it. */
+.mobileHeaderTitle > * {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.mobileHeaderActions {
+  flex-shrink: 0;
+}
+
+.mobileMenuBtn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--rs-space-1);
+  color: var(--rs-color-foreground-base-primary);
+}
+
+.mobileMenu {
+  display: none;
+  position: fixed;
+  top: var(--paper-mobile-header-height);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  background: var(--rs-color-background-neutral-primary);
+  overflow-y: auto;
+  padding: var(--rs-space-7) var(--rs-space-5);
+}
+
+.mobileMenuFooter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--rs-space-5);
+  margin-top: var(--rs-space-7);
+  padding-top: var(--rs-space-5);
+  border-top: 0.5px solid var(--rs-color-border-base-primary);
+}
+
+@media (max-width: 768px) {
+  /* The desktop rail is 262px of a 390px viewport; it has to go. Single-class
+     selector matching `.sidebar`'s own specificity, later in the file, so it
+     wins on source order. */
+  .sidebar {
+    display: none;
+  }
+
+  /* `.content` pulls itself back under the sidebar by the rail's width. With
+     no rail there is nothing to pull back over, and the offset would otherwise
+     drag the text off the left edge.
+
+     `min-width: 0` overrides the flex default of `auto`, which would let an
+     unbreakable child (a long breadcrumb) stretch the column — and with it the
+     page — past the viewport. */
+  .content {
+    margin-left: 0;
+    min-width: 0;
+  }
+
+  .mobileHeader {
+    display: flex;
+  }
+
+  .mobileMenuBtn {
+    display: flex;
+  }
+
+  .mobileMenu[data-open="true"] {
+    display: block;
+  }
 }

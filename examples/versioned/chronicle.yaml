@@ -49,6 +49,12 @@ versions:
       - dir: docs
         label: Docs
 
+links:
+  - label: Go to app
+    href: https://example.com
+  - label: Support
+    href: https://example.com/support
+
 search:
   enabled: true
   placeholder: Search...
