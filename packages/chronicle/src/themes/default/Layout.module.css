@@ -101,13 +101,11 @@
   color: var(--rs-color-foreground-base-primary);
 }
 
-/* Apsara's Sidebar.Footer is a column Flex — force a row so the version
-   switcher and links menu sit at opposite ends. */
+/* Row layout (direction/align/justify) is set via Sidebar.Footer's Flex props,
+   not here. Apsara's utility classes and this module have equal specificity, so
+   overriding from CSS would depend on stylesheet order — which differs between
+   dev and the production bundle, and silently loses in prod. */
 .sidebarFooter {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
   gap: var(--rs-space-3);
   height: var(--navbar-height);
   box-sizing: border-box;
@@ -343,6 +341,25 @@
   margin-top: var(--rs-space-7);
   padding-top: var(--rs-space-5);
   border-top: 0.5px solid var(--rs-color-border-base-primary);
+}
+
+/* With no `versions` configured, VersionSwitcher renders `latest.label` as a
+   bare <span>. Left as-is it reads as loose text under the full-width link
+   rows, so match Sidebar.Item's metrics and make it a proper footer row. The
+   versioned case renders a <button> and keeps Apsara's Button styling.
+
+   Scoped from the parent rather than inside VersionSwitcher so the desktop
+   footer keeps its inline treatment. The element+class selector also outranks
+   Apsara's single-class rules, so this does not depend on stylesheet order. */
+.mobileMenuFooter > span {
+  display: flex;
+  box-sizing: border-box;
+  align-self: stretch;
+  align-items: center;
+  min-height: var(--rs-space-9);
+  padding: var(--rs-space-3);
+  border-radius: var(--rs-radius-2);
+  color: var(--rs-color-foreground-base-secondary);
 }
 
 .mobileNav {
