@@ -342,7 +342,10 @@
 }
 
 @media (max-width: 768px) {
-  .sidebar {
+  /* Must repeat the `.layout aside.sidebar` selector from the base rule above:
+     a bare `.sidebar` (0,1,0) loses to that rule's (0,2,1) specificity, and a
+     media query adds no specificity of its own, so the sidebar stays visible */
+  .layout aside.sidebar {
     display: none;
   }
 
