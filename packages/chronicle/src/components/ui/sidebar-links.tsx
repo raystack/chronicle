@@ -8,6 +8,12 @@ import styles from './sidebar-links.module.css'
 
 const isExternal = (href: string) => /^[a-z][a-z0-9+.-]*:/i.test(href)
 
+const slugify = (value: string) =>
+  value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+
 interface SidebarLinksProps {
   /**
    * `menu` — a `?` icon button opening a dropdown, for the desktop sidebar footer.
@@ -23,19 +29,35 @@ export function SidebarLinks({ variant = 'menu' }: SidebarLinksProps) {
 
   if (!links.length) return null
 
-  // Tag the destination with the page the user clicked from. Schemes other than
-  // http(s) — mailto:, slack: — carry an opaque path, so they're left alone.
+  // Tag outbound links so the destination can attribute the visit. Relative
+  // paths are left untouched — they're same-origin, and tagging them would read
+  // as a self-referral. Schemes other than http(s) — mailto:, slack: — carry an
+  // opaque path, so they're left alone too.
   const open = (href: string) => {
     const url = new URL(href, window.location.origin)
     const isWeb = url.protocol === 'http:' || url.protocol === 'https:'
-    if (isWeb) url.searchParams.set('ref', window.location.href)
 
-    if (isExternal(href)) {
-      // `noopener` only — the destination should see Chronicle as the referrer.
-      window.open(isWeb ? url.toString() : href, '_blank', 'noopener')
-    } else {
+    if (!isExternal(href)) {
       navigate(`${url.pathname}${url.search}${url.hash}`)
+      return
     }
+
+    if (isWeb) {
+      const params = {
+        utm_source: window.location.hostname,
+        utm_medium: slugify(config.site.title),
+        utm_content: window.location.pathname,
+      }
+      // Anything already set on `href` wins.
+      for (const [key, value] of Object.entries(params)) {
+        if (value && !url.searchParams.has(key)) {
+          url.searchParams.set(key, value)
+        }
+      }
+    }
+
+    // `noopener` only — the destination should see Chronicle as the referrer.
+    window.open(isWeb ? url.toString() : href, '_blank', 'noopener')
   }
 
   if (variant === 'list') {

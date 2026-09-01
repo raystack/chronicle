@@ -300,13 +300,21 @@ links:
 | `label` | `string` | Menu item text |
 | `href` | `string` | URL. Absolute URLs open in a new tab; relative paths navigate in-app |
 
-Every link is tagged with a `ref` query param carrying the full URL of the page it was clicked from, so the destination can attribute the visit. External links open with `noopener` (not `noreferrer`), so the destination also receives a `Referer` header — but under the browser default referrer policy that header carries only the origin, so `ref` is what identifies the specific page.
+External links are tagged with UTM query params so the destination can attribute the visit, using the standard names every analytics tool recognises:
+
+| Param | Value |
+|-------|-------|
+| `utm_source` | Hostname of the docs site the click came from |
+| `utm_medium` | `site.title`, slugified |
+| `utm_content` | Path of the page the link was clicked from |
 
 ```
-https://support.example.com?ref=https%3A%2F%2Fdocs.example.com%2Fdocs%2Fguide
+https://support.example.com?utm_source=docs.example.com&utm_medium=my-documentation&utm_content=%2Fdocs%2Fguide
 ```
 
-Any query string already on `href` is preserved. Non-web schemes (`mailto:`, `slack:`) are left untouched.
+External links open with `noopener` (not `noreferrer`), so the destination also receives a `Referer` header — but under the browser default referrer policy that header carries only the origin, so `utm_content` is what identifies the specific page.
+
+Any query string already on `href` is preserved, and a `utm_*` param you set yourself is never overwritten. Relative paths are not tagged — they stay on the same origin, so the params would only register as a self-referral. Non-web schemes (`mailto:`, `slack:`) are left untouched.
 
 ### search
 
