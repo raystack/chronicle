@@ -260,7 +260,12 @@ export function Layout({
               ))}
             </Sidebar.Main>
             {showFooter ? (
-              <Sidebar.Footer className={styles.sidebarFooter}>
+              <Sidebar.Footer
+                className={styles.sidebarFooter}
+                direction='row'
+                align='center'
+                justify='between'
+              >
                 <VersionSwitcher />
                 <SidebarLinks />
               </Sidebar.Footer>
