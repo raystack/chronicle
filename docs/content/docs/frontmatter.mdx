@@ -51,8 +51,9 @@ The sidebar shows `SPP` and keeps the full title on the link's tooltip. Headings
 breadcrumbs, the browser tab and search all keep using `title`. Pages that set no
 `short` fall back to their title, so this is opt-in per page.
 
-Honoured by the `fanfold` theme, whose rail is narrow enough to need it. The
-`default` and `paper` themes ignore it and always show `title`.
+Honoured by the `fanfold` theme, whose rail is narrow enough to need it, and by
+its printed header, where the trail reads `Protocols / SPP` rather than the full
+title. The `default` and `paper` themes ignore it and always show `title`.
 
 ### description
 
@@ -61,6 +62,27 @@ Optional meta description for the page. Used in SEO metadata.
 ```yaml
 description: Step-by-step installation instructions
 ```
+
+### identifiers
+
+Optional list of extra lines identifying the page — the standard it implements, a
+package, a command. Each entry is printed as written, so the page decides both
+the facts and their order.
+
+```yaml
+title: Space Packet Protocol
+identifiers:
+  - CCSDS 133.0-B-2 * Space Packet Protocol
+  - pkg/spp * astro spp
+```
+
+Use it for pages whose readers already know them by something other than a title.
+A theme cannot work these out for itself, which is why they live in the page.
+
+Honoured by the `fanfold` theme, which prints them in its header block under the
+breadcrumb trail. A page that sets none keeps the lines that theme derives on its
+own — the site name, the section, and the page's path. The `default` and `paper`
+themes ignore the field.
 
 ### order
 
@@ -117,6 +139,19 @@ authors:
   - Jane Doe <jane@example.com>
   - Sam Patel
 ```
+
+### draft
+
+Set `draft: true` to keep a page out of the site. It is dropped from the
+navigation tree, so it does not appear in the sidebar, in breadcrumbs, in search,
+or in the previous/next links.
+
+```yaml
+draft: true
+```
+
+The file stays where it is, so this is the way to leave a page in the repository
+while it is still being written.
 
 A single author can be written without the list:
 
