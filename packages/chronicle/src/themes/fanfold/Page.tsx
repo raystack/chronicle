@@ -2,11 +2,13 @@
 
 import { getBreadcrumbItems } from 'fumadocs-core/breadcrumb';
 import { flattenTree } from 'fumadocs-core/page-tree';
+import type { Node } from 'fumadocs-core/page-tree';
 import { useMemo } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router';
 import { AuthorByline } from '@/components/common/author-byline';
 import { getActiveContentDir } from '@/lib/navigation';
 import { usePageContext } from '@/lib/page-context';
+import { NodeType, shortName } from '@/lib/tree-utils';
 import {
   filterPageTreeByContentDir,
   filterPageTreeByVersion
@@ -20,6 +22,36 @@ import { PageNav } from './PageNav';
 export const STARS = '*'.repeat(400);
 
 const pad = (n: number) => String(n).padStart(2, '0');
+
+/**
+ * Every `short` in a tree, by the URL that carries it.
+ *
+ * The printed trail wants the codes a reader already uses — "TRANSPORT / SPP" —
+ * where `getBreadcrumbItems` hands back full names, because it is fumadocs' own
+ * and knows nothing about `short`. The tree does: `attachShortNames` puts one on
+ * every page node and on each folder's index. Collecting them here rather than
+ * teaching the shared breadcrumb helper keeps the other two themes, which render
+ * their breadcrumbs from it and never use `short`, exactly as they were.
+ */
+function collectShortNames(nodes: Node[], into = new Map<string, string>()) {
+  for (const node of nodes) {
+    if (node.type === NodeType.Folder) {
+      // A folder's own name comes from `meta.json`; its short, if any, is on the
+      // index page the crumb actually links to.
+      if (node.index) {
+        const short = shortName(node.index);
+        if (short) into.set(node.index.url, short);
+      }
+      collectShortNames(node.children, into);
+      continue;
+    }
+    if (node.type !== NodeType.Page) continue;
+    const short = shortName(node);
+    if (short) into.set(node.url, short);
+  }
+  return into;
+}
+
 
 /**
  * A title this short is a code or a command — `SPP`, `XTCE`, `astro spp` — and
@@ -64,12 +96,17 @@ export function Page({ page, config, tree }: ThemePageProps) {
     return holdsThisPage ? scoped : versioned;
   }, [tree, version, config, contentDir, pathname]);
 
+  const shorts = useMemo(
+    () => collectShortNames(sectionTree.children),
+    [sectionTree]
+  );
+
   const crumbs = useMemo(
     () =>
       getBreadcrumbItems(pathname, sectionTree, { includePage: true }).map(
-        item => item.name
+        item => (item.url ? shorts.get(item.url) : undefined) ?? item.name
       ),
-    [pathname, sectionTree]
+    [pathname, sectionTree, shorts]
   );
 
   // "PAGE 03 / 22" — where this page falls in the section being read.
@@ -83,6 +120,15 @@ export function Page({ page, config, tree }: ThemePageProps) {
   const title = page.frontmatter.title ?? '';
 
   const trail = [section, ...crumbs].filter(Boolean).join(' / ');
+
+  /**
+   * The lines under the trail. A page that states its own identifiers — the
+   * standard it implements, the package, the command — has more to print here
+   * than the theme can work out for itself, so those win. Without them the
+   * header still fills: what site this is, what section, and where the page
+   * sits, which is all a theme can know on its own.
+   */
+  const identifiers = page.frontmatter.identifiers ?? [];
   const counter = index > 0 ? `PAGE ${pad(index)} / ${pad(total)}` : null;
 
   return (
@@ -96,11 +142,21 @@ export function Page({ page, config, tree }: ThemePageProps) {
             ** {trail}
             {counter ? ` * ${counter}` : ''}
           </div>
-          <div className={styles.metaLine}>
-            ** {config.site.title}
-            {section ? ` * ${section}` : ''}
-          </div>
-          <div className={styles.metaLine}>** {pathname}</div>
+          {identifiers.length ? (
+            identifiers.map(line => (
+              <div key={line} className={styles.metaLine}>
+                ** {line}
+              </div>
+            ))
+          ) : (
+            <>
+              <div className={styles.metaLine}>
+                ** {config.site.title}
+                {section ? ` * ${section}` : ''}
+              </div>
+              <div className={styles.metaLine}>** {pathname}</div>
+            </>
+          )}
         </header>
 
         <div className={styles.displayBand}>

@@ -27,6 +27,15 @@ export interface Frontmatter {
    */
   short?: string
   description?: string
+  /**
+   * Extra identifying lines for this page — a standard's number, a package
+   * path, a command. Printed verbatim by a theme with somewhere to put them,
+   * and ignored by the ones without, so nothing here is required.
+   *
+   * Named `identifiers` rather than `meta` because `meta.json` already means a
+   * directory's metadata, and the two would read as the same thing.
+   */
+  identifiers?: string[]
   order?: number
   icon?: string
   lastModified?: string
