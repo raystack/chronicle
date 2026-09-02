@@ -3,15 +3,33 @@
   align-items: flex-start;
 }
 
-/* The rails are pinned to the window edges, so the column of type is capped and
+/* 720px is 672px of content between the two 24px gutters, and 672px is exactly
+   80 characters of body type — a monospace advance is a flat 0.6em, so 80 x 14 x
+   0.6. Eighty columns is the carriage this whole theme is an impression of, and
+   the paper being that wide is what lets one measure serve everything on it.
+
+   The rails are pinned to the window edges, so the column of type is capped and
    centred in what is left between them. Auto inline margins on a flex item soak
    up the leftover space, which keeps the type centred on screen because the two
    rails are the same width. */
 .sheet {
   flex: 1;
   min-width: 0;
-  max-width: 768px;
+  max-width: 720px;
   margin-inline: auto;
+
+  /* Every run of prose, every table and every code block is held to this, so
+     they share one right edge with the star rule, the meta lines and the title
+     above them. A line printer had no way to set a paragraph narrower than a
+     table, and a theme drawn as printer output reads wrong when it does: the
+     paper looks wider than the report on it.
+
+     `100%` is the width of whichever band the content sits in, which is the
+     672px above. Both the alternatives were tried: holding prose to 600px left
+     the furniture running 120px past every paragraph, and widening the paper
+     instead of narrowing it put 86 characters on a line. Change the two numbers
+     together — this and the cap above — and everything follows. */
+  --fan-measure: 100%;
 }
 
 /* ---- header band: the strip a printer lays down before the report ---- */
@@ -75,7 +93,7 @@
 /* The lede stays a step above body copy. */
 .subtitle {
   margin: 18px 0 0;
-  max-width: 620px;
+  max-width: var(--fan-measure);
   font-size: 15px;
   line-height: 26px;
   color: var(--fan-ink-2);
@@ -116,13 +134,11 @@
   letter-spacing: 0;
 }
 
-/* 600px is 71 characters at 14px, since a monospace advance is a flat 0.6em.
-   Holding the old 680px would have run the line to 81. */
 .article p,
 .article ul,
 .article ol,
 .article dl {
-  max-width: 600px;
+  max-width: var(--fan-measure);
   margin: 0 0 var(--rs-space-6);
 }
 
@@ -211,7 +227,7 @@
 
 .article blockquote {
   margin: 0 0 var(--rs-space-6);
-  max-width: 600px;
+  max-width: var(--fan-measure);
   padding-left: var(--rs-space-6);
   border-left: 1px solid var(--fan-rule-strong);
   color: var(--fan-ink-2);
@@ -229,7 +245,7 @@
    inner elements share the same class prefix, hence the descendant reset. */
 
 .article div[aria-live] {
-  max-width: 600px;
+  max-width: var(--fan-measure);
   margin: 0 0 var(--rs-space-6);
   padding: var(--rs-space-4) 0 var(--rs-space-4) 18px;
   border: 0;
@@ -333,6 +349,7 @@
 
 .article pre {
   margin: 0;
+  max-width: var(--fan-measure);
   padding: var(--rs-space-4) 0;
   background: none;
   border: 0;
@@ -402,7 +419,7 @@
 
 .article table {
   width: 100%;
-  max-width: 100%;
+  max-width: var(--fan-measure);
   margin: 26px 0;
   border-collapse: collapse;
   background: none;
@@ -590,9 +607,12 @@
 
 /* No stated width, so this column takes whatever the labels leave and the
    toggle sits against the right edge of the sheet. */
-/* Stated, so this column no longer soaks up every spare pixel. 96px holds
-   "\203A NOTES" at the header's tracking with room to spare, and the label
-   shortens to "Hide" once the row is open. */
+/* Stated, so this column no longer soaks up every spare pixel. What it does take
+   comes off the paragraph column, the one column of a stated table with nothing
+   to spare, so it is only as wide as the word beside the chevron needs. 96px is
+   affordable at 672px of paper: it leaves the narrowest paragraph column in the
+   corpus 156px, still wider than that column's own longest word. On a narrower
+   sheet the word would have to go and the chevron carry the column alone. */
 .article table[data-fit="stated"] :is(th, td)[data-fanfold-toggle] {
   width: 96px;
   text-align: right;
@@ -655,10 +675,10 @@
   background: var(--fan-bar);
 }
 
-/* 600px is the measure body copy uses, so an opened note reads at the same
-   line length as the prose around the table rather than the width of a sheet. */
+/* The same measure body copy uses, so an opened note reads at the line length of
+   the prose around the table. */
 .article [data-fanfold-notes] > td > div {
-  max-width: 600px;
+  max-width: var(--fan-measure);
   margin-left: var(--rs-space-5);
   padding: 2px 0 0 var(--rs-space-5);
   border-left: 1px dashed var(--fan-rule-strong);
