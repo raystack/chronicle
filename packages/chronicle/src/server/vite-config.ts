@@ -215,6 +215,12 @@ export async function createViteConfig(
             rehypeCodeOptions: {
               ...rehypeCodeDefaultOptions,
               fallbackLanguage: 'text',
+              // Puts `language-<lang>` on the `code` element, which is the only
+              // thing in the rendered markup that says what a block is. A theme
+              // needs it to tell a listing from a drawing: a fence with no
+              // language highlights as `plaintext`, and fanfold hangs line
+              // numbers off everything except that.
+              addLanguageClass: true,
             },
             // Swap fumadocs' rehypeToc for a text-only toc: it exports heading
             // content as JSX evaluated at module scope, so any component in a
