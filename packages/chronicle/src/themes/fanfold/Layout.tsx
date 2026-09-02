@@ -44,6 +44,14 @@ const WEB_FONTS =
  * `navigation.social` often points at the same repository as a
  * `navigation.links` entry, so the list is deduplicated by destination — the
  * first spelling of a URL wins.
+ *
+ * `config.links` is deduplicated against as well, even though it is rendered
+ * elsewhere. A site that names its repository under both keys — a `social`
+ * entry for the icon and a footer link for the label — was getting it twice in
+ * one column, once as "github" and once as "GitHub". Neither component could
+ * see that on its own, since each is handed only its own list. The rail is the
+ * one that yields: `SidebarLinks` adds UTM parameters and routes relative hrefs
+ * through the router, so its copy is the one worth keeping.
  */
 function useRailLinks() {
   const { config } = usePageContext();
@@ -54,9 +62,10 @@ function useRailLinks() {
       href: s.href
     }))
   ];
-  const seen = new Set<string>();
+  const canonical = (href: string) => href.replace(/\/+$/, '');
+  const seen = new Set((config.links ?? []).map(link => canonical(link.href)));
   return all.filter(link => {
-    const key = link.href.replace(/\/+$/, '');
+    const key = canonical(link.href);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;

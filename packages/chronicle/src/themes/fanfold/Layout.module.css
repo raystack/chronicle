@@ -458,21 +458,45 @@ a.navSubLabel:hover {
   gap: var(--rs-space-2);
 }
 
-/* SidebarLinks brings its own list markup; this only has to line it up with the
-   rest of the footer column. */
-.railFooterLinks {
+/* SidebarLinks renders Apsara's own sidebar items, which arrive at 16px with
+   8px of indent — sized for a nav rail rather than for this footer, so they sat
+   larger than and offset from the links above them.
+
+   The label inside each one has to be restyled as well as the anchor around it.
+   Apsara nests the text in its own span, and that span declares its own colour
+   and a 500 weight, so anything set on the anchor alone left the label reading
+   darker and heavier than every other link in the column.
+
+   Restyled by descendant rather than by class: Apsara's class names are hashed,
+   so a theme cannot name them. The values match `.railFooterLink` below, which
+   is what these sit beside. */
+.railFooterLinks,
+.railFooterLinks > div {
   display: flex;
   flex-direction: column;
+  /* Apsara's own wrapper sits between this and the links, so the footer's gap
+     never reached them and the two rows bunched up under the ones above. */
+  gap: var(--rs-space-2);
 }
 
-.railFooterToggle {
-  justify-content: flex-start;
+.railFooterLinks a,
+.railFooterLinks a * {
+  min-height: 0;
+  height: auto;
+  padding: 0;
+  border-radius: 0;
+  background: none;
   font-size: 12px;
+  font-weight: 400;
   line-height: 20px;
+  letter-spacing: 0;
   color: var(--fan-ink-3);
+  text-decoration: none;
 }
 
-.railFooterToggle:hover {
+.railFooterLinks a:hover,
+.railFooterLinks a:hover * {
+  background: none;
   color: var(--fan-ink);
 }
 
@@ -528,6 +552,26 @@ a.navSubLabel:hover {
 }
 
 .iconButton:hover {
+  color: var(--fan-ink);
+}
+
+/* Declared after `.iconButton` on purpose. The toggle carries both classes, and
+   `.iconButton` styles a real icon button — centred, and a step darker than the
+   links this one sits beside. At equal specificity the later rule wins, so while
+   this block sat above it every override here was dead: the label came out
+   centred in the rail and in the wrong ink.
+
+   `align-self` also does a job `justify-content` could not. The rail is a flex
+   column, so the button was being stretched to its full 200px; shrinking it to
+   its label is what actually puts the text under the links. */
+.railFooterToggle {
+  align-self: flex-start;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--fan-ink-3);
+}
+
+.railFooterToggle:hover {
   color: var(--fan-ink);
 }
 
