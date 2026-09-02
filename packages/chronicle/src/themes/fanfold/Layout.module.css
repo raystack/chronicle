@@ -42,15 +42,25 @@
   --fan-display: "Doto", "Geist Mono", ui-monospace, monospace;
   --fan-head: "Departure Mono", "Geist Mono", ui-monospace, monospace;
 
-  /* 1600 = two 44px feed strips, two 240px rails, a 904px column of type and a
-     64px gutter either side of it. Past that the paper stops growing, so the
-     rails never drift away from what they describe. */
-  max-width: 1600px;
-  /* The gap sits above the paper, not inside it, so the sheet — bands, feed
-     strips and all — starts a little down the window and reads as a page laid
-     on a surface rather than one running off the top of the screen. */
-  margin: var(--fan-page-top) auto 0;
-  min-height: calc(100vh - var(--fan-page-top));
+  /* 1416 = two 44px feed strips, two 240px rails, the 720px sheet and a 64px
+     gutter either side of it. Past that the paper stops growing, so the rails
+     never drift away from what they describe.
+
+     Keep this in step with the sheet's own cap in `Page.module.css`: the sheet
+     is centred in what the rails leave, so a figure too large here does not
+     widen anything, it just parks the rails further from the type — at 1600,
+     which is what this was while the sheet was 904px, the gutters came out at
+     155px. */
+  max-width: 1416px;
+  /* The gap sits around the paper, not inside it, so the sheet — bands, feed
+     strips and all — reads as a page laid on a surface rather than one running
+     off the edge of the screen. The same gap below as above, so scrolling to
+     the end of a long page reaches the foot of the paper rather than a cut.
+
+     Everything that subtracts this has to subtract it twice, or the two margins
+     push a short page past the viewport and raise a scrollbar over nothing. */
+  margin: var(--fan-page-top) auto;
+  min-height: calc(100vh - var(--fan-page-top) * 2);
   color: var(--fan-ink);
   font-family: var(--fan-mono);
   -webkit-font-smoothing: antialiased;
@@ -138,11 +148,20 @@
    centred, and a `background-attachment: fixed` gradient tiles from the window
    edge, not the paper's, so the perforations would fall outside the sheet.
    Sticky keeps them still while they stay in flow beside it. */
+/* Stretched to the paper rather than held a viewport tall and stuck. Sticky at
+   `height: 100vh` covered the window while scrolling but could not know where
+   the paper ended: on a page shorter than the window the strip's own box ran
+   past the foot of the sheet and put a scrollbar over nothing, and at the end of
+   a long page it carried the feed holes down into the gap below the paper. A
+   `margin-bottom` of minus one page gap used to hide the first of those, and it
+   never quite did.
+
+   Stretching solves both by construction. The strip is exactly as tall as the
+   sheet beside it, so the holes run the full length of the paper and stop with
+   it, and a strip that always matches its container has nothing to stick to. */
 .strip {
-  position: sticky;
-  top: 0;
+  align-self: stretch;
   width: var(--fan-strip);
-  height: 100vh;
   flex-shrink: 0;
   background-image: radial-gradient(
     circle at 22px 20px,
@@ -151,10 +170,6 @@
   );
   background-size: var(--fan-strip) 40px;
   background-repeat: repeat-y;
-  /* The strip is a viewport tall so it still fills the window once stuck. The
-     negative margin stops that height from adding the page's top margin back on
-     as overflow at the bottom of a short page. */
-  margin-bottom: calc(var(--fan-page-top) * -1);
 }
 
 /* The zebra sits between the two feed strips and scrolls with the page. */
@@ -171,7 +186,7 @@
     transparent var(--fan-bar-height),
     transparent calc(var(--fan-bar-height) * 2)
   );
-  min-height: calc(100vh - var(--fan-page-top));
+  min-height: calc(100vh - var(--fan-page-top) * 2);
 }
 
 .rail {
