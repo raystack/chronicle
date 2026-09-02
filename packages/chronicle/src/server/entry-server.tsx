@@ -14,6 +14,7 @@ import { getPage, getPageTree, isDraft, getPageNav, loadPageModule, extractFront
 import { getFirstApiUrl } from '@/lib/api-routes';
 import { StatusCodes } from 'http-status-codes';
 import { resolvePageAndSlug, resolveDocsRedirect, compactTree } from '@/lib/tree-utils';
+import { buildThemeColorCss } from '@/lib/theme-colors';
 import { filterPageTreeByVersion, filterPageTreeByContentDir } from '@/lib/version-source';
 import { getActiveContentDir } from '@/lib/navigation';
 import { getLatestContentRoots, getVersionContentRoots } from '@/lib/config';
@@ -173,6 +174,8 @@ export default {
       ? clientAssets.merge(serverAssets, ...routeAssets)
       : clientAssets.merge(...routeAssets);
 
+    const themeColorCss = buildThemeColorCss(config.theme?.colors);
+
     const renderStart = performance.now();
     // prerender (vs renderToReadableStream) waits for all Suspense content;
     // the huge progressiveChunkSize stops React from "outlining" large completed
@@ -191,6 +194,11 @@ export default {
           {assets.js.map((attr: { href: string }) => (
             <link key={attr.href} rel="modulepreload" {...attr} />
           ))}
+          {/* After the stylesheets, so a site's own colours win over the
+              theme's defaults. */}
+          {themeColorCss && (
+            <style dangerouslySetInnerHTML={{ __html: themeColorCss }} />
+          )}
           {[...new Set(pageImages)].map((src: string) => {
             const { base, version } = splitVersion(src);
             const href = isLocalImage(base) && !isSvg(base)
