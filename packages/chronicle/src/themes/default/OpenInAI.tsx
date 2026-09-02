@@ -1,11 +1,6 @@
 'use client';
 
-import {
-  ChevronDownIcon,
-  ClipboardDocumentIcon,
-  DocumentTextIcon,
-  SparklesIcon
-} from '@heroicons/react/24/outline';
+import { ChevronDownIcon, CopyIcon, FileTextIcon, SparklesIcon } from '@/components/ui/icons';
 import { Button, Menu } from '@raystack/apsara';
 import { useCallback } from 'react';
 
@@ -91,11 +86,11 @@ export function OpenInAI() {
       </Menu.Trigger>
       <Menu.Content>
         <Menu.Item onClick={onCopy}>
-          <ClipboardDocumentIcon width={14} height={14} />
+          <CopyIcon width={14} height={14} />
           Copy as MD
         </Menu.Item>
         <Menu.Item onClick={onView}>
-          <DocumentTextIcon width={14} height={14} />
+          <FileTextIcon width={14} height={14} />
           View MD
         </Menu.Item>
         <Menu.Item onClick={onChatGPT}>

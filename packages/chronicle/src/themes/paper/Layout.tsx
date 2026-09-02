@@ -1,6 +1,6 @@
 'use client';
 
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MenuIcon, XIcon } from '@/components/ui/icons';
 import { Flex, Select, Text } from '@raystack/apsara';
 import { cx } from 'class-variance-authority';
 import { useEffect, useState } from 'react';
@@ -25,7 +25,7 @@ function SidebarHeader({ config }: { config: ThemeLayoutProps['config'] }) {
 
   if (entries.length <= 1) {
     return (
-      <Text size={2} weight={500} className={styles.title}>
+      <Text size="regular" weight="medium" className={styles.title}>
         {config.site.title}
       </Text>
     );
@@ -101,8 +101,8 @@ function LayoutInner({
                 aria-controls='paper-mobile-menu'
               >
                 {mobileMenuOpen
-                  ? <XMarkIcon width={16} height={16} />
-                  : <Bars3Icon width={16} height={16} />}
+                  ? <XIcon width={16} height={16} />
+                  : <MenuIcon width={16} height={16} />}
               </button>
             </Flex>
           </div>

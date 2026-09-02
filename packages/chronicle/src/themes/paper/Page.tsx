@@ -1,14 +1,4 @@
-import {
-  EyeIcon,
-  SunIcon,
-  MoonIcon,
-} from '@heroicons/react/24/outline';
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  MixerHorizontalIcon,
-  Cross2Icon
-} from '@radix-ui/react-icons'
+import { ArrowLeftIcon, ArrowRightIcon, EyeIcon, MoonIcon, SettingsIcon, SunIcon, XIcon } from '@/components/ui/icons';
 import { IconButton, useTheme } from '@raystack/apsara';
 import { useEffect, useMemo, useState } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router';
@@ -86,12 +76,12 @@ export function Page({ page, tree }: ThemePageProps) {
                   </IconButton>
                 )}
                 <IconButton size={2} onClick={() => setSettingsOpen(false)} aria-label='Close settings'>
-                  <Cross2Icon width={14} height={14} />
+                  <XIcon width={14} height={14} />
                 </IconButton>
               </>
             ) : (
               <IconButton size={2} onClick={() => setSettingsOpen(true)} aria-label='Open settings'>
-                <MixerHorizontalIcon width={14} height={14} />
+                <SettingsIcon width={14} height={14} />
               </IconButton>
             )}
           </div>

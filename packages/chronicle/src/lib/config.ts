@@ -26,7 +26,11 @@ export function loadConfig(): ChronicleConfig {
   return {
     ...defaultConfig,
     ...parsed,
-    theme: { ...defaultConfig.theme, ...parsed.theme },
+    theme: {
+      ...defaultConfig.theme,
+      ...parsed.theme,
+      name: parsed.theme?.name ?? defaultConfig.theme?.name ?? 'default',
+    },
     search: { ...defaultConfig.search, ...parsed.search },
   }
 }

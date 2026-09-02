@@ -1,4 +1,4 @@
-import { ThemeProvider, Skeleton, Flex } from '@raystack/apsara';
+import { Theme, Skeleton, Flex } from '@raystack/apsara';
 import { lazy, Suspense } from 'react';
 import { Navigate, useLocation } from 'react-router';
 import { AnalyticsProvider } from '@/components/analytics/AnalyticsProvider';
@@ -35,7 +35,7 @@ export function App() {
   const isAuthors = isAuthorRoute(route);
 
   return (
-    <ThemeProvider
+    <Theme
       enableSystem={themeConfig.enableSystem}
       forcedTheme={themeConfig.forcedTheme}
     >
@@ -64,7 +64,7 @@ export function App() {
           </Suspense>
         </SearchProvider>
       </AnalyticsProvider>
-    </ThemeProvider>
+    </Theme>
   );
 }
 

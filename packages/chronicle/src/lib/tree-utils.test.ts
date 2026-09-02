@@ -314,7 +314,7 @@ describe('compactTree', () => {
     const result = compactTree(tree)
     expect(result.children[0]).toEqual({
       type: 'page', name: 'Space Packet Protocol', short: 'SPP', url: '/protocols/spp',
-    })
+    } as Node)
   })
 
   test('keeps short on a folder index page', () => {

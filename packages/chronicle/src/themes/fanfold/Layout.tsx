@@ -1,6 +1,6 @@
 'use client';
 
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { MenuIcon, XIcon } from '@/components/ui/icons';
 import { useTheme } from '@raystack/apsara';
 import { cx } from 'class-variance-authority';
 import { useEffect, useState } from 'react';
@@ -262,9 +262,9 @@ export function Layout({
               aria-controls='fanfold-menu'
             >
               {menuOpen ? (
-                <XMarkIcon width={16} height={16} />
+                <XIcon width={16} height={16} />
               ) : (
-                <Bars3Icon width={16} height={16} />
+                <MenuIcon width={16} height={16} />
               )}
             </button>
           ) : null}

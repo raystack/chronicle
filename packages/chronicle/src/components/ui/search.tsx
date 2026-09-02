@@ -1,10 +1,4 @@
-import {
-  DocumentIcon,
-  HashtagIcon,
-  MagnifyingGlassIcon,
-  CodeBracketIcon,
-  ChevronRightIcon
-} from '@heroicons/react/24/outline';
+import { ChevronRightIcon, CodeIcon, FileIcon, HashIcon, SearchIcon } from '@/components/ui/icons';
 import { Command, IconButton, Text } from '@raystack/apsara';
 import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import GithubSlugger from 'github-slugger';
@@ -201,7 +195,7 @@ export function Search({ classNames }: SearchProps) {
       onClick={() => setOpen(true)}
       className={classNames?.trigger}
     >
-      <MagnifyingGlassIcon width={16} height={16} />
+      <SearchIcon width={16} height={16} />
     </IconButton>
   );
 }
@@ -277,7 +271,7 @@ export function SearchDialog() {
         <Command items={displayResults}>
           <Command.Input
             placeholder='Search'
-            leadingIcon={<MagnifyingGlassIcon width={16} height={16} />}
+            leadingIcon={<SearchIcon width={16} height={16} />}
             value={search}
             onChange={onSearchChange}
             className={styles.input}
@@ -405,12 +399,12 @@ function HighlightQuery({ text, query }: { text: string; query: string }) {
 
 function getResultIcon(result: SearchResult): React.ReactNode {
   if (result.url.startsWith('/apis/')) {
-    return <CodeBracketIcon className={styles.icon} />;
+    return <CodeIcon className={styles.icon} />;
   }
   if (result.match === SearchMatchType.Heading) {
-    return <HashtagIcon className={styles.icon} />;
+    return <HashIcon className={styles.icon} />;
   }
-  return <DocumentIcon className={styles.icon} />;
+  return <FileIcon className={styles.icon} />;
 }
 
 function getPageTitle(url: string): string {

@@ -88,7 +88,10 @@
   color: var(--rs-color-foreground-base-tertiary);
 }
 
-.topLinkText {
+/* Sidebar.Item wraps its label in a `sidebar-item-text` slot. The label needs
+   its own colour because Apsara sets one on that span, which would otherwise
+   win over the colour inherited from the item. */
+.topLinkItem :global([data-slot='sidebar-item-text']) {
   color: var(--rs-color-foreground-base-tertiary);
 }
 
@@ -97,7 +100,7 @@
   color: var(--rs-color-foreground-base-primary);
 }
 
-.topLinkItem[data-active='true'] .topLinkText {
+.topLinkItem[data-active='true'] :global([data-slot='sidebar-item-text']) {
   color: var(--rs-color-foreground-base-primary);
 }
 
@@ -181,13 +184,18 @@
   background: var(--rs-color-background-base-primary);
 }
 
-.groupItems {
+/* Sidebar.Group's parts are reached through their `sidebar-group-*` slots,
+   scoped by `.navGroup` on the group itself. The selectors are descendant, not
+   child, because groups nest: a rule on an outer group is meant to reach the
+   inner ones too. */
+.navGroup :global([data-slot='sidebar-group-items']) {
   padding-left: 0;
   padding-bottom: 0;
   gap: 0;
 }
 
-.navGroup:not([data-depth='0']) .groupItems {
+.navGroup:not([data-depth='0'])
+  :global([data-slot='sidebar-group-items']) {
   padding-left: var(--rs-space-4);
 }
 
@@ -199,22 +207,22 @@
   margin-top: var(--rs-space-7);
 }
 
-.navGroup .navGroupHeader {
+.navGroup :global([data-slot='sidebar-group-header']) {
   margin: 0;
   margin-bottom: 0;
   padding-top: 0;
   padding-bottom: 0;
 }
 
-.navGroup[data-depth='1'] .navGroupHeader {
+.navGroup[data-depth='1'] :global([data-slot='sidebar-group-header']) {
   height: auto;
 }
 
-.navGroup[data-depth='1'] .navGroupLabel {
+.navGroup[data-depth='1'] :global([data-slot='sidebar-group-label']) {
   color: var(--rs-color-foreground-base-primary);
 }
 
-.navGroupTrigger {
+.navGroup :global([data-slot='sidebar-group-trigger']) {
   display: flex;
   padding: var(--rs-space-3);
   align-items: center;
@@ -226,7 +234,7 @@
   box-sizing: border-box;
 }
 
-.navGroupLabel {
+.navGroup :global([data-slot='sidebar-group-label']) {
   flex: 1;
   text-align: left;
   color: var(--rs-color-foreground-base-secondary);
@@ -237,7 +245,7 @@
   letter-spacing: var(--rs-letter-spacing-small);
 }
 
-.navGroupChevron {
+.navGroup :global([data-slot='sidebar-group-chevron']) {
   margin-left: auto;
 }
 

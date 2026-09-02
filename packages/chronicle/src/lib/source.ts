@@ -112,17 +112,22 @@ function buildSyntheticMeta(): {
   return entries;
 }
 
-let cachedSource: ReturnType<typeof loader> | null = null;
+// Built through a named factory so the cache keeps the loader's concrete
+// type. `ReturnType<typeof loader>` would widen it to the default type
+// arguments, which then fails to match what `loader()` actually returned.
+function createSource() {
+  return loader({
+    source: { files: buildFiles() },
+    baseUrl: '/'
+  });
+}
+
+let cachedSource: ReturnType<typeof createSource> | null = null;
 let cachedTree: Root | null = null;
 let cachedNavMap: Map<string, PageNav> | null = null;
 
-async function getSource() {
-  if (cachedSource) return cachedSource;
-  const files = buildFiles();
-  cachedSource = loader({
-    source: { files },
-    baseUrl: '/'
-  });
+async function getSource(): Promise<ReturnType<typeof createSource>> {
+  cachedSource ??= createSource();
   return cachedSource;
 }
 

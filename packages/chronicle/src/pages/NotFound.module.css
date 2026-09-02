@@ -1,4 +1,12 @@
-.emptyState {
+/* EmptyState is styled through its `empty-state` slot rather than a
+   `classNames` prop. Reaching the slot needs an ancestor to scope the selector,
+   and that host also has to pass the height through, because EmptyState is
+   `height: 100%` and centres its content within it. */
+.emptyStateHost {
+  height: 100%;
+}
+
+.emptyStateHost :global([data-slot='empty-state']) {
   justify-content: center;
 }
 

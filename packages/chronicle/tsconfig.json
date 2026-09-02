@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
     "composite": false,
-    "declaration": true,
-    "declarationMap": true,
+    // The package ships a CLI built by Bun.build, not declarations, so
+    // emitting them only produces "cannot be named" portability errors.
+    "declaration": false,
+    "declarationMap": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "inlineSources": false,

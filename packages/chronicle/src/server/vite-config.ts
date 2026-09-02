@@ -16,7 +16,11 @@ import type { Pluggable } from 'unified';
 import remarkValidateMdx from '../lib/remark-validate-mdx';
 import rehypeTocText from '../lib/rehype-toc-text';
 
-function getDatabaseConnector(preset?: string): { connector: string; options?: Record<string, unknown> } {
+// Literal names rather than `string`: Nitro types the connector as db0's
+// `ConnectorName` union, and each of these is a member of it.
+type DatabaseConnector = 'bun-sqlite' | 'cloudflare-d1' | 'sqlite';
+
+function getDatabaseConnector(preset?: string): { connector: DatabaseConnector; options?: Record<string, unknown> } {
   switch (preset) {
     case 'bun':
       return { connector: 'bun-sqlite', options: { name: 'chronicle-search' } };
@@ -308,11 +312,10 @@ export async function createViteConfig(
     nitro: {
       logLevel: 2,
       errorHandler: path.resolve(packageRoot, 'src/server/error.ts'),
-      publicAssets: [{ dir: path.resolve(projectRoot, 'public') }],
+      publicAssets: [{ dir: path.resolve(projectRoot, 'public'), maxAge: 0 }],
       output: {
         dir: resolveOutputDir(projectRoot, preset),
       },
-      externals: ['sharp'],
       storage: {
         'image-cache': {
           driver: 'fs',

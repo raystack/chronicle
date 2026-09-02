@@ -52,6 +52,15 @@ function snapQuality(q: number): number {
   return closest;
 }
 
+/**
+ * `Buffer` is a `Uint8Array` at runtime, but its `ArrayBufferLike` generic
+ * doesn't satisfy `BodyInit`. A view over the same memory does, and copies
+ * nothing.
+ */
+function toBody(buf: Buffer): Uint8Array<ArrayBuffer> {
+  return new Uint8Array(buf.buffer as ArrayBuffer, buf.byteOffset, buf.byteLength)
+}
+
 export async function optimizeImage(
   filePath: string,
   w: number,
@@ -136,13 +145,13 @@ export default defineHandler(async event => {
 
   const cached = await storage.getItemRaw<Buffer>(key)
   if (cached) {
-    return new Response(cached, { headers })
+    return new Response(toBody(cached), { headers })
   }
 
   const existing = inflight.get(key)
   if (existing) {
     const optimized = await existing
-    return new Response(optimized, { headers })
+    return new Response(toBody(optimized), { headers })
   }
 
   const work = (async () => {
@@ -154,7 +163,7 @@ export default defineHandler(async event => {
   inflight.set(key, work)
   try {
     const optimized = await work
-    return new Response(optimized, { headers })
+    return new Response(toBody(optimized), { headers })
   } catch {
     const source = await fs.readFile(filePath).catch(() => null)
     if (!source) {

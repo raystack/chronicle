@@ -16,9 +16,12 @@ export function getTheme(name?: string): Theme {
   return themes[name];
 }
 
-export function getThemeConfig(name?: string) {
-  if (name === 'paper') {
-    return { enableSystem: true };
-  }
+export interface ThemeConfig {
+  enableSystem: boolean;
+  /** Pin the theme, ignoring the user's choice. No theme sets one today. */
+  forcedTheme?: string;
+}
+
+export function getThemeConfig(_name?: string): ThemeConfig {
   return { enableSystem: true };
 }

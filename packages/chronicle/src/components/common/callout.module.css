@@ -1,5 +1,9 @@
+/* Apsara sizes a Callout at 400px by default. Prose callouts should fill the
+   content column instead. This used to be the component's `width` prop, which
+   apsara 1.6 dropped. */
 .callout {
   margin: var(--rs-space-5) 0;
+  width: 100%;
 }
 
 .callout p:last-child {

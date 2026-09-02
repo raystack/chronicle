@@ -1,6 +1,6 @@
 'use client';
 
-import { Bars3BottomLeftIcon } from '@heroicons/react/24/outline';
+import { TocIcon } from '@/components/ui/icons';
 import { AnchorProvider, useActiveAnchor } from 'fumadocs-core/toc';
 import type { TableOfContents, TOCItemType } from 'fumadocs-core/toc';
 import { cx } from 'class-variance-authority';
@@ -69,7 +69,7 @@ function TocContent({ items }: { items: TOCItemType[] }) {
       </div>
       <div className={styles.panel} role='presentation'>
         <div className={styles.panelHeader}>
-          <Bars3BottomLeftIcon width={16} height={16} />
+          <TocIcon width={16} height={16} />
           <span className={styles.panelHeaderLabel}>On this page</span>
         </div>
         <nav className={styles.panelList}>

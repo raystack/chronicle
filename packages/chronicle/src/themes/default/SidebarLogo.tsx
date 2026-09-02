@@ -1,6 +1,6 @@
 'use client';
 
-import { BookOpenIcon } from '@heroicons/react/24/outline';
+import { BookOpenIcon } from '@/components/ui/icons';
 import { useTheme } from '@raystack/apsara';
 import type { ChronicleConfig } from '@/types';
 import styles from './Layout.module.css';

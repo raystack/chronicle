@@ -3,8 +3,7 @@
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import type { OpenAPIV3 } from 'openapi-types'
 import { Dialog, Button, Badge, IconButton, Input, CopyButton, Select, Menu } from '@raystack/apsara'
-import { Cross2Icon, ChevronDownIcon, ChevronUpIcon, PlayIcon, PlusIcon } from '@radix-ui/react-icons'
-import { CounterClockwiseClockIcon, CodeIcon } from '@radix-ui/react-icons'
+import { ChevronDownIcon, ChevronUpIcon, CodeIcon, HistoryIcon, PlayIcon, PlusIcon, XIcon } from '@/components/ui/icons';
 import { MethodBadge } from '@/components/api/method-badge'
 import { flattenSchema, generateExampleJson, toKind, type SchemaField } from '@/lib/schema'
 import { generateCurl } from '@/lib/snippet-generators'
@@ -289,10 +288,10 @@ export function PlaygroundDialog({
           <span className={styles.actionNavTitle}>{operation.summary ?? `${method} ${path}`}</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--rs-space-3)' }}>
             <IconButton size={2} onClick={handleReset} aria-label="Reset">
-              <CounterClockwiseClockIcon />
+              <HistoryIcon />
             </IconButton>
             <IconButton size={2} onClick={() => onOpenChange(false)} aria-label="Close">
-              <Cross2Icon />
+              <XIcon />
             </IconButton>
           </div>
         </div>
@@ -586,7 +585,7 @@ function BodyFieldRow({ field, value, onChange }: {
               />
             </div>
             <IconButton size={2} onClick={() => onChange(items.filter((_, j) => j !== i))} aria-label="Remove item">
-              <Cross2Icon />
+              <XIcon />
             </IconButton>
           </div>
         ))}
