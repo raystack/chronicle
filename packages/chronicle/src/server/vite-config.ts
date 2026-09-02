@@ -14,6 +14,7 @@ import remarkReadingTime from 'remark-reading-time';
 import remarkUnusedDirectives from '../lib/remark-unused-directives';
 import type { Pluggable } from 'unified';
 import remarkValidateMdx from '../lib/remark-validate-mdx';
+import rehypeTableColumns from '../lib/rehype-table-columns';
 import rehypeTocText from '../lib/rehype-toc-text';
 
 // Literal names rather than `string`: Nitro types the connector as db0's
@@ -222,6 +223,7 @@ export async function createViteConfig(
             rehypePlugins: (plugins: Pluggable[]) => [
               ...plugins.filter(plugin => !isRehypeToc(plugin)),
               rehypeTocText,
+              rehypeTableColumns,
             ],
             remarkPlugins: [
               remarkDirective,
