@@ -10,7 +10,7 @@
 .sheet {
   flex: 1;
   min-width: 0;
-  max-width: 904px;
+  max-width: 768px;
   margin-inline: auto;
 }
 
@@ -469,13 +469,203 @@
   color: var(--fan-ink);
 }
 
-/* The field-name column is the spine of a field map. Auto table layout shares
-   width by content, so a long notes column would otherwise break short names
-   like "Packet Version Number" across three lines. A plain length is used
-   because Chrome ignores a table cell's min-width once a percentage is in it,
-   which is why the narrow-screen value is set in the media query below. */
+/* The field-name column is the spine of a field map, so it asks for the room a
+   name like "Packet Version Number" needs rather than letting a long notes
+   column squeeze it to a word per line.
+
+   `width` rather than `min-width`: in auto table layout a width is the column's
+   preference, not a floor, so the column yields it back when the row cannot
+   afford it. A floor could not be overruled, and a conformance table whose first
+   column holds an item code like "SPP-14" was handing six characters 202px and
+   pushing the table 370px past the sheet. The same declaration now caps the
+   column too — auto layout will not grow a column past a width it was given
+   unless the content leaves it no choice.
+
+   The 8ch floor is there because auto layout, given the chance, shrinks the
+   column to its longest unbreakable run — and an item code like "SPP-14" has a
+   break opportunity at the hyphen, so it was collapsing to the width of "SPP-"
+   and setting the code on two lines.
+
+   A plain length is used because Chrome ignores a table cell's width once a
+   percentage is in it, which is why the narrow-screen value is set in the media
+   query below. */
 .article :is(th, td):first-child {
-  min-width: 24ch;
+  min-width: 8ch;
+  width: 24ch;
+}
+
+/* A table with a column of paragraphs is a different animal from a field map,
+   and `rehype-table-columns` is what tells them apart: it measures every column
+   at build time and marks the table with the index of the one holding prose,
+   giving each other cell a size class from its own longest line. CSS cannot ask
+   how much text is in a column, so without that the only thing to key off was
+   the column count — which said nothing about the table's shape.
+
+   Automatic layout hands the paragraph column whatever it asks for: 616px in one
+   conformance table, which ran the table 238px past the sheet and hid the end of
+   every line in it, with nothing on screen to say so. It also sizes each table
+   from that table's own content, so no two on a page line up.
+
+   Stating the widths fixes both. The short columns are told what they need, the
+   prose column is deliberately left without a width so that it takes whatever
+   they do not, and `width: 100%` means the table can no longer be wider than the
+   sheet, so nothing is hidden.
+
+   The plugin marks a table only when its whole shape is one that can be stated
+   this way — a single column of prose beside two or more of labels — so the
+   attribute is the entire condition here, and every other table is left to
+   automatic layout untouched. */
+.article table[data-fit="stated"] {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* The size classes, in the type they are sizing. A class is the longest line the
+   column has to hold, so these are the widths that line needs — the flags at the
+   bottom must not wrap at all, while a column of names may take two lines and is
+   given less than its longest entry would need on one.
+
+   The widths are px rather than ch because fixed layout reads them off the header
+   row, where `ch` resolves against the header's 10.5px type instead of the 14px
+   of the cells below — 16ch there measured 101px, not the 134px meant.
+
+   They are also tighter than each class could use, because what the label
+   columns leave over is the prose column's whole measure. On a seven-column
+   table the first values tried here left it 156px; these leave it 230px and take
+   4% off the height of the page, at the cost of a second line in some of the
+   longer names. Nothing is broken mid-word to get there: the clause references
+   still set on one line, and every label that wraps does so at a space. */
+.article table[data-fit="stated"] :is(th, td)[data-col="xl"] {
+  width: 202px;
+}
+
+.article table[data-fit="stated"] :is(th, td)[data-col="l"] {
+  width: 160px;
+}
+
+.article table[data-fit="stated"] :is(th, td)[data-col="m"] {
+  width: 126px;
+}
+
+.article table[data-fit="stated"] :is(th, td)[data-col="s"] {
+  width: 102px;
+}
+
+/* Wider than the values need, and with the padding trimmed, because the header
+   words are what has to fit: at the standard 16px of cell padding these columns
+   were breaking "STATUS" and "SUPPORT" mid-word into STAT/US and SUPP/ORT. The
+   values below them run to a character or three, so the padding was not earning
+   its keep there anyway. */
+.article table[data-fit="stated"] :is(th, td)[data-col="xs"] {
+  width: 64px;
+  padding-right: 4px;
+}
+
+/* One label column takes whatever the others leave, marked at build time as the
+   one holding the most text.
+
+   Without it the spare width pooled wherever a column had no stated width, which
+   here is the toggle's: on a three-column table 554px of the 720px sheet stood
+   empty beside a name wrapping over five lines. The class widths above are the
+   minimum each column needs to hold its longest word, which was the right
+   measure while the paragraph column was competing for the same pixels and is
+   simply too tight now that it is folded away.
+
+   This rule has to follow the class widths it overrides — the two selectors have
+   the same specificity, so their order is what settles it. */
+.article table[data-fit="stated"] :is(th, td)[data-grow] {
+  width: auto;
+}
+
+/* ---- folded notes ---- */
+
+/* The paragraph column of a stated table is folded under its row and opened on
+   demand (`ExpandableRow.tsx`). Data attributes rather than classes because CSS
+   modules rewrite class names but leave attributes alone, so a component in the
+   theme can hand its markup over to be styled from here.
+
+   Styling has to live in this file rather than beside the component: the rules
+   above are scoped `.article td`, which outranks a bare class from another
+   module, so a class there could not set so much as the cell's padding. */
+
+/* No stated width, so this column takes whatever the labels leave and the
+   toggle sits against the right edge of the sheet. */
+/* Stated, so this column no longer soaks up every spare pixel. 96px holds
+   "\203A NOTES" at the header's tracking with room to spare, and the label
+   shortens to "Hide" once the row is open. */
+.article table[data-fit="stated"] :is(th, td)[data-fanfold-toggle] {
+  width: 96px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.article [data-fanfold-toggle] button {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-family: var(--fan-mono);
+  font-size: 10.5px;
+  line-height: 18px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fan-ink-3);
+  cursor: pointer;
+}
+
+.article [data-fanfold-toggle] button:hover {
+  color: var(--fan-ink);
+}
+
+/* A dashed ring matches the rules the rest of the sheet is ruled with. */
+.article [data-fanfold-toggle] button:focus-visible {
+  outline: 1px dashed var(--fan-rule-strong);
+  outline-offset: 3px;
+}
+
+.article [data-fanfold-chevron] {
+  display: inline-block;
+  transition: transform 120ms ease;
+}
+
+/* Reduced motion turns the sweep off; the rotation still happens, so the state
+   of the row is never carried by the animation alone. */
+@media (prefers-reduced-motion: reduce) {
+  .article [data-fanfold-chevron] {
+    transition: none;
+  }
+}
+
+.article [data-fanfold-summary][data-open] [data-fanfold-chevron] {
+  transform: rotate(90deg);
+}
+
+/* An open row is marked at both ends: the labels take the bar tint, and the
+   paragraph below carries a rule down its left the way a quote does. */
+.article [data-fanfold-summary][data-open] > :is(th, td) {
+  background: var(--fan-bar);
+}
+
+.article [data-fanfold-notes] > td {
+  padding: 0 0 20px;
+  border: 0;
+  background: var(--fan-bar);
+}
+
+/* 600px is the measure body copy uses, so an opened note reads at the same
+   line length as the prose around the table rather than the width of a sheet. */
+.article [data-fanfold-notes] > td > div {
+  max-width: 600px;
+  margin-left: var(--rs-space-5);
+  padding: 2px 0 0 var(--rs-space-5);
+  border-left: 1px dashed var(--fan-rule-strong);
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0;
+  color: var(--fan-ink);
 }
 
 /* ---- footer band ---- */
@@ -640,7 +830,14 @@
   }
 
   .article :is(th, td):first-child {
-    min-width: 10ch;
+    width: 10ch;
+  }
+
+  /* Narrower than the short columns add up to, so the stated widths are dropped
+     and a wide table goes back to sizing itself and scrolling inside the
+     article, which is steadier than six columns all at their minimum. */
+  .article table[data-fit="stated"] {
+    table-layout: auto;
   }
 
   .display[data-size="code"] {
