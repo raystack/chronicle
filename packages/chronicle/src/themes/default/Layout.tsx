@@ -1,15 +1,5 @@
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  CodeBracketSquareIcon,
-  RectangleStackIcon,
-  DocumentTextIcon,
-  Squares2X2Icon,
-  Bars3Icon,
-  XMarkIcon
-} from '@heroicons/react/24/outline';
+import { ApiIcon, ArrowLeftIcon, ArrowRightIcon, FileTextIcon, LayersIcon, MenuIcon, PlayIcon, XIcon } from '@/components/ui/icons';
 import { Flex, IconButton, Button, Sidebar } from '@raystack/apsara';
-import { PlayIcon } from '@radix-ui/react-icons';
 import { cx } from 'class-variance-authority';
 import { useState, useEffect, useMemo, useRef, lazy, Suspense } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router';
@@ -38,7 +28,7 @@ import { VersionSwitcher } from './VersionSwitcher';
 const MAX_SIDEBAR_DEPTH = 3;
 
 const iconMap: Record<string, React.ReactNode> = {
-  'rectangle-stack': <RectangleStackIcon width={16} height={16} />,
+  'rectangle-stack': <LayersIcon width={16} height={16} />,
   'method-get': <MethodBadge method='GET' size='micro' />,
   'method-post': <MethodBadge method='POST' size='micro' />,
   'method-put': <MethodBadge method='PUT' size='micro' />,
@@ -135,8 +125,8 @@ export function Layout({
               aria-controls='mobile-menu'
             >
               {mobileSidebarOpen
-                ? <XMarkIcon width={16} height={16} />
-                : <Bars3Icon width={16} height={16} />}
+                ? <XIcon width={16} height={16} />
+                : <MenuIcon width={16} height={16} />}
             </button>
           )}
         </Flex>
@@ -149,8 +139,8 @@ export function Layout({
                 key={entry.href}
                 href={entry.href}
                 active={activeContentDir === entry.contentDir}
-                leadingIcon={renderConfigIcon(entry.icon, entry.label, <DocumentTextIcon width={16} height={16} />)}
-                classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
+                leadingIcon={renderConfigIcon(entry.icon, entry.label, <FileTextIcon width={16} height={16} />)}
+                className={styles.topLinkItem}
                 render={<RouterLink to={entry.href} />}
               >
                 {entry.label}
@@ -161,8 +151,8 @@ export function Layout({
                 key={`${api.basePath}-${api.name}`}
                 href={api.basePath}
                 active={isApiBase(api.basePath)}
-                leadingIcon={renderConfigIcon(api.icon, api.name, <CodeBracketSquareIcon width={16} height={16} />)}
-                classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
+                leadingIcon={renderConfigIcon(api.icon, api.name, <ApiIcon width={16} height={16} />)}
+                className={styles.topLinkItem}
                 render={<RouterLink to={api.basePath} />}
               >
                 {api.name} API
@@ -196,7 +186,7 @@ export function Layout({
         {hideSidebar ? null : (
           <Sidebar
             defaultOpen
-            collapsible={false}
+            collapsible='none'
             className={cx(styles.sidebar, classNames?.sidebar)}
           >
             <Sidebar.Header className={styles.sidebarHeader}>
@@ -217,9 +207,9 @@ export function Layout({
                       leadingIcon={renderConfigIcon(
                         entry.icon,
                         entry.label,
-                        <DocumentTextIcon width={16} height={16} />
+                        <FileTextIcon width={16} height={16} />
                       )}
-                      classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
+                      className={styles.topLinkItem}
                       render={<RouterLink to={entry.href} data-no-prefetch />}
                     >
                       {entry.label}
@@ -233,9 +223,9 @@ export function Layout({
                       leadingIcon={renderConfigIcon(
                         api.icon,
                         api.name,
-                        <CodeBracketSquareIcon width={16} height={16} />
+                        <ApiIcon width={16} height={16} />
                       )}
-                      classNames={{ root: styles.topLinkItem, text: styles.topLinkText }}
+                      className={styles.topLinkItem}
                       render={<RouterLink to={api.basePath} data-no-prefetch />}
                     >
                       {api.name} API
@@ -362,13 +352,6 @@ function SidebarNode({
         leadingIcon={icon ?? undefined}
         collapsible={depth >= 1}
         defaultOpen={hasActiveChild}
-        classNames={{
-          items: styles.groupItems,
-          header: styles.navGroupHeader,
-          trigger: styles.navGroupTrigger,
-          label: styles.navGroupLabel,
-          chevron: styles.navGroupChevron,
-        }}
       >
         {item.children.map((child, i) => (
           <SidebarNode
@@ -508,7 +491,7 @@ function ViewDocsButton() {
       variant='outline'
       color='neutral'
       size='small'
-      leadingIcon={<DocumentTextIcon width={12} height={12} />}
+      leadingIcon={<FileTextIcon width={12} height={12} />}
       onClick={() => window.open(docsUrl, '_blank', 'noopener,noreferrer')}
     >
       View documentation

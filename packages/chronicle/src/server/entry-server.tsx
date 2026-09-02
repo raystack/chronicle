@@ -65,7 +65,7 @@ export default {
 
     if (route.type === RouteType.Redirect) {
       // biome-ignore lint/correctness/useHookAtTopLevel: useNitroApp is a Nitro DI accessor, not a React hook
-      useNitroApp().hooks.callHook('chronicle:ssr-rendered', pathname, route.status, 0);
+      useNitroApp().hooks?.callHook('chronicle:ssr-rendered', pathname, route.status, 0);
       return new Response(null, {
         status: route.status,
         headers: { Location: route.to },
@@ -241,7 +241,7 @@ export default {
     const status = route.type === RouteType.DocsPage && !page ? StatusCodes.NOT_FOUND : StatusCodes.OK;
 
     // biome-ignore lint/correctness/useHookAtTopLevel: useNitroApp is a Nitro DI accessor, not a React hook
-    useNitroApp().hooks.callHook('chronicle:ssr-rendered', pathname, status, renderDuration);
+    useNitroApp().hooks?.callHook('chronicle:ssr-rendered', pathname, status, renderDuration);
 
     return new Response(prelude, {
       status,

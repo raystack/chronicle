@@ -1,6 +1,6 @@
 'use client'
 
-import { QuestionMarkCircledIcon } from '@radix-ui/react-icons'
+import { HelpIcon } from '@/components/ui/icons';
 import { IconButton, Menu, Sidebar } from '@raystack/apsara'
 import { useNavigate } from 'react-router'
 import { usePageContext } from '@/lib/page-context'
@@ -86,7 +86,7 @@ export function SidebarLinks({ variant = 'menu' }: SidebarLinksProps) {
           <IconButton size={3} aria-label='Links' className={styles.trigger} />
         }
       >
-        <QuestionMarkCircledIcon width={16} height={16} />
+        <HelpIcon width={16} height={16} />
       </Menu.Trigger>
       <Menu.Content side='top' align='end'>
         {links.map(link => (

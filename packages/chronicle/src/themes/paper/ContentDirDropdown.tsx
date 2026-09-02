@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon } from '@/components/ui/icons';
 import { Button, Menu } from '@raystack/apsara';
 import { useLocation, useNavigate } from 'react-router';
 import { getLandingEntries } from '@/lib/config';
@@ -25,7 +25,7 @@ export function ContentDirDropdown() {
             size='small'
             variant='outline'
             color='neutral'
-            width='100%'
+            style={{ width: '100%' }}
             trailingIcon={<ChevronDownIcon width={14} height={14} />}
           />
         }

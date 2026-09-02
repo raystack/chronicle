@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon } from '@/components/ui/icons';
 import { Badge, Button, Menu, Flex, Text } from '@raystack/apsara';
 import { useNavigate } from 'react-router';
 import { getAllVersions } from '@/lib/config';
@@ -35,7 +35,7 @@ export function VersionSwitcher() {
             size='small'
             variant='outline'
             color='neutral'
-            width='100%'
+            style={{ width: '100%' }}
             trailingIcon={<ChevronDownIcon width={14} height={14} />}
           />
         }

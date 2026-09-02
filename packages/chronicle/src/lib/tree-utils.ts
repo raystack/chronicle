@@ -19,7 +19,8 @@ function compactLeaf(node: Node): Node {
   for (const [k, v] of Object.entries(node)) {
     if (KEEP_FIELDS.has(k)) out[k] = v;
   }
-  return out as Node;
+  // Assembled key by key from a Node, so the result is one again.
+  return out as unknown as Node;
 }
 
 function compactNode(node: Node): Node {
@@ -31,7 +32,7 @@ function compactNode(node: Node): Node {
     else if (k === 'index') out.index = compactLeaf(v as Node);
     else out[k] = v;
   }
-  return out as Node;
+  return out as unknown as Node;
 }
 
 export function compactTree(tree: Root): Root {
@@ -103,15 +104,22 @@ export function resolveDocsRedirect(
   return findFolderFirstPage(tree.children, `/${slug.join('/')}`);
 }
 
-interface ResolvePageDeps {
-  getPage: (slug: string[]) => Promise<unknown>;
+/**
+ * Generic over the page so this module stays free of fumadocs types while
+ * callers keep the concrete page type on the way out.
+ */
+interface ResolvePageDeps<TPage> {
+  getPage: (slug: string[]) => Promise<TPage | undefined>;
   getPageTree: () => Promise<{ children: Node[] }>;
-  isDraft: (page: unknown) => boolean;
+  isDraft: (page: TPage) => boolean;
   config: ChronicleConfig;
   version: VersionContext;
 }
 
-export async function resolvePageAndSlug(slug: string[], deps: ResolvePageDeps) {
+export async function resolvePageAndSlug<TPage>(
+  slug: string[],
+  deps: ResolvePageDeps<TPage>,
+): Promise<{ page: TPage; slug: string[] } | null> {
   const { getPage, getPageTree, isDraft, config, version } = deps;
 
   const page = await getPage(slug);

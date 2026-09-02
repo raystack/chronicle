@@ -33,7 +33,7 @@ export default defineHandler(async event => {
 
   const contentLength = parseInt(event.req.headers.get('content-length') ?? '0', 10);
   if (contentLength > MAX_BODY_SIZE) {
-    throw new HTTPError({ status: StatusCodes.CONTENT_TOO_LARGE, message: `Request body too large (max ${MAX_BODY_SIZE} bytes)` });
+    throw new HTTPError({ status: StatusCodes.REQUEST_TOO_LONG, message: `Request body too large (max ${MAX_BODY_SIZE} bytes)` });
   }
 
   const { specName, method, path, headers, body } =

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import type { OpenAPIV3 } from 'openapi-types'
 import { Flex, Button, Menu, CopyButton, Separator } from '@raystack/apsara'
-import { ChevronDownIcon } from '@radix-ui/react-icons'
+import { ChevronDownIcon } from '@/components/ui/icons';
 import { MethodBadge } from '@/components/api/method-badge'
 import { ApiCodeSnippet } from './api-code-snippet'
 import { ApiResponsePanel } from './api-response-panel'

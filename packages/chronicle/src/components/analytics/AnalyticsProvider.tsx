@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router'
 import type { ReactNode } from 'react'
 import type { AnalyticsConfig } from '@/types'
-import type { AnalyticsInstance } from 'analytics'
+import type { AnalyticsInstance, AnalyticsPlugin } from 'analytics'
 
 function PageViewTracker({ analytics }: { analytics: AnalyticsInstance }) {
   const { pathname } = useLocation()
@@ -35,7 +35,7 @@ export function AnalyticsProvider({
 
     const init = async () => {
       try {
-        const plugins: unknown[] = []
+        const plugins: AnalyticsPlugin[] = []
         if (config.googleAnalytics?.measurementId) {
           const { default: googleAnalytics } = await import('@analytics/google-analytics')
           plugins.push(

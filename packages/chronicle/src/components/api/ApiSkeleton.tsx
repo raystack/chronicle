@@ -73,7 +73,7 @@ export function ApiFullSkeleton() {
       <Flex className={layoutStyles.body}>
         <Sidebar
           defaultOpen
-          collapsible={false}
+          collapsible='none'
           className={cx(layoutStyles.sidebar, apiLayoutStyles.sidebar)}
         >
           <Sidebar.Header className={layoutStyles.sidebarHeader}>

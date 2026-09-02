@@ -138,7 +138,7 @@ function convertV2SecurityDefs(defs: Record<string, OpenAPIV2.SecuritySchemeObje
   const result: Record<string, OpenAPIV3.SecuritySchemeObject> = {}
   for (const [name, def] of Object.entries(defs)) {
     if (def.type === 'apiKey') {
-      result[name] = { type: 'apiKey', name: (def as JsonObject).name as string, in: def.in as string } as OpenAPIV3.ApiKeySecurityScheme
+      result[name] = { type: 'apiKey', name: def.name, in: def.in } as OpenAPIV3.ApiKeySecurityScheme
     } else if (def.type === 'basic') {
       result[name] = { type: 'http', scheme: 'basic' } as OpenAPIV3.HttpSecurityScheme
     } else if (def.type === 'oauth2') {

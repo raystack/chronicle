@@ -25,7 +25,7 @@ export function Breadcrumbs({ slug, tree, className }: BreadcrumbsProps) {
           <Breadcrumb.Item
             key={`item-${index}`}
             current={isCurrent}
-            render={isCurrent ? undefined : <RouterLink to={item.url} />}
+            render={isCurrent || !item.url ? undefined : <RouterLink to={item.url} />}
           >
             {item.name}
           </Breadcrumb.Item>

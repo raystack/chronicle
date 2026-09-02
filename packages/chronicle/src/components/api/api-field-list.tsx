@@ -2,7 +2,7 @@
 
 import { useState, type ReactNode } from 'react'
 import { Badge, Flex } from '@raystack/apsara'
-import { ChevronRightIcon, ChevronDownIcon } from '@radix-ui/react-icons'
+import { ChevronDownIcon, ChevronRightIcon } from '@/components/ui/icons';
 import type { SchemaField } from '@/lib/schema'
 import styles from './api-field-list.module.css'
 

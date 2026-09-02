@@ -99,9 +99,9 @@ export default definePlugin((nitroApp) => {
     const endpoint = res.status === 404 ? '/api/not-found' : toEndpoint(route)
 
     const clientIp =
-      event.req.headers['x-forwarded-for']?.toString().split(',')[0].trim() ??
-      event.req.headers['x-real-ip']?.toString() ??
-      event.req.socket?.remoteAddress ??
+      event.req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+      event.req.headers.get('x-real-ip') ||
+      event.req.ip ||
       'unknown'
 
     requestCounter.add(1, { method, endpoint, status: res.status })

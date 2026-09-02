@@ -1,4 +1,4 @@
-import { FolderIcon } from '@heroicons/react/24/outline';
+import { FolderIcon } from '@/components/ui/icons';
 import { Link as RouterLink } from 'react-router';
 import { getLandingEntries } from '@/lib/config';
 import { Head } from '@/lib/head';

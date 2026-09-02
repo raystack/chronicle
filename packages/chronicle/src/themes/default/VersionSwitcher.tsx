@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
+import { ChevronDownIcon } from '@/components/ui/icons';
 import { Badge, Button, Menu, Flex, Text } from '@raystack/apsara';
 import { useNavigate } from 'react-router';
 import { getAllVersions } from '@/lib/config';
