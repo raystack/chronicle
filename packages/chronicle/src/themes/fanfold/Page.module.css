@@ -388,6 +388,21 @@
   min-height: 22px;
 }
 
+/* A fence with no language is a drawing, not a listing — an ASCII diagram, a
+   tree, a captured terminal — and nobody cites a line of it by number. The
+   numbers also push the whole thing in by 3ch plus a gutter, which throws a
+   diagram's own alignment out and makes it read as source.
+
+   `plaintext` is the signal, and it is a narrower one than it looks: fumadocs
+   highlights a bare fence with its `defaultLanguage`, which is `plaintext`,
+   while a fence naming a language nothing can highlight falls back to `text`.
+   So an author who wrote nothing gets no numbers, and one who wrote
+   ```logql keeps them. The counter still counts; only the digits are dropped,
+   so nothing downstream has to know about this. */
+.article pre code:global(.language-plaintext) :global(.line)::before {
+  display: none;
+}
+
 /* Right-aligned so the digits stay in a column once a listing passes line 99. */
 .article pre code :global(.line)::before {
   content: counter(fan-line, decimal-leading-zero);
