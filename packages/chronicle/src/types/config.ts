@@ -7,7 +7,7 @@ const logoSchema = z.object({
 })
 
 const themeSchema = z.object({
-  name: z.enum(['default', 'paper']),
+  name: z.enum(['default', 'paper', 'fanfold']),
   colors: z.record(z.string(), z.string()).optional(),
 })
 

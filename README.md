@@ -5,7 +5,7 @@ Config-driven documentation framework built on Vite, Nitro, and Apsara UI.
 ## Features
 
 - **Config-driven** — Single `chronicle.yaml` for all site configuration
-- **Themeable** — Built-in themes: `default` (sidebar + TOC) and `paper` (book-style)
+- **Themeable** — Built-in themes: `default` (sidebar + TOC), `paper` (book-style) and `fanfold` (continuous-form line printer)
 - **MDX** — Write docs in MDX with callouts, tabs, mermaid diagrams, and syntax highlighting
 - **API docs** — Interactive OpenAPI documentation with "Try it out" panel
 - **LLMs** — Auto-generate `/llms.txt` and `/llms-full.txt` for AI consumption

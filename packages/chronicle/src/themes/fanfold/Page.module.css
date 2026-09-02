@@ -1,0 +1,655 @@
+.pageRow {
+  display: flex;
+  align-items: flex-start;
+}
+
+/* The rails are pinned to the window edges, so the column of type is capped and
+   centred in what is left between them. Auto inline margins on a flex item soak
+   up the leftover space, which keeps the type centred on screen because the two
+   rails are the same width. */
+.sheet {
+  flex: 1;
+  min-width: 0;
+  max-width: 904px;
+  margin-inline: auto;
+}
+
+/* ---- header band: the strip a printer lays down before the report ---- */
+
+.headerBand {
+  display: flex;
+  flex-direction: column;
+  padding: 22px var(--fan-gutter);
+}
+
+.stars {
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 10.5px;
+  line-height: 19px;
+  letter-spacing: 0.06em;
+  color: var(--fan-stars);
+  user-select: none;
+}
+
+.metaLine {
+  font-size: 10.5px;
+  line-height: 19px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fan-ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+
+
+/* ---- display band ---- */
+
+.displayBand {
+  padding: 30px var(--fan-gutter);
+}
+
+.display {
+  margin: 0;
+  font-family: var(--fan-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--fan-ink);
+  overflow-wrap: anywhere;
+}
+
+/* A code gets the mock's masthead; a name gets one size on every page. */
+.display[data-size="code"] {
+  font-size: 96px;
+  line-height: 88px;
+}
+
+.display[data-size="name"] {
+  font-size: 44px;
+  line-height: 46px;
+}
+
+/* The lede stays a step above body copy. */
+.subtitle {
+  margin: 18px 0 0;
+  max-width: 620px;
+  font-size: 15px;
+  line-height: 26px;
+  color: var(--fan-ink-2);
+}
+
+.byline {
+  padding: 0 var(--fan-gutter);
+}
+
+/* ---- article ---- */
+
+.article {
+  padding: 0 var(--fan-gutter) 12px;
+  font-size: 15.5px;
+  line-height: 28px;
+  color: var(--fan-ink);
+  /* Prose is capped at 680px and never overflows, so this only ever engages for
+     a table with more columns than the sheet can wrap into. Without it such a
+     table scrolls the whole page sideways, rails and all. */
+  overflow-x: auto;
+}
+
+.article > :first-child {
+  margin-top: 0;
+}
+
+/* Apsara's paragraph, table and callout components set font-size, line-height
+   and letter-spacing on the elements themselves, so the article's values never
+   reach them by inheritance — body copy was rendering at 14px with the 28px
+   leading meant for 15.5px, a ratio of 2.0. Restated here so they land.
+
+   The 1.71 ratio suits Geist Mono's 0.53em x-height, which is large for a
+   monospace — the text sits taller in the line and needs less leading than the
+   face the mock was drawn with. */
+.article :is(p, li, dd, dt) {
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0;
+}
+
+/* 600px is 71 characters at 14px, since a monospace advance is a flat 0.6em.
+   Holding the old 680px would have run the line to 81. */
+.article p,
+.article ul,
+.article ol,
+.article dl {
+  max-width: 600px;
+  margin: 0 0 var(--rs-space-6);
+}
+
+.article li {
+  margin-bottom: 6px;
+}
+
+.article ul,
+.article ol {
+  padding-left: 22px;
+}
+
+.article ul {
+  list-style: none;
+}
+
+/* Dashes rather than bullets — a dot-matrix printer had no round glyph. */
+.article ul > li::before {
+  content: "\2013";
+  position: absolute;
+  margin-left: -22px;
+  color: var(--fan-ink-3);
+}
+
+.article ul > li {
+  position: relative;
+}
+
+.article h1,
+.article h2,
+.article h3,
+.article h4,
+.article h5,
+.article h6 {
+  font-weight: 400;
+  text-transform: uppercase;
+  color: var(--fan-ink);
+  scroll-margin-top: 24px;
+}
+
+.article h2 {
+  font-family: var(--fan-head);
+  font-size: 22px;
+  line-height: 26px;
+  letter-spacing: 0.06em;
+  margin: var(--rs-space-12) 0 22px;
+}
+
+.article h3 {
+  font-family: var(--fan-head);
+  font-size: 16px;
+  line-height: 24px;
+  letter-spacing: 0.06em;
+  margin: var(--rs-space-10) 0 var(--rs-space-5);
+}
+
+.article h4,
+.article h5,
+.article h6 {
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0.1em;
+  color: var(--fan-ink-3);
+  margin: var(--rs-space-9) 0 var(--rs-space-4);
+}
+
+.article a {
+  color: var(--fan-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--fan-underline);
+}
+
+.article a:hover {
+  border-bottom-color: var(--fan-ink);
+}
+
+.article strong {
+  font-weight: 700;
+}
+
+.article hr {
+  border: 0;
+  border-top: 1px dashed var(--fan-rule-strong);
+  margin: 44px 0;
+}
+
+.article blockquote {
+  margin: 0 0 var(--rs-space-6);
+  max-width: 600px;
+  padding-left: var(--rs-space-6);
+  border-left: 1px solid var(--fan-rule-strong);
+  color: var(--fan-ink-2);
+}
+
+.article img {
+  max-width: 100%;
+  height: auto;
+  border: 1px dashed var(--fan-rule);
+}
+
+/* ---- callouts: a ruled aside, not a rounded card ----
+   Apsara's Callout is the only thing in an article carrying aria-live, so that
+   attribute targets the container without depending on its hashed class. Its
+   inner elements share the same class prefix, hence the descendant reset. */
+
+.article div[aria-live] {
+  max-width: 600px;
+  margin: 0 0 var(--rs-space-6);
+  padding: var(--rs-space-4) 0 var(--rs-space-4) 18px;
+  border: 0;
+  border-left: 2px solid var(--fan-rule-strong);
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+  color: var(--fan-ink-2);
+  font-size: 14px;
+  line-height: 24px;
+}
+
+.article div[aria-live] * {
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+/* Same proportional tracking leak as the table cells. */
+.article div[aria-live],
+.article div[aria-live] * {
+  letter-spacing: 0;
+}
+
+.article div[aria-live] :is(p, li) {
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.article div[aria-live] strong {
+  color: var(--fan-ink);
+}
+
+/* The callout reset above clears borders and backgrounds, so the chip gets both
+   of its own back. */
+.article div[aria-live] code {
+  border: 1px solid var(--fan-chip-line);
+  background: var(--fan-wash);
+}
+
+/* The reset above strips the border that draws a link's underline. */
+.article div[aria-live] a {
+  border-bottom: 1px solid var(--fan-underline);
+}
+
+.article div[aria-live] a:hover {
+  border-bottom-color: var(--fan-ink);
+}
+
+/* ---- inline code ----
+   A wash with a hairline around it. The border is keyed to the fill rather than
+   to the paper — a step of about ten levels — so it draws the edge without
+   reading as a second mark competing with the fill, which is what made the
+   original bordered chip so heavy.
+
+   Sized in `em` so a chip tracks whatever it sits in — body copy, a table cell,
+   a callout. No vertical padding, and an inline box's border does not enter the
+   line-height calculation, so nothing here pushes the lines of a paragraph
+   apart.
+
+   `:not(pre) > code` rather than a list of parents: it catches inline code
+   wherever it appears and leaves listings alone. */
+
+.article :not(pre) > code {
+  font-family: var(--fan-mono);
+  font-size: 0.92em;
+  padding: 0 3px;
+  border: 1px solid var(--fan-chip-line);
+  border-radius: 0;
+  background: var(--fan-wash);
+  color: var(--fan-ink);
+}
+
+/* ---- code blocks: a ruled listing, not a card ----
+   Dashed rules top and bottom frame the listing the way a printer separates a
+   block from body copy, and the line numbers sit in their own gutter. Lines are
+   set tighter than body copy: code is scanned down a column, not read across. */
+
+.article div:has(> pre) {
+  margin: 26px 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  overflow: visible;
+  max-width: 100%;
+}
+
+/* The `title` bar becomes the printout's file label. */
+.article div:has(> pre) > :not(pre) {
+  padding: 0 0 9px;
+  background: none;
+  border: 0;
+  border-bottom: 1px solid var(--fan-rule);
+  font-family: var(--fan-mono);
+  font-size: 10.5px;
+  line-height: 18px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fan-ink-3);
+}
+
+.article pre {
+  margin: 0;
+  padding: var(--rs-space-4) 0;
+  background: none;
+  border: 0;
+  border-top: 1px dashed var(--fan-rule);
+  border-bottom: 1px dashed var(--fan-rule);
+  border-radius: 0;
+  overflow-x: auto;
+}
+
+/* A file label already draws the rule above the listing. */
+.article div:has(> pre) > :not(pre) + pre {
+  border-top: 0;
+}
+
+.article pre code {
+  display: block;
+  font-family: var(--fan-mono);
+  font-size: 13px;
+  line-height: 22px;
+  counter-reset: fan-line;
+}
+
+/* Shiki separates its line spans with real newline characters. Once those spans
+   are blocks, each newline becomes an anonymous block of its own and doubles the
+   spacing. Normal white-space processing drops whitespace between blocks, so the
+   newlines disappear and each line keeps `pre` handling for its own indentation.
+   The `:has` guard leaves a code block with no line spans untouched. */
+.article pre code:has(> :global(.line)) {
+  white-space: normal;
+}
+
+.article pre code :global(.line) {
+  display: block;
+  white-space: pre;
+  counter-increment: fan-line;
+  min-height: 22px;
+}
+
+/* Right-aligned so the digits stay in a column once a listing passes line 99. */
+.article pre code :global(.line)::before {
+  content: counter(fan-line, decimal-leading-zero);
+  display: inline-block;
+  width: 3ch;
+  margin-right: var(--rs-space-6);
+  text-align: right;
+  font-size: 11px;
+  color: var(--fan-ink-4);
+  user-select: none;
+}
+
+.article pre code span {
+  color: var(--shiki-light);
+}
+
+/* Shiki's palette is pitched for a bright editor and sits loud against paper
+   this muted. Pulling the saturation down keeps the token hierarchy readable
+   while letting the listing belong to the rest of the sheet. */
+.article pre code {
+  filter: saturate(0.45);
+}
+
+:global([data-theme="dark"]) .article pre code span {
+  color: var(--shiki-dark);
+}
+
+/* ---- tables: the field map ---- */
+
+.article table {
+  width: 100%;
+  max-width: 100%;
+  margin: 26px 0;
+  border-collapse: collapse;
+  background: none;
+  border: 0;
+  font-size: 13.5px;
+  line-height: 24px;
+}
+/* Apsara tints the header band on `thead` itself, so clearing the row and the
+   cells leaves the colour behind. The field map wants ruled columns, not a
+   shaded strip. */
+.article thead,
+.article thead tr,
+.article tr {
+  background: none;
+  border: 0;
+}
+
+/* Apsara's table cells are nowrap, which lets one long cell stretch the table
+   past the sheet and scroll the whole page sideways. A printout wraps its
+   columns instead, so wrapping is turned back on here.
+
+   `break-word` is used rather than `anywhere` because `anywhere` also lowers a
+   column's minimum width, which lets the table algorithm split short headings
+   like "BITS" down the middle even when the sheet has room. A table too wide to
+   wrap scrolls inside the article instead — see the rule on `.article`. */
+.article :is(th, td) {
+  white-space: normal;
+  overflow-wrap: break-word;
+}
+
+.article th {
+  padding: 0 var(--rs-space-5) 10px 0;
+  border: 0;
+  border-bottom: 1px solid var(--fan-rule-strong);
+  text-align: left;
+  vertical-align: bottom;
+  font-family: var(--fan-mono);
+  font-weight: 400;
+  font-size: 10.5px;
+  line-height: 18px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fan-ink-3);
+  background: none;
+}
+
+/* Apsara's cells carry 20px leading and 0.25px of tracking — spacing meant for a
+   proportional face, which reads gappy in mono and crowds the rows. */
+.article td {
+  padding: 13px var(--rs-space-5) 13px 0;
+  border: 0;
+  vertical-align: top;
+  font-family: var(--fan-mono);
+  font-size: 13.5px;
+  line-height: 22px;
+  letter-spacing: 0;
+  color: var(--fan-ink-2);
+  background: none;
+}
+
+.article tbody td:first-child {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--fan-ink);
+}
+
+/* The field-name column is the spine of a field map. Auto table layout shares
+   width by content, so a long notes column would otherwise break short names
+   like "Packet Version Number" across three lines. A plain length is used
+   because Chrome ignores a table cell's min-width once a percentage is in it,
+   which is why the narrow-screen value is set in the media query below. */
+.article :is(th, td):first-child {
+  min-width: 24ch;
+}
+
+/* ---- footer band ---- */
+
+.footerBand {
+  padding: 0 var(--fan-gutter) 56px;
+}
+
+.footerRule {
+  border-top: 1px dashed var(--fan-rule-strong);
+  margin: 0 calc(var(--fan-gutter) * -1);
+}
+
+.footerNav {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--rs-space-7);
+  padding-top: 26px;
+}
+
+.footerLink {
+  font-size: 14px;
+  line-height: 26px;
+  text-transform: uppercase;
+  color: var(--fan-ink);
+  text-decoration: none;
+  border-bottom: 1px solid var(--fan-underline);
+}
+
+.footerLink:hover {
+  border-bottom-color: var(--fan-ink);
+}
+
+.footerLinkNext {
+  margin-left: auto;
+  text-align: right;
+}
+
+.footerMeta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--rs-space-7);
+  padding-top: 34px;
+  font-size: 10.5px;
+  line-height: 18px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--fan-ink-3);
+}
+
+/* ---- right rail: on this page ---- */
+
+.pageNav {
+  width: var(--fan-rail);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 34px var(--rs-space-9) var(--rs-space-13) var(--rs-space-7);
+  /* A long page can still outrun the window, so the rail stays scrollable — but
+     a track drawn down the edge of the sheet reads as a tear in the paper. */
+  scrollbar-width: none;
+}
+
+.pageNav::-webkit-scrollbar {
+  display: none;
+}
+
+.pageNavLabel {
+  font-size: 10px;
+  line-height: 16px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fan-ink-3);
+  margin-bottom: var(--rs-space-3);
+}
+
+
+/* Headings wrap rather than truncate — a cut heading loses the words that tell
+   it from its neighbours. Lines within one heading are set tighter than the gap
+   between headings (4px against 9px), so a second line still reads as a
+   continuation rather than a new entry. */
+.pageNavItem {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin-bottom: 9px;
+  font-size: 12.5px;
+  line-height: 16px;
+  letter-spacing: 0;
+  color: var(--fan-ink-3);
+  text-decoration: none;
+}
+
+.pageNavItemText {
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.pageNavItem:hover {
+  color: var(--fan-ink);
+}
+
+/* Nothing wraps now, so the indent means one thing only: this heading is nested
+   under the one above it. */
+.pageNavItemNested {
+  padding-left: var(--rs-space-4);
+}
+
+.pageNavItem[data-active="true"] {
+  color: var(--fan-ink);
+  font-weight: 500;
+}
+
+/* The same struck square the left rail uses to mark the current line. It sits in
+   the gutter rather than in the text flow, so an active heading stays on the
+   same left edge as every other one. */
+.pageNavItem[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  /* Pinned to the middle of the first line, not the middle of the box, so it
+     stays level with the heading when the heading runs to two lines. */
+  top: 6px;
+  width: 4px;
+  height: 4px;
+  background: var(--fan-ink);
+}
+
+/* A nested heading is already inset, so the marker steps in with it. */
+.pageNavItemNested[data-active="true"]::before {
+  left: 4px;
+}
+
+@media (max-width: 1080px) {
+  .pageNav {
+    display: none;
+  }
+
+  .display[data-size="code"] {
+    font-size: 64px;
+    line-height: 60px;
+  }
+
+  .display[data-size="name"] {
+    font-size: 38px;
+    line-height: 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  .article {
+    font-size: 14.5px;
+    line-height: 26px;
+  }
+
+  .article :is(th, td):first-child {
+    min-width: 10ch;
+  }
+
+  .display[data-size="code"] {
+    font-size: 44px;
+    line-height: 44px;
+  }
+
+  .display[data-size="name"] {
+    font-size: 30px;
+    line-height: 33px;
+  }
+}

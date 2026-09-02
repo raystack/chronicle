@@ -1,0 +1,575 @@
+/* Continuous-form line printer paper: tractor-feed strips down both edges,
+   zebra banding behind the sheet, and monospace type throughout. */
+.layout {
+  --fan-strip: 44px;
+  --fan-rail: 240px;
+  --fan-bar-height: 42px;
+  --fan-gutter: 24px;
+  --fan-mobile-header: 48px;
+  --fan-page-top: 24px;
+
+  /* Spacing and radii come from Apsara wherever a value lands exactly on its
+     scale, so this theme moves with the design system.
+     Colour does not, and deliberately. This palette is a specific paper stock
+     taken from the design — a warm off-white ground, warm greys, an oxidised
+     rule — and Apsara's neutrals are a different, cooler set. Mapping to the
+     nearest token would shift every one of them, which is a change to the
+     design rather than an adoption of the system. Overriding a `--fan-*` here
+     is the supported way to retint the whole theme. */
+  --fan-ground: #fffdfe;
+  --fan-bar: oklch(98.9% 0.005 3.3 / 0.85);
+  --fan-ink: #1d1a1a;
+  --fan-ink-2: #5b5758;
+  --fan-ink-3: #908b8c;
+  --fan-ink-4: #c1bcbd;
+  --fan-rule: #dddada;
+  --fan-rule-strong: #c6c3bb;
+  --fan-underline: #c9c0ae;
+  --fan-stars: #cdc9ca;
+  --fan-hole: #f6f2f3;
+  --fan-desk: #fffdfe;
+  /* A hairline ring draws the edge crisply and wraps all four sides, so the top
+     of the sheet is as defined as its sides. The lift underneath is kept wide
+     and faint — enough to separate the page from the surface without pooling
+     into a dark band around it. */
+  --fan-lift: 0 0 0 1px rgba(29, 26, 26, 0.045),
+    0 1px 1px rgba(29, 26, 26, 0.025),
+    0 10px 24px -10px rgba(29, 26, 26, 0.05);
+  --fan-wash: #f8f5f5;
+  --fan-chip-line: #ebe6e6;
+
+  --fan-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --fan-display: "Doto", "Geist Mono", ui-monospace, monospace;
+  --fan-head: "Departure Mono", "Geist Mono", ui-monospace, monospace;
+
+  /* 1600 = two 44px feed strips, two 240px rails, a 904px column of type and a
+     64px gutter either side of it. Past that the paper stops growing, so the
+     rails never drift away from what they describe. */
+  max-width: 1600px;
+  /* The gap sits above the paper, not inside it, so the sheet — bands, feed
+     strips and all — starts a little down the window and reads as a page laid
+     on a surface rather than one running off the top of the screen. */
+  margin: var(--fan-page-top) auto 0;
+  min-height: calc(100vh - var(--fan-page-top));
+  color: var(--fan-ink);
+  font-family: var(--fan-mono);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:global([data-theme="dark"]) .layout {
+  --fan-ground: #131111;
+  --fan-bar: oklch(19.5% 0.002 3.3 / 0.85);
+  --fan-ink: #ece8e8;
+  --fan-ink-2: #b3adad;
+  --fan-ink-3: #8b8585;
+  --fan-ink-4: #575151;
+  --fan-rule: #302c2c;
+  --fan-rule-strong: #423d3d;
+  --fan-underline: #4c443a;
+  --fan-stars: #3a3535;
+  --fan-hole: #201d1d;
+  --fan-desk: #131111;
+  /* A shadow alone is invisible against a ground this dark, so the sheet gets a
+     hairline of light around it instead, with the shadow left to give depth. */
+  --fan-lift: 0 0 0 1px rgba(236, 232, 232, 0.1),
+    0 10px 26px -10px rgba(0, 0, 0, 0.3);
+  --fan-wash: #1d1b1b;
+  --fan-chip-line: #332f2f;
+}
+
+/* The surface the sheet lies on.
+   This cannot be done with a `body` rule. Every theme's stylesheet ships in the
+   same bundle whichever theme is active, so two unscoped `body` selectors of
+   equal specificity collide and bundle order decides the winner — the paper
+   theme's rule was winning here regardless of the configured theme. A theme's
+   custom properties are also declared on `.layout`, so `var(--fan-ground)` would
+   not even resolve at body scope.
+
+   A fixed backdrop behind the layout avoids both problems: it only exists while
+   this theme is mounted, and it reads the tokens from the element that declares
+   them. It carries the same tone as the paper — the sheet's edges are drawn by
+   the shadow on `.frame`, not by a change of colour. */
+.layout::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: var(--fan-desk);
+  pointer-events: none;
+}
+
+/* The desk is the same tone as the paper, so this shadow is the only thing
+   marking where the sheet ends. */
+.frame {
+  display: flex;
+  align-items: flex-start;
+  background-color: var(--fan-ground);
+  box-shadow: var(--fan-lift);
+}
+
+/* ApiLayout wraps the theme in a fixed-height, `overflow: hidden` shell and
+   styles the content column as the scroller. For that to work a definite height
+   has to reach it, so these wrappers take one — and the page's top margin comes
+   off, since the shell is exactly a viewport tall and the margin would push its
+   last 24px out of sight. `height: 100%` against the auto-height layout of a
+   normal docs page resolves to auto, so none of this touches those. */
+.layout[data-api] {
+  display: flex;
+  flex-direction: column;
+  margin-top: 0;
+  min-height: 0;
+}
+
+/* `flex: 1` rather than `height: 100%`: at narrow widths the mobile header is
+   also in this column, and a full-height frame beneath it overflowed the shell
+   by the header's height — clipping the last 48px of the scroll area. */
+.layout[data-api] .frame {
+  flex: 1;
+  min-height: 0;
+}
+
+.layout[data-api] .sheet {
+  height: 100%;
+  min-height: 0;
+}
+
+/* Real elements rather than a background on the layout: the paper is capped and
+   centred, and a `background-attachment: fixed` gradient tiles from the window
+   edge, not the paper's, so the perforations would fall outside the sheet.
+   Sticky keeps them still while they stay in flow beside it. */
+.strip {
+  position: sticky;
+  top: 0;
+  width: var(--fan-strip);
+  height: 100vh;
+  flex-shrink: 0;
+  background-image: radial-gradient(
+    circle at 22px 20px,
+    var(--fan-hole) 5.5px,
+    transparent 6px
+  );
+  background-size: var(--fan-strip) 40px;
+  background-repeat: repeat-y;
+  /* The strip is a viewport tall so it still fills the window once stuck. The
+     negative margin stops that height from adding the page's top margin back on
+     as overflow at the bottom of a short page. */
+  margin-bottom: calc(var(--fan-page-top) * -1);
+}
+
+/* The zebra sits between the two feed strips and scrolls with the page. */
+.sheet {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-start;
+  border-inline: 1px dashed var(--fan-rule);
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--fan-bar) 0,
+    var(--fan-bar) var(--fan-bar-height),
+    transparent var(--fan-bar-height),
+    transparent calc(var(--fan-bar-height) * 2)
+  );
+  min-height: calc(100vh - var(--fan-page-top));
+}
+
+.rail {
+  width: var(--fan-rail);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  max-height: 100vh;
+  overflow-y: auto;
+  padding: 34px 0 var(--rs-space-13) var(--rs-space-7);
+  scrollbar-width: thin;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* The sidebar is also hidden on the authors pages, which are shared across
+   themes: they style themselves from Apsara tokens and the `--paper-font-*`
+   hooks a theme is expected to set. Remapping those here prints them in the
+   same ink as the rest of the sheet, with no change to the shared components. */
+.contentFull {
+  margin-inline: auto;
+  max-width: 1000px;
+
+  --paper-font-mono: var(--fan-mono);
+  --paper-font-body: var(--fan-mono);
+  --rs-color-foreground-accent-primary: var(--fan-ink);
+  --rs-color-background-accent-secondary: var(--fan-bar);
+  --rs-color-foreground-base-primary: var(--fan-ink);
+  --rs-color-foreground-base-secondary: var(--fan-ink-3);
+  --rs-color-border-base-primary: var(--fan-rule-strong);
+}
+
+/* The theme's own landing page sets its own measure and gutters, and its rule of
+   asterisks is meant to run the width of the sheet, so the cap comes off for it.
+
+   `hideSidebar` is all the layout is told, and it is true for the authors pages
+   too, so this cannot be decided from a prop. The landing marks itself with a
+   data attribute instead — CSS modules rewrite class names but leave attributes
+   alone, so the selector still matches from here. */
+.contentFull:has(> [data-fanfold-landing]) {
+  max-width: none;
+  /* `.sheet` aligns its children to the start, so the content column is only as
+     tall as what is in it. Stretching it gives the landing a height to fill, so
+     its footer can sit at the foot of the paper instead of partway down. */
+  align-self: stretch;
+}
+
+/* Excluded rather than reset: a reset here would be the more specific rule and
+   would beat the landing's own display type, which is what it exists to allow. */
+.contentFull:not(:has(> [data-fanfold-landing])) h1 {
+  font-family: var(--fan-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+/* ---- brand ---- */
+
+.brand {
+  display: block;
+  margin-bottom: 26px;
+  padding-left: var(--rs-space-3);
+  text-decoration: none;
+}
+
+.brandName {
+  font-family: var(--fan-display);
+  font-weight: 800;
+  font-size: 24px;
+  line-height: 21px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fan-ink);
+}
+
+.brandVersion {
+  display: block;
+  margin-top: 6px;
+  font-size: 10.5px;
+  line-height: 16px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fan-ink-3);
+}
+
+/* ---- search ---- */
+
+/* The search trigger lives in the mobile header alone — the rail deliberately
+   has no search row — so it is sized for that one place. It used to carry rail
+   geometry (a 200px width, a bottom rule, a 22px margin) that every rendered
+   instance then overrode. */
+.search {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fan-ink-3);
+  font-family: inherit;
+  font-size: 10.5px;
+  line-height: 18px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.search:hover {
+  color: var(--fan-ink);
+  border-bottom-color: var(--fan-ink-3);
+}
+
+.searchKey {
+  color: var(--fan-ink-4);
+}
+
+/* ---- section switcher ----
+   One row per content directory. The active row is a solid block of ink that
+   bleeds 8px left of the text, so the current section reads as struck through
+   the margin rather than merely bolded. */
+
+.switcher {
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-1);
+  width: 208px;
+}
+
+.switcherItem {
+  display: flex;
+  align-items: center;
+  height: 24px;
+  padding-left: var(--rs-space-3);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  font-size: 10.5px;
+  line-height: 19px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--fan-ink-2);
+  text-decoration: none;
+}
+
+.switcherItem:hover {
+  color: var(--fan-ink);
+  background: var(--fan-bar);
+}
+
+.switcherItem[data-active="true"] {
+  background: var(--fan-ink);
+  color: var(--fan-ground);
+  font-weight: 500;
+}
+
+.separator {
+  width: 200px;
+  height: 0;
+  margin: 18px 0 0 var(--rs-space-3);
+  border-top: 1px dotted var(--fan-rule-strong);
+}
+
+/* ---- nav ----
+   Group headings stay in caps — they are short labels and the caps are what make
+   them read as headings. Page names are set in their natural case: a protocol
+   name like "Proximity-1 Data Link Layer" loses every word shape in caps, which
+   is exactly the cue you need to read it at this size. The case difference then
+   does most of the work separating headings from links, so colour and size only
+   have to widen the gap a little further. */
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  width: 208px;
+  padding: 18px 0 0 var(--rs-space-3);
+}
+
+.navGroup {
+  padding-top: 26px;
+}
+
+.navGroup:first-child {
+  padding-top: 0;
+}
+
+.navLabel,
+.navSubLabel {
+  display: block;
+  margin-bottom: 6px;
+  text-decoration: none;
+  font-size: 10px;
+  line-height: 16px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fan-ink-3);
+}
+
+.navSubLabel {
+  padding-top: 22px;
+}
+
+a.navLabel:hover,
+a.navSubLabel:hover {
+  color: var(--fan-ink);
+}
+
+.navList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* No case transform: a page's `short` frontmatter already carries the case it
+   wants ("SPP"), and forcing uppercase would wreck a site that falls back to
+   full titles. Nothing wraps either, so every entry is one line and every line
+   is one entry; the `title` attribute carries the full name for anything the
+   ellipsis cuts. */
+.navLink {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: var(--rs-space-2);
+  font-size: 12.5px;
+  line-height: 20px;
+  letter-spacing: 0.02em;
+  color: var(--fan-ink);
+  text-decoration: none;
+}
+
+/* `min-width: 0` lets the text shrink below its content width, which is what
+   allows the ellipsis; without it a flex item refuses to go narrower and the
+   marker beside it gets pushed out of the rail instead. */
+.navLinkText {
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.navLink:hover {
+  color: var(--fan-ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--fan-underline);
+}
+
+.navLink[data-active="true"] {
+  font-weight: 500;
+}
+
+/* A struck square marks the current page, the way a printout marks a line. It is
+   absolutely placed in the gutter left of the text rather than being a flex item
+   ahead of it, so the names all keep one left edge whether active or not — and
+   it can never be clipped by the ellipsis. */
+.navLink[data-active="true"]::before {
+  content: "";
+  position: absolute;
+  left: -8px;
+  top: 50%;
+  margin-top: -2px;
+  width: 4px;
+  height: 4px;
+  background: var(--fan-ink);
+}
+
+.navIcon {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+/* ---- rail footer ---- */
+
+.railFooter {
+  width: 200px;
+  margin: var(--rs-space-10) 0 0 var(--rs-space-3);
+  padding-top: var(--rs-space-5);
+  border-top: 1px dotted var(--fan-rule-strong);
+  display: flex;
+  flex-direction: column;
+  gap: var(--rs-space-2);
+}
+
+/* SidebarLinks brings its own list markup; this only has to line it up with the
+   rest of the footer column. */
+.railFooterLinks {
+  display: flex;
+  flex-direction: column;
+}
+
+.railFooterToggle {
+  justify-content: flex-start;
+  font-size: 12px;
+  line-height: 20px;
+  color: var(--fan-ink-3);
+}
+
+.railFooterToggle:hover {
+  color: var(--fan-ink);
+}
+
+.railFooterLink {
+  font-size: 12px;
+  line-height: 20px;
+  letter-spacing: 0;
+  color: var(--fan-ink-3);
+  text-decoration: none;
+}
+
+.railFooterLink:hover {
+  color: var(--fan-ink);
+}
+
+/* ---- mobile ---- */
+
+.mobileHeader {
+  display: none;
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--fan-mobile-header);
+  gap: var(--rs-space-5);
+  padding: 10px var(--rs-space-6);
+  background: var(--fan-ground);
+  border-bottom: 1px dashed var(--fan-rule);
+}
+
+/* In the rail both blocks stack with room to breathe; in the header bar they
+   sit on one line, so the vertical rhythm they carry has to come off. */
+.mobileHeader .brand {
+  margin-bottom: 0;
+}
+
+.mobileActions {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fan-ink-2);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  color: var(--fan-ink);
+}
+
+.mobileMenu {
+  display: none;
+}
+
+@media (max-width: 1080px) {
+  .layout {
+    --fan-page-top: 0px;
+  }
+
+  /* The sheet is the whole window here, so there is no edge to lift. */
+  .frame {
+    box-shadow: none;
+  }
+
+  .strip {
+    display: none;
+  }
+
+  .mobileHeader {
+    display: flex;
+  }
+
+  .sheet {
+    border-inline: 0;
+    min-height: auto;
+  }
+
+  .rail {
+    display: none;
+  }
+
+  .mobileMenu {
+    display: none;
+    padding: var(--rs-space-6);
+    border-bottom: 1px dashed var(--fan-rule);
+    background: var(--fan-ground);
+  }
+
+  .mobileMenu[data-open="true"] {
+    display: block;
+  }
+}

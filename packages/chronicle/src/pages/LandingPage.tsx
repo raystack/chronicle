@@ -3,28 +3,59 @@ import { Link as RouterLink } from 'react-router';
 import { getLandingEntries } from '@/lib/config';
 import { Head } from '@/lib/head';
 import { usePageContext } from '@/lib/page-context';
+import { getTheme } from '@/themes/registry';
+import type { ThemeLandingProps } from '@/types';
 import styles from './LandingPage.module.css';
 
+/**
+ * Resolves what the landing page shows, then hands it to the active theme.
+ *
+ * Themes that fill the `Landing` slot get to lay the page out themselves; the
+ * rest fall through to `DefaultLanding` below. Config reading, the `<Head>`
+ * tags and the version label stay here either way, so a theme never has to
+ * repeat them.
+ */
 export function LandingPage() {
   const { config, version } = usePageContext();
   const entries = getLandingEntries(config, version.dir);
+  const { Landing } = getTheme(config.theme?.name);
 
-  const heading = version.dir === null
-    ? config.site.title
-    : `${config.site.title} — ${versionLabel(config, version.dir)}`;
+  // The heading only carries a version when an older one is being read, so the
+  // latest reads as the site itself. `versionLabel` is the label either way —
+  // a theme may want to print "0.3" even on the latest version.
+  const olderLabel =
+    version.dir === null ? null : versionLabel(config, version.dir);
+  const heading = olderLabel
+    ? `${config.site.title} — ${olderLabel}`
+    : config.site.title;
+
+  const props: ThemeLandingProps = {
+    config,
+    entries,
+    heading,
+    description: config.site.description,
+    versionLabel: olderLabel ?? config.latest?.label ?? null,
+  };
 
   return (
     <>
       <Head
-        title={version.dir ? `${config.site.title} — ${versionLabel(config, version.dir)}` : 'Documentation'}
+        title={olderLabel ? `${config.site.title} — ${olderLabel}` : 'Documentation'}
         description={config.site.description}
         config={config}
       />
+      {Landing ? <Landing {...props} /> : <DefaultLanding {...props} />}
+    </>
+  );
+}
+
+function DefaultLanding({ entries, heading, description }: ThemeLandingProps) {
+  return (
     <div className={styles.root}>
       <div className={styles.header}>
         <h1 className={styles.title}>{heading}</h1>
-        {config.site.description ? (
-          <p className={styles.description}>{config.site.description}</p>
+        {description ? (
+          <p className={styles.description}>{description}</p>
         ) : null}
       </div>
       <div className={styles.grid}>
@@ -49,7 +80,6 @@ export function LandingPage() {
         ))}
       </div>
     </div>
-    </>
   );
 }
 

@@ -6,7 +6,7 @@ order: 7
 
 # Themes
 
-Chronicle ships with two built-in themes. Set the theme in your `chronicle.yaml`:
+Chronicle ships with three built-in themes. Set the theme in your `chronicle.yaml`:
 
 ```yaml
 theme:
@@ -58,3 +58,42 @@ theme:
 - Reading progress tracking
 - Optimized typography for long content
 - Light mode only (dark mode toggle is disabled)
+
+## Fanfold Theme
+
+A continuous-form line printer look — tractor-feed strips down both edges, faint
+zebra banding behind the page, and monospace type throughout.
+
+```yaml
+theme:
+  name: fanfold
+```
+
+### Layout
+
+- **Left rail** — A section switcher, then the page tree for the section you are in
+- **Sheet** — Centered content with a printed header block and a footer block
+- **Right rail** — Table of contents plus configured links
+
+### Features
+
+- Header block prints the breadcrumb trail, site name, path, and a page counter
+- Page title set in a dot-matrix face that steps down in size as titles get longer
+- Code blocks print as ruled listings with a line-number gutter
+- Tables print as field maps with no cell borders
+- Its own landing page: a masthead over a register of every section
+- Light and dark mode
+
+### Landing page
+
+When `landing` is turned on, this theme prints its own cover sheet instead of the
+shared card grid. It shows an ident line, the site title in the dot-matrix face,
+the site description, and then every content directory as a numbered row with its
+path and description.
+
+Set it in `chronicle.yaml`:
+
+```yaml
+latest:
+  landing: true
+```

@@ -3,7 +3,7 @@ import path from 'node:path';
 import { normalizeAuthorList } from './authors';
 import { loader } from 'fumadocs-core/source';
 import { flattenTree } from 'fumadocs-core/page-tree';
-import type { Root, Node, Folder } from 'fumadocs-core/page-tree';
+import type { Root, Node, Folder, Item } from 'fumadocs-core/page-tree';
 
 import { parentPath, getFolderPath } from './folder-utils';
 
@@ -181,6 +181,50 @@ function sortTreeByOrder(tree: Root, pages: { url: string; data: unknown }[], me
   return { ...tree, children: sortNodes(tree.children, pageOrderMap, folderOrderMap) };
 }
 
+/**
+ * Copies each page's `short` frontmatter onto its node in the tree, so a sidebar
+ * can label a link without having to look the page up again. Nodes for pages
+ * that set no `short` are left exactly as they were.
+ */
+function attachShortNames(
+  tree: Root,
+  pages: { url: string; data: unknown }[],
+): Root {
+  const shortByUrl = new Map<string, string>();
+  for (const page of pages) {
+    const short = (page.data as Record<string, unknown>).short;
+    if (typeof short === 'string' && short.length > 0) {
+      shortByUrl.set(page.url, short);
+    }
+  }
+  if (shortByUrl.size === 0) return tree;
+
+  const withShort = (node: Item): Item => {
+    const short = shortByUrl.get(node.url);
+    if (!short) return node;
+    // fumadocs' `Item` has no `short`, so widen rather than cast a literal.
+    const labelled: Item & { short: string } = { ...node, short };
+    return labelled;
+  };
+
+  function walk(nodes: Node[]): Node[] {
+    return nodes.map(node => {
+      if (node.type === NodeType.Folder) {
+        const folder = { ...node, children: walk(node.children) } as Folder;
+        // Only touch `index` when there is one. Writing the key back as
+        // `undefined` gives the folder an `index` it never had, and compactTree
+        // walks every key it keeps — including that one.
+        if (node.index) folder.index = withShort(node.index);
+        return folder;
+      }
+      if (node.type !== NodeType.Page) return node;
+      return withShort(node);
+    });
+  }
+
+  return { ...tree, children: walk(tree.children) };
+}
+
 function filterDraftsFromTree(tree: Root, draftUrls: Set<string>): Root {
   function filterNodes(nodes: Node[]): Node[] {
     return nodes
@@ -197,8 +241,12 @@ export async function getPageTree(): Promise<Root> {
   if (cachedTree) return cachedTree;
   const s = await getSource();
   const metaFiles = buildFiles().filter(f => f.type === 'meta') as { path: string; data: Record<string, unknown> }[];
-  const sorted = sortTreeByOrder(s.pageTree as Root, s.getPages(), metaFiles);
-  const draftUrls = new Set(s.getPages().filter(p => isDraft(p)).map(p => p.url));
+  const pages = s.getPages();
+  const sorted = attachShortNames(
+    sortTreeByOrder(s.pageTree as Root, pages, metaFiles),
+    pages,
+  );
+  const draftUrls = new Set(pages.filter(p => isDraft(p)).map(p => p.url));
   cachedTree = draftUrls.size > 0 ? filterDraftsFromTree(sorted, draftUrls) : sorted;
   return cachedTree;
 }

@@ -1,0 +1,293 @@
+/* The landing page as a cover sheet: an ident line struck across the top, a
+   dot-matrix masthead, then the sections printed as a register.
+
+   The bands read wider than the ones on a content page. A content page is a
+   column of prose capped at 904px; this is a form, so it uses the full sheet
+   and only the register's own columns hold the eye. */
+
+.root {
+  --fan-landing-gutter: clamp(24px, 6vw, 120px);
+
+  display: flex;
+  flex-direction: column;
+  /* A site with few sections leaves the register short. Filling the sheet lets
+     the footer drop to the bottom of the paper rather than stopping halfway
+     down with blank zebra under it. */
+  min-height: 100%;
+  max-width: 1384px;
+  margin-inline: auto;
+}
+
+/* ---- header band ---- */
+
+/* Set in from the sheet's edge by a hair rather than the band gutter, so the
+   rule of asterisks reads as struck across the whole page. */
+.headerBand {
+  display: flex;
+  flex-direction: column;
+  padding: 34px 24px 26px;
+}
+
+.stars {
+  overflow: hidden;
+  white-space: nowrap;
+  font-size: 10.5px;
+  line-height: 18px;
+  letter-spacing: 0.14em;
+  color: var(--fan-stars);
+  user-select: none;
+}
+
+.identRow {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 26px;
+  padding-top: 6px;
+}
+
+/* Holds the struck lines as one unit. `min-width: 0` so a long site title
+   ellipses inside the row instead of pushing the links off the sheet. */
+.identLines {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ident {
+  font-size: 10.5px;
+  line-height: 18px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fan-ink-3);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.headerLinks {
+  display: flex;
+  flex-shrink: 0;
+  gap: 26px;
+}
+
+.headerLink {
+  font-size: 10.5px;
+  line-height: 18px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fan-ink-3);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.headerLink:hover {
+  color: var(--fan-ink);
+}
+
+/* ---- hero band ---- */
+
+.heroBand {
+  padding: 56px var(--fan-landing-gutter) 20px;
+}
+
+.display {
+  margin: 0;
+  font-family: var(--fan-display);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--fan-ink);
+  overflow-wrap: anywhere;
+}
+
+/* Two sizes, not a ladder — same reasoning as the display on a content page. */
+.display[data-size="wordmark"] {
+  font-size: clamp(34px, 11vw, 160px);
+  line-height: 0.93;
+}
+
+.display[data-size="name"] {
+  font-size: clamp(32px, 6vw, 84px);
+  line-height: 0.98;
+}
+
+/* A step above body copy, and the one place on this page words come from the
+   site's own config. */
+.lede {
+  margin: 22px 0 0;
+  max-width: 680px;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 28px;
+  letter-spacing: 0.01em;
+  color: var(--fan-ink);
+  text-wrap: pretty;
+}
+
+/* ---- register band ---- */
+
+.registerBand {
+  padding: 56px var(--fan-landing-gutter) 20px;
+}
+
+.sectionTitle {
+  margin: 0 0 34px;
+  font-family: var(--fan-head);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 26px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--fan-ink);
+}
+
+/* Fixed-width slots so the four columns hold their lanes down the register,
+   whatever a row's label or description happens to be. */
+.headRow,
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 0;
+}
+
+.headRow {
+  padding-bottom: 10px;
+  border-bottom: 1px dashed var(--fan-rule-strong);
+  font-size: 10.5px;
+  line-height: 18px;
+  letter-spacing: 0.14em;
+  color: var(--fan-ink-3);
+}
+
+.row {
+  padding: 9px 0;
+  font-size: 13.5px;
+  line-height: 24px;
+  color: var(--fan-ink-3);
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+}
+
+/* Hover is the only thing separating this register from a printed one, so it
+   stays to a rule under the row and ink in the label — no fill, no lift. */
+.row:hover {
+  border-bottom-color: var(--fan-rule);
+}
+
+.row:hover .name {
+  border-bottom-color: var(--fan-ink);
+}
+
+.colNo,
+.colName,
+.colPath {
+  flex-shrink: 0;
+}
+
+.colNo {
+  width: 56px;
+  font-variant-numeric: tabular-nums;
+}
+
+.colName {
+  width: 170px;
+  padding-right: 16px;
+  font-weight: 500;
+  text-transform: uppercase;
+  color: var(--fan-ink);
+}
+
+/* The rule on hover belongs to the label, not to the lane it sits in — set on
+   the fixed-width slot it ran the whole column and read as a stray underscore. */
+.name {
+  border-bottom: 1px solid transparent;
+}
+
+.colPath {
+  width: 170px;
+  padding-right: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.colWhat {
+  flex: 1;
+  min-width: 0;
+  color: var(--fan-ink);
+}
+
+/* ---- footer band ---- */
+
+.footerBand {
+  margin-top: auto;
+  padding: 64px var(--fan-landing-gutter);
+}
+
+.footerRule {
+  border-top: 1px dashed var(--fan-rule-strong);
+}
+
+.footerMeta {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  padding-top: 22px;
+  font-size: 10.5px;
+  line-height: 18px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--fan-ink-3);
+}
+
+/* ---- narrow widths ---- */
+
+/* Below the register's own width the four lanes cannot hold, so each row
+   becomes a small printed block: number and label on one line, path and
+   description stacked under it. The head row has nothing left to label. */
+@media (max-width: 860px) {
+  .headRow {
+    display: none;
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 32px 1fr;
+    column-gap: 12px;
+    row-gap: 2px;
+    padding: 14px 0;
+    border-bottom: 1px dashed var(--fan-rule);
+  }
+
+  .colNo {
+    width: auto;
+    grid-row: 1;
+  }
+
+  .colName,
+  .colPath,
+  .colWhat {
+    width: auto;
+    grid-column: 2;
+    padding-right: 0;
+  }
+
+  .colPath {
+    font-size: 12px;
+    color: var(--fan-ink-3);
+  }
+}
+
+@media (max-width: 600px) {
+  .identRow {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .headerLinks {
+    flex-wrap: wrap;
+    gap: 4px 18px;
+  }
+}

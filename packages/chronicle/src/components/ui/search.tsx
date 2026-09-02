@@ -184,7 +184,7 @@ export function SearchProvider({ children }: { children: ReactNode }) {
   return <SearchContext.Provider value={value}>{children}</SearchContext.Provider>;
 }
 
-function useSearch(): SearchContextValue {
+export function useSearch(): SearchContextValue {
   const ctx = useContext(SearchContext);
   if (!ctx) throw new Error('Search components must be used within <SearchProvider>');
   return ctx;
