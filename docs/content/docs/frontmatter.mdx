@@ -13,6 +13,7 @@ Every MDX file supports YAML frontmatter at the top of the file for page-level c
 ```mdx
 ---
 title: Getting Started
+short: Start
 description: A quick guide to set up your project
 order: 2
 icon: rectangle-stack
@@ -34,6 +35,24 @@ Your content here...
 ```yaml
 title: Installation Guide
 ```
+
+### short
+
+Optional short label for the sidebar. Use it when the full title is too long for
+a narrow rail but the page is known by a code its readers already use — a package
+name, a command, a standard's abbreviation.
+
+```yaml
+title: Space Packet Protocol
+short: SPP
+```
+
+The sidebar shows `SPP` and keeps the full title on the link's tooltip. Headings,
+breadcrumbs, the browser tab and search all keep using `title`. Pages that set no
+`short` fall back to their title, so this is opt-in per page.
+
+Honoured by the `fanfold` theme, whose rail is narrow enough to need it. The
+`default` and `paper` themes ignore it and always show `title`.
 
 ### description
 

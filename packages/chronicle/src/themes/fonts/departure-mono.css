@@ -1,0 +1,12 @@
+/* Declared once, here, rather than in each theme's CSS module.
+   The paper and fanfold themes both set this face. Two identical @font-face
+   rules in one bundle is harmless but pointless, and when they pointed at
+   per-theme copies of the file it also shipped the 22KB twice. registry.ts
+   imports this as a plain stylesheet, so it lands exactly once. */
+@font-face {
+  font-family: "Departure Mono";
+  src: url("./DepartureMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

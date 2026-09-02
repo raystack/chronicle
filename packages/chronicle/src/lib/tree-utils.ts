@@ -2,7 +2,17 @@ import type { Folder, Node, Root } from 'fumadocs-core/page-tree';
 import type { ChronicleConfig } from '@/types';
 import type { VersionContext } from './version-source';
 
-const KEEP_FIELDS = new Set(['type', 'name', 'url', 'icon', 'children', 'index']);
+// Anything not listed here is dropped when the tree is serialised for the
+// client, so a new node field has to be added or it will not survive the trip.
+const KEEP_FIELDS = new Set([
+  'type',
+  'name',
+  'short',
+  'url',
+  'icon',
+  'children',
+  'index',
+]);
 
 function compactLeaf(node: Node): Node {
   const out: Record<string, unknown> = {};
@@ -26,6 +36,15 @@ function compactNode(node: Node): Node {
 
 export function compactTree(tree: Root): Root {
   return { ...tree, children: tree.children.map(compactNode) };
+}
+
+/**
+ * The `short` frontmatter a page set, if any. `attachShortNames` in source.ts
+ * puts it on the node; fumadocs' own `Item` type does not know about it.
+ */
+export function shortName(node: Node): string | undefined {
+  const value = (node as { short?: unknown }).short;
+  return typeof value === 'string' && value.length > 0 ? value : undefined;
 }
 
 export const NodeType = {

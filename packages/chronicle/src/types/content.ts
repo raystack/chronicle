@@ -20,6 +20,12 @@ export interface Author {
 
 export interface Frontmatter {
   title: string
+  /**
+   * Short label for navigation — a package or command name such as `SPP`. Falls
+   * back to `title`. Useful where the full title is too long for a sidebar but
+   * the page is known by a code its readers already use.
+   */
+  short?: string
   description?: string
   order?: number
   icon?: string
@@ -59,4 +65,20 @@ export interface Page extends PageNav {
   frontmatter: Frontmatter
   content: ReactNode
   toc: TableOfContents
+}
+
+/**
+ * One content root offered on the landing page. Built from config rather than
+ * from the page tree, so it is available before any page is loaded.
+ *
+ * It lives here rather than beside `getLandingEntries` in `lib/config.ts`
+ * because `types/theme.ts` needs it for the `Landing` slot, and a type in
+ * `types/` importing from `lib/` would close an import cycle.
+ */
+export interface LandingEntry {
+  label: string
+  description?: string
+  href: string
+  contentDir: string
+  icon?: string
 }

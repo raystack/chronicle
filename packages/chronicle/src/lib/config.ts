@@ -4,6 +4,7 @@ import {
   type BadgeConfig,
   type ChronicleConfig,
   chronicleConfigSchema,
+  type LandingEntry,
 } from '@/types'
 
 const defaultConfig: ChronicleConfig = chronicleConfigSchema.parse({
@@ -78,14 +79,6 @@ export interface VersionDescriptor {
   label: string
   badge?: BadgeConfig
   isLatest: boolean
-}
-
-export interface LandingEntry {
-  label: string
-  description?: string
-  href: string
-  contentDir: string
-  icon?: string
 }
 
 export function getLandingEntries(

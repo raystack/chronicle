@@ -2,7 +2,7 @@ import { describe, expect, test } from 'bun:test'
 import type { Node, Root } from 'fumadocs-core/page-tree'
 import type { ChronicleConfig } from '@/types'
 import type { VersionContext } from './version-source'
-import { getFirstPageUrl, findFolderFirstPage, resolveDocsRedirect, resolvePageAndSlug, compactTree } from './tree-utils'
+import { getFirstPageUrl, findFolderFirstPage, resolveDocsRedirect, resolvePageAndSlug, compactTree, shortName } from './tree-utils'
 
 function page(url: string, name = 'Page'): Node {
   return { type: 'page', name, url } as Node
@@ -299,5 +299,56 @@ describe('compactTree', () => {
   test('preserves tree name', () => {
     const tree: Root = { name: 'custom', children: [] }
     expect(compactTree(tree).name).toBe('custom')
+  })
+
+  // `short` is not a field fumadocs knows about, so it only survives
+  // serialisation because it is named in KEEP_FIELDS.
+  test('keeps short on page nodes', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{
+        type: 'page', name: 'Space Packet Protocol', short: 'SPP',
+        url: '/protocols/spp', $ref: 'spp.mdx',
+      } as Node],
+    }
+    const result = compactTree(tree)
+    expect(result.children[0]).toEqual({
+      type: 'page', name: 'Space Packet Protocol', short: 'SPP', url: '/protocols/spp',
+    })
+  })
+
+  test('keeps short on a folder index page', () => {
+    const tree: Root = {
+      name: 'root',
+      children: [{
+        type: 'folder', name: 'Transport',
+        index: { type: 'page', name: 'Transport overview', short: 'TP', url: '/transport' } as Node,
+        children: [],
+      } as Node],
+    }
+    const folder = compactTree(tree).children[0] as any
+    expect(folder.index.short).toBe('TP')
+  })
+})
+
+describe('shortName', () => {
+  test('returns the short label a page set', () => {
+    const node = { type: 'page', name: 'Space Packet Protocol', short: 'SPP', url: '/spp' } as Node
+    expect(shortName(node)).toBe('SPP')
+  })
+
+  test('returns undefined when a page set none, so callers fall back to title', () => {
+    const node = { type: 'page', name: 'Install', url: '/install' } as Node
+    expect(shortName(node)).toBeUndefined()
+  })
+
+  test('ignores an empty string', () => {
+    const node = { type: 'page', name: 'Install', short: '', url: '/install' } as Node
+    expect(shortName(node)).toBeUndefined()
+  })
+
+  test('ignores a non-string value', () => {
+    const node = { type: 'page', name: 'Install', short: 42, url: '/install' } as unknown as Node
+    expect(shortName(node)).toBeUndefined()
   })
 })
