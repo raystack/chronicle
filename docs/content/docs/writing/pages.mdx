@@ -1,0 +1,119 @@
+---
+title: Pages and frontmatter
+description: How a file becomes a page, and the frontmatter you will use every day.
+order: 1
+---
+
+A page is an `.mdx` file in a content directory. Create the file and it is on the
+site — there is nothing to register.
+
+## Files become URLs
+
+The path under a content directory is the URL:
+
+```
+content/docs/index.mdx              → /docs
+content/docs/hello.mdx              → /docs/hello
+content/docs/guides/setup.mdx       → /docs/guides/setup
+content/docs/guides/index.mdx       → /docs/guides
+```
+
+`index.mdx` is the page for the folder that holds it. `readme.mdx` does the same
+job, which is useful when the folder is also browsed on GitHub.
+
+## Frontmatter
+
+Every page opens with a YAML block. Only `title` is required:
+
+```mdx
+---
+title: Installing the CLI
+description: Get the command line tool onto your machine.
+order: 2
+---
+
+The CLI ships as a single binary.
+
+## Requirements
+```
+
+The four fields you will use on nearly every page:
+
+| Field | What it does |
+|---|---|
+| `title` | **Required.** The heading above the article, the sidebar label, the browser tab |
+| `description` | The line under the heading, plus the meta description and social card |
+| `order` | Where the page sits in the sidebar. Lower first |
+| `draft` | `true` keeps the page out of the site while you write it |
+
+There are nine more fields for narrower jobs. See
+[Frontmatter fields](/docs/reference/frontmatter) for the full list.
+
+## Do not repeat the title
+
+Every theme prints `title` above the article. A page that opens with its own
+`# Installing the CLI` shows the same words twice.
+
+```mdx
+---
+title: Installing the CLI
+---
+
+# Installing the CLI      ← delete this
+
+The CLI ships as a single binary.
+```
+
+Start with your first sentence, and use `##` and below for sections. Those are
+what the table of contents lists — a `#` in the body never appears there.
+
+## Writing MDX
+
+MDX is markdown plus components. Everything you expect from markdown works:
+headings, lists, tables, links, code fences, block quotes, bold and italic.
+
+On top of that Chronicle gives you callouts, tabs, badges, collapsible sections
+and Mermaid diagrams. See [Components](/docs/writing/components).
+
+Code fences are highlighted by Shiki. Name the language on the fence:
+
+````mdx
+```bash
+chronicle dev
+```
+````
+
+A fence with no language is rendered as plain text rather than failing, so an
+ASCII diagram is safe to paste in.
+
+## Hiding a page while you write it
+
+Set `draft: true`:
+
+```mdx
+---
+title: Not finished yet
+draft: true
+---
+```
+
+The file stays where it is, but the page is dropped from the navigation tree — so
+it is out of the sidebar, breadcrumbs, search, and the previous and next links.
+This is how you keep unfinished work in the repository.
+
+## Reading time and last modified
+
+Reading time is measured from the page body and shown by the themes that have
+somewhere to put it. You do not set it.
+
+`lastModified` is a date you set yourself when you want the page to state one:
+
+```yaml
+lastModified: "2026-03-30"
+```
+
+## Next
+
+- [Navigation](/docs/writing/navigation) — ordering pages and naming folders
+- [Components](/docs/writing/components) — callouts, tabs, diagrams
+- [Frontmatter fields](/docs/reference/frontmatter) — all thirteen fields

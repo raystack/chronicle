@@ -2,6 +2,8 @@ site:
   title: Chronicle
   description: Config-driven documentation framework
 
+url: https://chronicle.raystack.org
+
 content:
   - dir: docs
     label: Docs
@@ -17,6 +19,30 @@ navigation:
 search:
   enabled: true
   placeholder: Search docs...
+
+# The docs were reorganised into groups. These keep every old link working.
+redirects:
+  - from: /docs/features
+    to: /docs
+    permanent: true
+  - from: /docs/cli
+    to: /docs/reference/cli
+    permanent: true
+  - from: /docs/configuration
+    to: /docs/reference/config
+    permanent: true
+  - from: /docs/frontmatter
+    to: /docs/reference/frontmatter
+    permanent: true
+  - from: /docs/components
+    to: /docs/writing/components
+    permanent: true
+  - from: /docs/image-optimization
+    to: /docs/writing/images
+    permanent: true
+  - from: /docs/docker
+    to: /docs/deploy/docker
+    permanent: true
 
 telemetry:
   enabled: true

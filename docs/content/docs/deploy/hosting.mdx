@@ -1,0 +1,186 @@
+---
+title: Deploy
+description: Put a built site on Vercel, Cloudflare, a Node host, or any static host.
+order: 2
+---
+
+Pick the preset that matches your host, build, and publish the output. The
+preset is the only Chronicle-specific part — everything after it is your host's
+normal workflow.
+
+Set it in the config so every build agrees:
+
+```yaml
+preset: vercel
+```
+
+Or pass it per build, which is what you want if the same repository deploys to
+more than one place:
+
+```bash
+chronicle build --preset static
+```
+
+## Vercel
+
+```yaml
+preset: vercel
+```
+
+```bash
+chronicle build
+```
+
+The build writes `.vercel/output`, which is the directory Vercel deploys
+directly. Set the build command to `chronicle build` and leave the output
+directory at its default.
+
+For a site that does not need per-request search or the API request tester, use
+`vercel-static` instead. Same output location, built as a single-page app.
+
+## Cloudflare
+
+For Workers:
+
+```yaml
+preset: cloudflare
+```
+
+The build writes `.output/`. Deploy it with Wrangler.
+
+For Pages, use the static preset built for it:
+
+```yaml
+preset: cloudflare-pages
+```
+
+That writes `.output/public/`. Point your Pages project at that directory.
+
+## A Node host
+
+Any host that runs a Node process — a VM, a container platform, a PaaS.
+
+```yaml
+preset: node-server
+```
+
+```bash
+chronicle build
+chronicle start --port 3000 --host 0.0.0.0
+```
+
+`--host 0.0.0.0` matters. The default binds to localhost, which works on your
+machine and refuses connections from outside a container.
+
+Point the platform's health check at `/api/health`, and its readiness check at
+`/api/ready` if it has a separate one. See
+[Monitoring](/docs/deploy/monitoring).
+
+There is a container image if you would rather not build your own — see
+[Docker](/docs/deploy/docker).
+
+## GitHub Pages
+
+```yaml
+preset: github-pages
+```
+
+The build writes `.output/public/`. A workflow that builds and publishes it:
+
+```yaml
+name: docs
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install
+      - run: bun run chronicle build --preset github-pages
+      # GitHub Pages cannot rewrite unknown paths, but it does serve 404.html
+      # for them — so a copy of the app shell makes deep links work.
+      - run: cp .output/public/index.html .output/public/404.html
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .output/public
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: github-pages
+    steps:
+      - uses: actions/deploy-pages@v4
+```
+
+## Any other static host
+
+```yaml
+preset: static
+```
+
+`chronicle build` writes `.output/public/`. Upload it to S3, Netlify, a CDN, or
+an nginx document root. There is nothing to run.
+
+### Send unknown paths to index.html
+
+This one step catches most people. A static build is a single-page app, so every
+page is served by the same `index.html`. Without a rewrite rule the home page
+works and `/docs/quick-start` returns a 404.
+
+On nginx:
+
+```nginx
+location / {
+  try_files $uri $uri/ /index.html;
+}
+```
+
+On Netlify, a `_redirects` file in the published directory:
+
+```
+/*  /index.html  200
+```
+
+Most CDNs call this a "SPA fallback" or "rewrite to index". Whatever the name,
+it is the same rule.
+
+## Set `url` before you ship
+
+```yaml
+url: https://docs.example.com
+```
+
+Without it there are no absolute URLs for the sitemap, no canonical link tags,
+and no social cards — a social network needs an absolute address to fetch a card
+image from. It is the single easiest thing to forget and the one most visible
+once the site is public.
+
+## Redirects survive the move
+
+If your docs used to live somewhere else, or you moved pages during the
+migration, `redirects` in the config are served by Chronicle itself. They work
+the same on every server preset.
+
+Static presets have no server to run them, so on a static host use the host's
+own redirect mechanism — the same place you configured the rewrite above. See
+[Links and redirects](/docs/writing/links).
+
+## A checklist
+
+Before you call it done:
+
+- `url` is set
+- `/sitemap.xml` and `/robots.txt` return something sensible
+- Search finds a page you know exists
+- A shared link shows a social card
+- Old URLs still resolve, if any moved
+- Health check points at `/api/health`, on a server build
+- A deep link like `/docs/quick-start` loads directly, on a static build

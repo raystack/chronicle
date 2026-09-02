@@ -1,95 +1,71 @@
 ---
-title: Getting Started
-description: Install and set up Chronicle, a config-driven documentation framework.
+title: Introduction
+description: What Chronicle is, when to reach for it, and where to go next.
 order: 1
 ---
 
-# Getting Started
+Chronicle turns a folder of MDX files into a documentation site. You write pages,
+you describe the site in one YAML file, and that is the whole setup. There is no
+JavaScript config, no plugin list, and no build script to maintain.
 
-Chronicle is a config-driven documentation framework built on Vite, Nitro, and Apsara UI components. Write MDX content, configure with a single YAML file, and get a fully themed documentation site.
+It is built on Vite and Nitro, and renders with Apsara components. Pages are
+server-rendered, so they work with JavaScript turned off and load fast on a
+slow connection.
 
-## Installation
+## When to reach for it
 
-```bash
-bun add @raystack/chronicle
-```
+Chronicle suits a project that needs more than a README and less than a custom
+site. It is a good fit when you want:
 
-## Quick Start
+- **Docs in your repository.** Pages are files. They review like code.
+- **More than one version live at once.** Old versions stay reachable at their
+  own URLs while you keep writing the new one.
+- **An API reference from your OpenAPI spec.** Point at the spec file and you
+  get browsable endpoint pages with a request tester.
+- **Something to hand to an AI tool.** Every page has a plain markdown URL, and
+  the site publishes an index at `llms.txt`.
 
-### 1. Initialize a new project
+It is a poor fit if you need a full marketing site, a CMS with a web editor, or
+a design you control down to the pixel. Chronicle gives you a choice of three
+themes and no way to write a fourth.
 
-```bash
-chronicle init
-```
+## What you get
 
-This creates:
-- `chronicle.yaml` — your site configuration
-- `content/` — content directory with a sample `index.mdx`
-- `.gitignore` — with `node_modules`, `dist`, `.output` entries
+Write MDX and Chronicle handles the rest of a docs site: navigation built from
+your folders, full-text search, a table of contents per page, breadcrumbs,
+previous and next links, dark mode, social cards, a sitemap, and redirects for
+URLs you have moved.
 
-To use an existing directory as content (e.g. `docs/`):
+The pieces you will touch most often:
 
-```bash
-chronicle init -c docs
-```
+| You want to | Go to |
+|---|---|
+| Get a site running | [Quick start](/docs/quick-start) |
+| Write and organise pages | [Writing docs](/docs/writing/pages) |
+| Publish a second version | [Versioned documentation](/docs/guides/versioning) |
+| Publish an API reference | [API reference](/docs/guides/api-reference) |
+| Look up a config key | [chronicle.yaml](/docs/reference/config) |
+| Put it on the internet | [Deploy](/docs/deploy/hosting) |
 
-### 2. Start the development server
+## How a project is laid out
 
-```bash
-chronicle dev
-```
-
-Your docs site is now running at [http://localhost:3000](http://localhost:3000).
-
-### 3. Add content
-
-Create `.mdx` files in your content directory. Each file becomes a page. Use folders to create nested navigation.
+One config file, one content folder:
 
 ```
 my-docs/
-├── chronicle.yaml
+├── chronicle.yaml       # the whole site config
 ├── content/
-│   ├── index.mdx
-│   ├── getting-started.mdx
-│   └── guides/
-│       ├── installation.mdx
-│       └── configuration.mdx
+│   └── docs/            # a content directory
+│       ├── index.mdx    # → /docs
+│       └── guides/
+│           └── setup.mdx  # → /docs/guides/setup
 └── .output/             # build output, gitignored
 ```
 
-### 4. Build for production
+Files become URLs. Folders become groups in the sidebar. See
+[Project structure](/docs/structure) for how the pieces fit together.
 
-```bash
-chronicle build
-chronicle start
-```
+## Next
 
-Or use the combined command:
-
-```bash
-chronicle serve
-```
-
-## Project Structure
-
-A minimal Chronicle project looks like:
-
-```
-my-docs/
-├── chronicle.yaml      # Site configuration
-├── content/
-│   ├── index.mdx       # Home page
-│   └── guides/
-│       └── setup.mdx   # Nested page at /guides/setup
-└── .output/             # Build output, gitignored
-```
-
-All configuration is done through `chronicle.yaml`. No additional config files needed.
-
-## Next Steps
-
-- [CLI Commands](/docs/cli) — All available CLI commands and flags
-- [Configuration](/docs/configuration) — Full `chronicle.yaml` reference
-- [Frontmatter](/docs/frontmatter) — Page-level metadata options
-- [Components](/docs/components) — MDX components and admonitions
-- [Themes](/docs/themes) — Available themes and customization
+Start with the [quick start](/docs/quick-start) — it takes about two minutes and
+ends with a site running on your machine.

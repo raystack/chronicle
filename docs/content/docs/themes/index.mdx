@@ -1,0 +1,79 @@
+---
+title: Choosing a theme
+description: Three built-in themes, and which one suits your docs.
+order: 1
+---
+
+Chronicle ships three themes. Set one in `chronicle.yaml`:
+
+```yaml
+theme:
+  name: default
+```
+
+You cannot write a fourth, so pick the one whose shape fits your material. You
+can recolour whichever you pick — see [Theme options](/docs/themes/options).
+
+## Which one
+
+| Theme | Shape | Reach for it when |
+|---|---|---|
+| `default` | Sidebar, content, table of contents | Reference docs people navigate and search |
+| `paper` | One column, reading progress | Guides and long explanations people read start to finish |
+| `fanfold` | Line-printer paper, monospace throughout | Systems and protocol docs, where a printed look fits the material |
+
+### default
+
+The layout most documentation uses, and the right first choice. A navigation
+tree on the left, the page in the middle, its headings on the right. Readers
+already know how to use it, and nothing about it will surprise them.
+
+Pick it when people arrive knowing what they want and need to find it.
+
+### paper
+
+A single column at a reading width, with a progress indicator down the side and
+no table of contents competing for attention. Typography is tuned for long
+stretches of prose.
+
+Pick it when your docs are more explanation than reference — a handbook, a set
+of guides, something read in order rather than searched.
+
+### fanfold
+
+Continuous-form line printer paper: tractor-feed strips down both edges, faint
+zebra banding behind the text, monospace type, and a printed header block on
+every page carrying the breadcrumb trail and a page counter.
+
+It reads two frontmatter fields the others ignore. `short` gives a page a code
+for the narrow rail, and `identifiers` prints extra lines in the header — the
+standard a page implements, its package, its command.
+
+Pick it for material that is already technical and enumerated: protocols, wire
+formats, command references. It is a strong look, and it is the wrong choice for
+a friendly product guide.
+
+## Trying them
+
+Switching costs one line, and no page content has to change:
+
+```yaml
+theme:
+  name: paper
+```
+
+Restart the dev server and click through your five longest pages. A theme that
+suits your material is obvious quickly, and so is one that does not.
+
+Two fields are only read by `fanfold`, so a page that sets `short` or
+`identifiers` loses nothing by moving to another theme — the fields are ignored,
+not broken.
+
+## Dark mode
+
+All three do light and dark, following the reader's system preference with a
+toggle to override it. There is nothing to configure.
+
+Check both when you pick a theme, and again if you set your own colours — a
+look that works in one is not guaranteed to work in the other, and half your
+readers will see each.

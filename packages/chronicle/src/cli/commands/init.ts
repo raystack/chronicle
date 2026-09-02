@@ -15,13 +15,13 @@ export const defaultInitConfig: ChronicleConfig = {
   search: { enabled: true, placeholder: 'Search documentation...' }
 };
 
+// No `# Welcome` heading: every theme prints the frontmatter title above the
+// article, so a heading here would show the same words twice.
 const sampleMdx = `---
 title: Welcome
 description: Getting started with your documentation
 order: 1
 ---
-
-# Welcome
 
 This is your documentation home page.
 `;

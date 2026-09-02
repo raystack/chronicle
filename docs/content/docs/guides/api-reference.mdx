@@ -1,0 +1,143 @@
+---
+title: API reference
+description: Turn an OpenAPI spec into browsable endpoint pages with a request tester.
+order: 2
+---
+
+Point Chronicle at an OpenAPI file and it renders a reference: one page per
+endpoint, with parameters, request and response schemas, code samples in four
+languages, and a panel for sending real requests.
+
+You write no pages for this. The spec is the source.
+
+## Set it up
+
+Put the spec next to `chronicle.yaml` and add an `api` entry:
+
+```yaml
+api:
+  - name: Petstore API
+    spec: ./petstore.yaml
+    basePath: /apis
+    server:
+      url: https://petstore.swagger.io/v2
+      description: Production
+```
+
+Restart and the reference is at `/apis`. Each endpoint gets its own URL under
+that, and they all appear in the sidebar grouped by tag, with a coloured badge
+for the method.
+
+`spec` accepts JSON or YAML, and both OpenAPI 3.x and Swagger 2.0. A Swagger 2.0
+file is converted as it loads, so you do not have to migrate it first.
+
+Several APIs at once is just several entries, each with its own `basePath`:
+
+```yaml
+api:
+  - name: Public API
+    spec: ./public.yaml
+    basePath: /apis
+    server: { url: https://api.example.com }
+  - name: Admin API
+    spec: ./admin.yaml
+    basePath: /admin-apis
+    server: { url: https://admin.example.com }
+```
+
+## What a reader gets
+
+**The endpoint page.** Method and path at the top, then the parameters — path,
+query and header — with types, required markers, descriptions and examples. Then
+the request body schema, then a response schema per status code. Nested objects
+expand in place.
+
+**Code samples.** cURL, Python, Go and TypeScript, generated from the endpoint
+and switchable from a tab strip. They include the real server URL and the auth
+header, so they are ready to paste.
+
+**A request tester.** The **Test request** button opens a panel with the
+parameters as editable fields and a JSON editor for the body. Sending shows the
+status, the timing, and the response body with syntax highlighting.
+
+**A markdown version.** Every endpoint answers at a `.md` URL with the whole
+thing — parameters, examples, responses and a cURL command — as plain text, for
+handing to an AI tool.
+
+## Authentication
+
+Declare how the API authenticates and the reference picks it up:
+
+```yaml
+api:
+  - name: Petstore API
+    spec: ./petstore.yaml
+    basePath: /apis
+    server:
+      url: https://petstore.swagger.io/v2
+    auth:
+      type: apiKey
+      header: Authorization
+      placeholder: "Bearer your-token"
+```
+
+The auth field then appears on every endpoint page and in the request tester,
+and the value a reader types is written into the code samples.
+
+If the spec declares `securitySchemes`, Chronicle reads those instead and offers
+the schemes it finds — API key, bearer token or basic auth. The `auth` config
+above is for a spec that does not say.
+
+Whatever a reader types stays in their browser. It is never sent anywhere except
+to the API they are testing against.
+
+### The request tester and CORS
+
+Requests go through a proxy on your docs server rather than straight from the
+browser. That is deliberate: most APIs do not allow cross-origin requests from a
+docs site, so a direct call would fail before it left the page.
+
+This means the API has to be reachable from wherever your docs are hosted. An
+API on a private network works when you run `chronicle dev` on the same network
+and does not work from a public host.
+
+## Linking to your own guides
+
+If the spec has an `externalDocs` entry, a **View documentation** button appears
+on the endpoint page. Use it to send someone from a bare endpoint to the guide
+that explains why they would call it.
+
+## One spec per version
+
+A versioned site can give each version its own spec, pointed at that version's
+server:
+
+```yaml
+versions:
+  - dir: v1
+    label: "1.0"
+    content:
+      - dir: docs
+        label: Docs
+    api:
+      - name: REST API (v1)
+        spec: ./v1-openapi.yaml
+        basePath: /apis
+        server:
+          url: https://api.example.com/v1
+```
+
+That serves at `/v1/apis/...`. See
+[Versioned documentation](/docs/guides/versioning).
+
+## Things to know
+
+**The spec is read at startup.** Change the file and restart the dev server.
+
+**Endpoints are indexed for search** alongside your written pages, by method,
+path and summary, so `POST /pets` finds the endpoint.
+
+**A spec that fails to parse fails the build** rather than rendering an empty
+reference. The error names the file.
+
+See [`api`](/docs/reference/config) for every field.

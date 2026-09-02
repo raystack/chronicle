@@ -1,0 +1,139 @@
+---
+title: Navigation
+description: Order pages, name folders, and shape the sidebar with meta.json.
+order: 2
+---
+
+The sidebar is built from your folders. You do not write a navigation file — you
+name and order what is already there.
+
+## Ordering pages
+
+Add `order` to a page's frontmatter. Lower numbers come first.
+
+```mdx
+---
+title: Installation
+order: 1
+---
+```
+
+Pages with no `order` come after every page that has one, so you can order the
+important pages and leave the rest.
+
+### Slotting a page between two others
+
+`order` takes decimals. This is the whole reason it does — you can insert a page
+without renumbering its neighbours:
+
+```
+introduction.mdx    order: 1
+installation.mdx    order: 1.5   ← new page, lands between the two
+configuration.mdx   order: 2
+```
+
+## Folders become groups
+
+A folder is a group in the sidebar. Its name is derived from the folder name,
+capitalised:
+
+```
+content/docs/
+├── index.mdx
+├── quick-start.mdx
+└── guides/
+    ├── setup.mdx
+    └── advanced.mdx
+```
+
+```
+Quick start
+▸ Guides
+    Setup
+    Advanced
+```
+
+Pages sitting directly in the content directory appear before the folders.
+
+## meta.json
+
+Drop a `meta.json` in a folder to control the folder itself. The folder name is
+only a fallback.
+
+```json
+{
+  "title": "Getting started",
+  "order": 2
+}
+```
+
+| Field | What it does |
+|---|---|
+| `title` | The group label. Overrides the capitalised folder name |
+| `order` | Where the group sits. Shares one scale with page `order` |
+| `pages` | Explicit page order, by filename without the extension |
+| `root` | `true` makes this folder a navigation boundary |
+
+A folder's position comes from `meta.json` only. The `order` in its `index.mdx`
+frontmatter positions that page inside the group — it does not move the group.
+
+### One scale for pages and folders
+
+Pages and folders sort against each other using the same numbers, so a group can
+sit between two loose pages:
+
+```
+index.mdx           order: 1
+quick-start.mdx     order: 2
+guides/meta.json    order: 3   ← the group lands here
+reference/meta.json order: 4
+```
+
+### Ordering by filename
+
+If you would rather list the pages than number them, use `pages`:
+
+```json
+{
+  "title": "Guides",
+  "pages": ["introduction", "installation", "configuration"]
+}
+```
+
+Anything not listed follows the listed pages.
+
+## Short labels for a narrow rail
+
+When a title is too long for the sidebar but the page is known by a code its
+readers already use, add `short`:
+
+```yaml
+title: Space Packet Protocol
+short: SPP
+```
+
+The sidebar shows `SPP` and keeps the full title on the link's tooltip. Headings,
+breadcrumbs, the browser tab and search all keep using `title`.
+
+This is read by the `fanfold` theme, whose rail is narrow enough to need it. The
+`default` and `paper` themes always show `title`.
+
+## Icons
+
+`icon` puts a small graphic next to a sidebar entry:
+
+```yaml
+icon: rectangle-stack
+```
+
+The available values are listed under
+[`icon`](/docs/reference/frontmatter) in the frontmatter reference.
+
+## What else the navigation drives
+
+The same tree feeds the breadcrumbs at the top of a page, the previous and next
+links at the bottom, and the order results come back in from search. Order the
+tree well and all four improve at once.
+
+A page with `draft: true` is removed from the tree, so it disappears from all of
+them. See [Pages and frontmatter](/docs/writing/pages).

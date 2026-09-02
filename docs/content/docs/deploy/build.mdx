@@ -1,0 +1,107 @@
+---
+title: Build and serve
+description: What a production build produces, and how presets change it.
+order: 1
+---
+
+```bash
+chronicle build
+chronicle start
+```
+
+`build` writes the production site. `start` serves what `build` produced — it
+does not build for you, so the order matters. `chronicle serve` runs both, which
+is handy locally and wrong in a deployment, where you want the build to happen
+once and the server to start many times.
+
+## Two kinds of output
+
+The `preset` decides which you get, and it is the only decision that really
+matters here.
+
+**A server build** produces a small server. Pages are rendered per request,
+which is what makes search, image resizing and the API request tester work.
+This is the default.
+
+**A static build** produces a single-page app: one `index.html`, a JavaScript
+bundle, and a small JSON file per page that the app fetches as the reader
+navigates. There is no process to run and nothing to keep alive.
+
+```yaml
+preset: static
+```
+
+Or per build:
+
+```bash
+chronicle build --preset static
+```
+
+## What you give up going static
+
+There is no server, so the parts that needed one change:
+
+| | Server build | Static build |
+|---|---|---|
+| Page HTML | Rendered per request, works with JavaScript off | One shell; pages filled in by JavaScript |
+| Search | Queried per request | Whole index downloaded, searched in the browser |
+| Images | Resized on demand, then cached | Resized once, during the build |
+| API request tester | Proxies through your server | Not available |
+| Health and readiness | `/api/health`, `/api/ready` | Not available |
+| Redirects | Served by Chronicle | Your host has to do them |
+
+Everything else is generated either way: navigation, versions, the API
+reference, markdown URLs, `llms.txt`, the sitemap and social cards.
+
+The first row matters most. A server build sends finished HTML, so a crawler or
+a reader with JavaScript off gets the page. A static build sends a shell, so
+they get very little. If search ranking matters to you, that is the argument for
+a server build.
+
+Pick static for a small or medium site you want on a CDN with nothing to
+operate. Pick a server build for a large site, when search needs to stay fast,
+or when the request tester matters.
+
+## Where the output goes
+
+| Preset | Output directory |
+|---|---|
+| unset, `node-server`, `cloudflare` | `.output/` |
+| `static`, `cloudflare-pages`, `github-pages` | `.output/public/` |
+| `vercel`, `vercel-static` | `.vercel/output/` |
+
+A static host has to send unknown paths to `index.html`, because every page
+shares that one file. Getting this wrong is the usual reason a deep link 404s
+while the home page works — see [Deploy](/docs/deploy/hosting).
+
+Gitignore whichever applies. `chronicle init` adds `.output` for you.
+
+## Build failures
+
+The build stops on a page it cannot parse, and names the file and the line. This
+is deliberate — a docs site that silently drops a broken page is worse than one
+that refuses to build.
+
+The usual cause is MDX being stricter than markdown about `<` and `{`, which it
+reads as the start of a component or an expression. Wrap the character in
+backticks.
+
+## In CI
+
+```bash
+bun install
+bun run chronicle build --preset static
+```
+
+Then publish the output directory. The build needs no network access beyond
+installing packages, and no services.
+
+If your build machine is not the machine that serves the site, remember `start`
+needs the `.output/` directory that `build` wrote — copy it, or build on the
+host.
+
+## Next
+
+- [Deploy](/docs/deploy/hosting) — putting the output on a host
+- [Docker](/docs/deploy/docker) — running from the container image
+- [Monitoring](/docs/deploy/monitoring) — health checks and metrics

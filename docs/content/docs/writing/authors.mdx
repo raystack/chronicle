@@ -1,0 +1,85 @@
+---
+title: Authors and bylines
+description: Credit the people who write your docs, and give each of them a page.
+order: 6
+---
+
+Naming an author puts a byline on the page, credits them in the page's structured
+data and on its social card, and gives them a page listing everything they wrote.
+
+## Crediting a page
+
+Add `authors` to the page's frontmatter. Each entry is a plain string — either
+`Name <email>` or just a name:
+
+```yaml
+authors:
+  - Jane Doe <jane@example.com>
+  - Sam Patel
+```
+
+A single author does not need the list:
+
+```yaml
+authors: Jane Doe <jane@example.com>
+```
+
+That is all you need. Nothing has to be registered first, which keeps the door
+open for an occasional contributor.
+
+## The byline
+
+The byline shows two names at most. Any more collapse into a `+N` counter that
+names the rest on hover, so a page with six authors does not push its own title
+down the screen.
+
+Each name carries an avatar. Without a picture to use, it is drawn from the
+author's initials.
+
+## The authors registry
+
+Writing the same name and email on forty pages gets old, and it means forty
+places to edit when something changes. Put the details in `chronicle.yaml`
+instead:
+
+```yaml
+authors:
+  jane:
+    name: Jane Doe
+    bio: Writes about distributed systems.
+    avatar: /team/jane.png
+    url: https://github.com/jane
+    email: jane@example.com
+```
+
+Then reference the key from a page:
+
+```yaml
+authors: [jane]
+```
+
+The bio, avatar and profile link come along with it. See
+[`authors`](/docs/reference/config) for the full field list.
+
+A frontmatter string that matches no key is still valid — it renders as a plain
+name. So you can register the people who write often and spell out the rest.
+
+## Author pages
+
+Every author gets a page at `/authors/<slug>` listing everything they wrote, and
+every byline name links to it. The site's full list is at `/authors`.
+
+An author's `url` and `email` are shown on their page rather than in the byline,
+which keeps the byline to names and the contact details in one predictable place.
+
+## Where else authors show up
+
+| Place | What it uses |
+|---|---|
+| The byline | Name and avatar |
+| The author's page | Name, bio, avatar, `url`, `email` |
+| `Article` structured data | Author names, for search engines |
+| The social card | Author names, under the title |
+
+The social card is the image people see when a page is shared. See
+[Generated routes](/docs/reference/routes) for how it is made.

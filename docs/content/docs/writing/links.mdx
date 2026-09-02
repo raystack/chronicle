@@ -1,0 +1,98 @@
+---
+title: Links and redirects
+description: How links between pages resolve, and how to keep old URLs working after you move one.
+order: 5
+---
+
+## Linking between pages
+
+Use the page's URL, starting from the root:
+
+```mdx
+See [Navigation](/docs/writing/navigation) for ordering.
+```
+
+Internal links are resolved when the page is built, so a link to a page that
+does not exist is caught then rather than becoming a 404 for a reader. Internal
+links also navigate without a full page load.
+
+Relative links work too, and are resolved against the current page:
+
+```mdx
+See [Navigation](./navigation) for ordering.
+```
+
+Prefer absolute paths for anything that crosses a folder. A relative link breaks
+quietly when you move the page holding it; an absolute one keeps working.
+
+### Linking to a section
+
+Add the heading's slug. Slugs are the heading text, lowercased, with spaces
+turned into hyphens:
+
+```mdx
+[Ordering pages](/docs/writing/navigation#ordering-pages)
+```
+
+### External links
+
+Write them as normal. They open in a new tab.
+
+```mdx
+[Nitro](https://nitro.build)
+```
+
+## Redirects
+
+Move or rename a page and its old URL stops working. Add a redirect so anyone
+holding the old link — a bookmark, a blog post, a search result — still lands in
+the right place.
+
+```yaml
+redirects:
+  - from: /docs/old-page
+    to: /docs/writing/pages
+  - from: /legacy/api
+    to: /apis
+    permanent: true
+```
+
+Redirects are checked before every other route, so they win over a real page at
+the same path.
+
+| Field | What it does |
+|---|---|
+| `from` | The old path |
+| `to` | Where to send it |
+| `permanent` | `true` sends 308, `false` (default) sends 307 |
+
+### Which status to use
+
+Use `permanent: true` when the old URL is never coming back. Browsers and search
+engines cache a 308 hard, so a mistake is expensive to undo — a reader whose
+browser cached it will keep being redirected after you remove the rule.
+
+Use the default 307 while you are still deciding. Nothing is cached, so you can
+change your mind.
+
+### A worked example
+
+Say you split one page into a folder of three. The old URL was `/docs/config`:
+
+```yaml
+redirects:
+  - from: /docs/config
+    to: /docs/reference/config
+    permanent: true
+```
+
+Anyone following an old link arrives at the new page. Meanwhile, update the
+links inside your own pages to point at the new URL directly — a redirect is for
+links you do not control, not a substitute for fixing your own.
+
+## Markdown links to your own pages
+
+Every page also answers at a `.md` URL that returns its raw source. This is what
+the "Open in AI" menu copies, and what an AI tool reads when it follows
+`llms.txt`. You do not have to do anything to get it. See
+[Generated routes](/docs/reference/routes).
