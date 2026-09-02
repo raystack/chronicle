@@ -22,7 +22,7 @@ import { buildLlmsTxt, type LlmsPage } from '@/lib/llms';
 import { DEFAULT_WIDTH, DEFAULT_QUALITY, isLocalImage, isSvg, splitVersion } from '@/lib/image-utils';
 import { isAnimatedImage } from '@/lib/image-animation';
 import { getAssetVersion } from '@/lib/asset-version';
-import type { VersionContext } from '@/lib/version-source';
+import { contentSectionPrefixes, sectionOf, type VersionContext } from '@/lib/version-source';
 import type { Frontmatter, PageNavLink } from '@/types';
 import { buildAuthorIndex } from '@/lib/author-index';
 import { normalizeAuthorList, resolveAuthors } from '@/lib/authors';
@@ -367,19 +367,33 @@ function flattenTreeUrls(tree: PageTreeRoot): { url: string; title: string }[] {
   return result;
 }
 
-function computeNavigation(tree: PageTreeRoot): Map<string, { prev: PageNavLink | null; next: PageNavLink | null }> {
+function computeNavigation(
+  tree: PageTreeRoot,
+  config: ChronicleConfig,
+): Map<string, { prev: PageNavLink | null; next: PageNavLink | null }> {
   const navMap = new Map<string, { prev: PageNavLink | null; next: PageNavLink | null }>();
-  const ordered = flattenTreeUrls(tree);
 
-  for (let i = 0; i < ordered.length; i++) {
-    navMap.set(ordered[i].url, {
-      prev: i > 0
-        ? { url: ordered[i - 1].url, title: ordered[i - 1].title }
-        : null,
-      next: i < ordered.length - 1
-        ? { url: ordered[i + 1].url, title: ordered[i + 1].title }
-        : null,
-    });
+  // Chained per section, matching the dev server. See `getNavMap` in source.ts.
+  const prefixes = contentSectionPrefixes(config);
+  const bySection = new Map<string, ReturnType<typeof flattenTreeUrls>>();
+  for (const entry of flattenTreeUrls(tree)) {
+    const key = sectionOf(entry.url, prefixes) ?? '';
+    const group = bySection.get(key);
+    if (group) group.push(entry);
+    else bySection.set(key, [entry]);
+  }
+
+  for (const ordered of bySection.values()) {
+    for (let i = 0; i < ordered.length; i++) {
+      navMap.set(ordered[i].url, {
+        prev: i > 0
+          ? { url: ordered[i - 1].url, title: ordered[i - 1].title }
+          : null,
+        next: i < ordered.length - 1
+          ? { url: ordered[i + 1].url, title: ordered[i + 1].title }
+          : null,
+      });
+    }
   }
 
   return navMap;
@@ -1064,7 +1078,7 @@ export async function generateStaticSite(options: StaticGenerateOptions): Promis
   const contentMirror = path.resolve(packageRoot, '.content');
   const folderMeta = await scanFolderMeta(contentMirror, config);
   const tree = buildPageTree(pages, config, folderMeta);
-  const navMap = computeNavigation(tree);
+  const navMap = computeNavigation(tree, config);
 
   // Generate all static assets
   console.log(chalk.gray('  Generating page data files...'));

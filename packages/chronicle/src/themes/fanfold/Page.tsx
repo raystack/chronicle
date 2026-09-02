@@ -81,20 +81,19 @@ export function Page({ page, config, tree }: ThemePageProps) {
    * The printed header reads as a report on one section, so the trail and the
    * page counter are both scoped to the content directory being read.
    *
-   * The tree may or may not already be scoped: `entry-server` unwraps it itself
-   * when a site has a single content directory. Scoping an unwrapped tree again
-   * silently returns its first sub-folder — or nothing, for a flat directory —
-   * which emptied the trail and dropped the counter. So the narrower tree is
-   * only taken when it still contains the page being rendered.
+   * The tree handed here may already be scoped — `entry-server` narrows it when
+   * a site has a single content directory — but both filters recognise that and
+   * hand such a tree back untouched.
    */
-  const sectionTree = useMemo(() => {
-    const versioned = filterPageTreeByVersion(tree, version, config);
-    const scoped = filterPageTreeByContentDir(versioned, version, contentDir);
-    const holdsThisPage = flattenTree(scoped.children).some(
-      p => p.url === pathname
-    );
-    return holdsThisPage ? scoped : versioned;
-  }, [tree, version, config, contentDir, pathname]);
+  const sectionTree = useMemo(
+    () =>
+      filterPageTreeByContentDir(
+        filterPageTreeByVersion(tree, version, config),
+        version,
+        contentDir
+      ),
+    [tree, version, config, contentDir]
+  );
 
   const shorts = useMemo(
     () => collectShortNames(sectionTree.children),
@@ -119,7 +118,17 @@ export function Page({ page, config, tree }: ThemePageProps) {
   }, [sectionTree, pathname]);
   const title = page.frontmatter.title ?? '';
 
-  const trail = [section, ...crumbs].filter(Boolean).join(' / ');
+  /**
+   * The trail leads with the section, then the crumbs. `getBreadcrumbItems`
+   * starts at the tree root, and that root's name is the section's own label,
+   * so the two met and the header read "DOCS / DOCS / GETTING STARTED".
+   * Dropping any name that repeats the one before it also covers a folder whose
+   * index page carries the folder's title.
+   */
+  const trail = [section, ...crumbs]
+    .filter(Boolean)
+    .filter((name, i, all) => i === 0 || name !== all[i - 1])
+    .join(' / ');
 
   /**
    * The lines under the trail. A page that states its own identifiers — the

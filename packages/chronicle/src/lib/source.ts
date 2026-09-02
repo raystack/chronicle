@@ -19,9 +19,11 @@ import {
   loadConfig,
 } from './config';
 import {
+  contentSectionPrefixes,
   filterPagesByVersion,
   filterPageTreeByVersion,
   resolveVersionFromUrl,
+  sectionOf,
   type VersionContext,
 } from './version-source';
 import type { Frontmatter, PageNav, PageNavLink } from '@/types';
@@ -303,12 +305,27 @@ async function getNavMap(): Promise<Map<string, PageNav>> {
         ? p.name
         : titleFromUrl(p.url)
   });
+
+  // Chain within a section, not across the whole site. The last page of "Docs"
+  // used to offer the first page of the next content directory as its next
+  // link, dropping the reader into a different audience's material.
+  const prefixes = contentSectionPrefixes(loadConfig());
+  const bySection = new Map<string, typeof pages>();
+  for (const page of pages) {
+    const key = sectionOf(page.url, prefixes) ?? '';
+    const group = bySection.get(key);
+    if (group) group.push(page);
+    else bySection.set(key, [page]);
+  }
+
   const navMap = new Map<string, PageNav>();
-  for (let i = 0; i < pages.length; i++) {
-    navMap.set(pages[i].url, {
-      prev: i > 0 ? toLink(pages[i - 1]) : null,
-      next: i < pages.length - 1 ? toLink(pages[i + 1]) : null
-    });
+  for (const group of bySection.values()) {
+    for (let i = 0; i < group.length; i++) {
+      navMap.set(group[i].url, {
+        prev: i > 0 ? toLink(group[i - 1]) : null,
+        next: i < group.length - 1 ? toLink(group[i + 1]) : null
+      });
+    }
   }
   cachedNavMap = navMap;
   return cachedNavMap;
