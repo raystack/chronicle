@@ -320,6 +320,18 @@ export async function getPageNav(slug: string[]): Promise<PageNav> {
   return navMap.get(url) ?? { prev: null, next: null };
 }
 
+/**
+ * A frontmatter list of plain strings, or undefined. Anything that is not a
+ * string is dropped rather than rendered: this comes straight from a content
+ * file, where a single mistyped entry should not reach a theme as `[object
+ * Object]`.
+ */
+function normalizeStringList(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  const items = value.filter((item): item is string => typeof item === 'string' && item.trim() !== '')
+  return items.length > 0 ? items : undefined
+}
+
 export function extractFrontmatter(page: { data: unknown }, fallbackTitle?: string): Frontmatter {
   const d = page.data as Record<string, unknown>;
   return {
@@ -328,6 +340,7 @@ export function extractFrontmatter(page: { data: unknown }, fallbackTitle?: stri
     order: d.order as number | undefined,
     icon: d.icon as string | undefined,
     lastModified: d.lastModified as string | undefined,
+    identifiers: normalizeStringList(d.identifiers),
     authors: normalizeAuthorList(d.authors),
     draft: d.draft as boolean | undefined,
     _readingTime: d._readingTime as number | undefined,
