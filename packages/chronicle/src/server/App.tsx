@@ -80,6 +80,12 @@ function PageFallback() {
   );
 }
 
+/**
+ * Site-wide head tags. The page title is deliberately not among them: every
+ * route renders its own `<Head>`, and a title here would be hoisted into the
+ * document ahead of that one. The browser reads the first `<title>` it finds,
+ * so the tab said "Chronicle" on every page instead of naming the page.
+ */
 function RootHead({ config }: { config: ChronicleConfig }) {
   const siteJsonLd = config.url
     ? {
@@ -91,15 +97,12 @@ function RootHead({ config }: { config: ChronicleConfig }) {
       }
     : null;
 
+  if (!siteJsonLd) return null;
+
   return (
-    <>
-      <title>{config.site.title}</title>
-      {siteJsonLd && (
-        <script
-          type='application/ld+json'
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd, null, 2) }}
-        />
-      )}
-    </>
+    <script
+      type='application/ld+json'
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd, null, 2) }}
+    />
   );
 }
