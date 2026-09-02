@@ -57,7 +57,7 @@ theme:
 - Minimal, distraction-free design
 - Reading progress tracking
 - Optimized typography for long content
-- Light mode only (dark mode toggle is disabled)
+- Light and dark mode
 
 ## Fanfold Theme
 
@@ -77,10 +77,20 @@ theme:
 
 ### Features
 
-- Header block prints the breadcrumb trail, site name, path, and a page counter
+- Header block prints the breadcrumb trail and a page counter, then whatever the
+  page gives as [`identifiers`](/docs/frontmatter) — falling back to the site
+  name and path
 - Page title set in a dot-matrix face that steps down in size as titles get longer
-- Code blocks print as ruled listings with a line-number gutter
-- Tables print as field maps with no cell borders
+- Everything on the sheet is held to one 80-column measure, so prose, tables,
+  code and rules share the same edges
+- Code blocks print as ruled listings with a line-number gutter. A fence with no
+  language is treated as a drawing rather than a listing and gets no numbers, so
+  ASCII diagrams keep their own alignment
+- Tables print as field maps with no cell borders. A wide table with a column of
+  prose in it has its columns measured at build time, and folds that column under
+  each row behind a toggle, so the paragraph reads at the full width of the sheet
+  instead of a narrow column
+- Uses a page's [`short`](/docs/frontmatter) label in the rail and the header trail
 - Its own landing page: a masthead over a register of every section
 - Light and dark mode
 
