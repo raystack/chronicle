@@ -32,9 +32,17 @@
 .header {
   display: flex;
   align-items: center;
+  gap: var(--rs-space-3);
   height: 48px;
   padding: 0 var(--rs-space-5);
   flex-shrink: 0;
+}
+
+/* The mark keeps its own width so the drawing is never squeezed, and never
+   gives ground to a long site title. */
+.logo {
+  flex-shrink: 0;
+  color: var(--rs-color-foreground-accent-primary);
 }
 
 .contentDirTrigger {
@@ -107,6 +115,7 @@
 .mobileHeaderTitle {
   display: flex;
   align-items: center;
+  gap: var(--rs-space-3);
   min-width: 0;
   overflow: hidden;
 }

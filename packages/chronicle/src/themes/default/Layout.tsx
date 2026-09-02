@@ -10,6 +10,7 @@ import { useApiOperation } from '@/lib/use-api-operation';
 const PlaygroundDialog = lazy(() => import('@/components/api/playground-dialog').then(m => ({ default: m.PlaygroundDialog })));
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
 import { Search } from '@/components/ui/search';
+import { Logo } from '@/components/ui/logo';
 import { SidebarLinks } from '@/components/ui/sidebar-links';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import { getLandingEntries } from '@/lib/config';
@@ -21,7 +22,6 @@ import { NodeType } from '@/lib/tree-utils';
 import type { ThemeLayoutProps } from '@/types';
 import styles from './Layout.module.css';
 import { OpenInAI } from './OpenInAI';
-import { SidebarLogo } from './SidebarLogo';
 
 import { VersionSwitcher } from './VersionSwitcher';
 
@@ -111,7 +111,7 @@ export function Layout({
   return (
     <Flex direction='column' className={cx(styles.layout, classNames?.layout)}>
       <div className={styles.mobileHeader}>
-        <SidebarLogo config={config} />
+        <Logo config={config} className={styles.sidebarLogo} />
         <Flex align='center' gap={3}>
           {config.search?.enabled && <Search />}
           <ClientThemeSwitcher size={16} />
@@ -190,7 +190,7 @@ export function Layout({
             className={cx(styles.sidebar, classNames?.sidebar)}
           >
             <Sidebar.Header className={styles.sidebarHeader}>
-              <SidebarLogo config={config} />
+              <Logo config={config} className={styles.sidebarLogo} />
               <Flex gap={3} align='center'>
                 {config.search?.enabled && <Search />}
                 <ClientThemeSwitcher size={16} />
@@ -350,9 +350,22 @@ function SidebarNode({
         data-depth={depth}
         label={item.name?.toString() ?? ''}
         leadingIcon={icon ?? undefined}
-        collapsible={depth >= 1}
-        defaultOpen={hasActiveChild}
+        // Every group can be collapsed. Top-level ones start open so the whole
+        // site is visible on arrival; nested ones open only when they hold the
+        // page being read.
+        collapsible
+        defaultOpen={depth === 0 || hasActiveChild}
       >
+        {/* A folder's own index page. The group label is a collapse trigger,
+            not a link, so without this row the index page has no way into it
+            from the sidebar at all. */}
+        {item.index ? (
+          <SidebarNode
+            item={item.index}
+            pathname={pathname}
+            depth={depth + 1}
+          />
+        ) : null}
         {item.children.map((child, i) => (
           <SidebarNode
             key={child.type === 'page' ? child.url : (child.name?.toString() ?? i)}

@@ -5,6 +5,7 @@ import { useTheme } from '@raystack/apsara';
 import { cx } from 'class-variance-authority';
 import { useEffect, useState } from 'react';
 import { Link as RouterLink, useLocation } from 'react-router';
+import { Logo } from '@/components/ui/logo';
 import { useSearch } from '@/components/ui/search';
 import { SidebarLinks } from '@/components/ui/sidebar-links';
 import {
@@ -82,6 +83,7 @@ function Brand() {
 
   return (
     <RouterLink to={version.urlPrefix || '/'} className={styles.brand}>
+      <Logo config={config} size={20} className={styles.brandLogo} />
       <span className={styles.brandName}>{config.site.title}</span>
       {label ? <span className={styles.brandVersion}>~/{label}</span> : null}
     </RouterLink>
