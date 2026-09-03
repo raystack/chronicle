@@ -4,6 +4,10 @@ site:
 
 url: https://chronicle.raystack.org
 
+logo:
+  light: /logo.svg
+  dark: /logo-dark.svg
+
 content:
   - dir: docs
     label: Docs
