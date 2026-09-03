@@ -10,18 +10,18 @@ import { useApiOperation } from '@/lib/use-api-operation';
 const PlaygroundDialog = lazy(() => import('@/components/api/playground-dialog').then(m => ({ default: m.PlaygroundDialog })));
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
 import { Search } from '@/components/ui/search';
+import { Logo } from '@/components/ui/logo';
 import { SidebarLinks } from '@/components/ui/sidebar-links';
 import { Breadcrumbs } from '@/components/ui/breadcrumbs';
 import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir } from '@/lib/navigation';
 import { usePageContext } from '@/lib/page-context';
 import { isAuthorRoute, resolveRoute } from '@/lib/route-resolver';
-import type { Node, Root } from 'fumadocs-core/page-tree';
+import type { Folder, Node, Root } from 'fumadocs-core/page-tree';
 import { NodeType } from '@/lib/tree-utils';
 import type { ThemeLayoutProps } from '@/types';
 import styles from './Layout.module.css';
 import { OpenInAI } from './OpenInAI';
-import { SidebarLogo } from './SidebarLogo';
 
 import { VersionSwitcher } from './VersionSwitcher';
 
@@ -111,7 +111,7 @@ export function Layout({
   return (
     <Flex direction='column' className={cx(styles.layout, classNames?.layout)}>
       <div className={styles.mobileHeader}>
-        <SidebarLogo config={config} />
+        <Logo config={config} className={styles.sidebarLogo} />
         <Flex align='center' gap={3}>
           {config.search?.enabled && <Search />}
           <ClientThemeSwitcher size={16} />
@@ -190,7 +190,7 @@ export function Layout({
             className={cx(styles.sidebar, classNames?.sidebar)}
           >
             <Sidebar.Header className={styles.sidebarHeader}>
-              <SidebarLogo config={config} />
+              <Logo config={config} className={styles.sidebarLogo} />
               <Flex gap={3} align='center'>
                 {config.search?.enabled && <Search />}
                 <ClientThemeSwitcher size={16} />
@@ -327,6 +327,52 @@ function hasActiveDescendant(node: Node, pathname: string): boolean {
   return false;
 }
 
+function SidebarGroupNode({
+  item,
+  pathname,
+  depth
+}: {
+  item: Folder;
+  pathname: string;
+  depth: number;
+}) {
+  const icon = typeof item.icon === 'string' ? iconMap[item.icon] : item.icon;
+  const hasActiveChild = hasActiveDescendant(item, pathname);
+  const [open, setOpen] = useState(depth === 0 || hasActiveChild);
+
+  // Client-side navigation does not remount the tree, so a group the reader
+  // collapsed would stay shut over the page they just opened.
+  useEffect(() => {
+    if (hasActiveChild) setOpen(true);
+  }, [hasActiveChild]);
+
+  return (
+    <Sidebar.Group
+      className={styles.navGroup}
+      data-depth={depth}
+      label={item.name?.toString() ?? ''}
+      leadingIcon={icon ?? undefined}
+      collapsible
+      open={open}
+      onOpenChange={setOpen}
+    >
+      {/* The group label is a collapse trigger, not a link, so a folder's index
+          page needs a row of its own. */}
+      {item.index ? (
+        <SidebarNode item={item.index} pathname={pathname} depth={depth + 1} />
+      ) : null}
+      {item.children.map((child, i) => (
+        <SidebarNode
+          key={child.type === 'page' ? child.url : (child.name?.toString() ?? i)}
+          item={child}
+          pathname={pathname}
+          depth={depth + 1}
+        />
+      ))}
+    </Sidebar.Group>
+  );
+}
+
 function SidebarNode({
   item,
   pathname,
@@ -342,27 +388,7 @@ function SidebarNode({
 
   if (item.type === 'folder') {
     if (depth > MAX_SIDEBAR_DEPTH) return null;
-    const icon = typeof item.icon === 'string' ? iconMap[item.icon] : item.icon;
-    const hasActiveChild = hasActiveDescendant(item, pathname);
-    return (
-      <Sidebar.Group
-        className={styles.navGroup}
-        data-depth={depth}
-        label={item.name?.toString() ?? ''}
-        leadingIcon={icon ?? undefined}
-        collapsible={depth >= 1}
-        defaultOpen={hasActiveChild}
-      >
-        {item.children.map((child, i) => (
-          <SidebarNode
-            key={child.type === 'page' ? child.url : (child.name?.toString() ?? i)}
-            item={child}
-            pathname={pathname}
-            depth={depth + 1}
-          />
-        ))}
-      </Sidebar.Group>
-    );
+    return <SidebarGroupNode item={item} pathname={pathname} depth={depth} />;
   }
 
   const isActive = pathname === item.url;

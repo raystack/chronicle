@@ -1,10 +1,8 @@
 ---
-title: CLI Commands
-description: Chronicle CLI commands reference.
-order: 2
+title: CLI commands
+description: Every Chronicle command and flag.
+order: 3
 ---
-
-# CLI Commands
 
 Chronicle provides a CLI to initialize, develop, build, and serve your documentation site.
 
@@ -54,7 +52,7 @@ chronicle build [options]
 |------|-------------|---------|
 | `--content <path>` | Content directory | `content` |
 | `--config <path>` | Path to `chronicle.yaml` | `./chronicle.yaml` |
-| `--preset <preset>` | Deploy preset (`vercel`, `cloudflare`, `node-server`) | — |
+| `--preset <preset>` | Deploy preset. See [`preset`](/docs/reference/config) for the values | — |
 
 ## start
 
@@ -84,9 +82,9 @@ chronicle serve [options]
 | `--config <path>` | Path to `chronicle.yaml` | `./chronicle.yaml` |
 | `-p, --port <port>` | Port number | `3000` |
 | `--host <host>` | Host address | `localhost` |
-| `--preset <preset>` | Deploy preset (`vercel`, `cloudflare`, `node-server`) | — |
+| `--preset <preset>` | Deploy preset. See [`preset`](/docs/reference/config) for the values | — |
 
-## Resolution Order
+## Resolution order
 
 CLI flags take precedence over `chronicle.yaml` values, which take precedence over defaults.
 
@@ -95,3 +93,8 @@ CLI flags take precedence over `chronicle.yaml` values, which take precedence ov
 | Content directory | `--content` | `content` | `content` |
 | Deploy preset | `--preset` | `preset` | — |
 | Config path | `--config` | — | `./chronicle.yaml` |
+
+`start` serves what `build` produced. It does not build, so run `build` first —
+or use `serve`, which does both.
+
+See [Build and serve](/docs/deploy/build) for what each preset writes.

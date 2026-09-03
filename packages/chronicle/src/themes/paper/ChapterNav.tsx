@@ -31,6 +31,11 @@ export function ChapterNav({ tree }: ChapterNavProps) {
                   {item.name}
                 </span>
                 <ul className={styles.chapterItems}>
+                  {/* The chapter label is plain text, so a folder's index page
+                      needs a row of its own or it is unreachable here. */}
+                  {item.index ? (
+                    <ChapterItem item={item.index} pathname={pathname} />
+                  ) : null}
                   {item.children.map(child => (
                     <ChapterItem
                       key={child.type === 'page' ? child.url : (child.name?.toString() ?? '')}
@@ -70,6 +75,9 @@ function ChapterItem({
       <li className={styles.subFolder}>
         <span className={styles.subLabel}>{item.name}</span>
         <ul className={styles.chapterItems}>
+          {item.index ? (
+            <ChapterItem item={item.index} pathname={pathname} />
+          ) : null}
           {item.children.map(child => (
             <ChapterItem
               key={child.type === 'page' ? child.url : (child.name?.toString() ?? '')}

@@ -254,6 +254,15 @@
   text-decoration: none;
 }
 
+/* Above the name, not beside it — the rail is 240px and the display face is
+   wide, so sharing a line breaks titles mid-word. */
+.brandLogo {
+  /* Block-level so the name sits under it, but still a flex box so a letter
+     mark stays centred. */
+  display: flex;
+  margin-bottom: 10px;
+}
+
 .brandName {
   font-family: var(--fan-display);
   font-weight: 800;
@@ -262,6 +271,8 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--fan-ink);
+  /* A single long word has to break rather than run off the 240px rail. */
+  overflow-wrap: break-word;
 }
 
 .brandVersion {

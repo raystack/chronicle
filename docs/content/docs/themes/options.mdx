@@ -1,19 +1,18 @@
 ---
-title: Themes
-description: Available themes and customization options.
-order: 7
+title: Theme options
+description: What each built-in theme gives you, and how to tune its colours.
+order: 2
 ---
 
-# Themes
-
-Chronicle ships with three built-in themes. Set the theme in your `chronicle.yaml`:
+What each theme gives you. For help picking one, see
+[Choosing a theme](/docs/themes).
 
 ```yaml
 theme:
   name: default
 ```
 
-## Default Theme
+## Default theme
 
 A traditional documentation layout with three-column design.
 
@@ -37,7 +36,7 @@ theme:
 - Breadcrumb navigation
 - Active heading tracking in table of contents
 
-## Paper Theme
+## Paper theme
 
 A book-style layout optimized for long-form reading.
 
@@ -59,7 +58,7 @@ theme:
 - Optimized typography for long content
 - Light and dark mode
 
-## Fanfold Theme
+## Fanfold theme
 
 A continuous-form line printer look — tractor-feed strips down both edges, faint
 zebra banding behind the page, and monospace type throughout.
@@ -78,7 +77,7 @@ theme:
 ### Features
 
 - Header block prints the breadcrumb trail and a page counter, then whatever the
-  page gives as [`identifiers`](/docs/frontmatter) — falling back to the site
+  page gives as [`identifiers`](/docs/reference/frontmatter) — falling back to the site
   name and path
 - Page title set in a dot-matrix face that steps down in size as titles get longer
 - Everything on the sheet is held to one 80-column measure, so prose, tables,
@@ -90,7 +89,7 @@ theme:
   prose in it has its columns measured at build time, and folds that column under
   each row behind a toggle, so the paragraph reads at the full width of the sheet
   instead of a narrow column
-- Uses a page's [`short`](/docs/frontmatter) label in the rail and the header trail
+- Uses a page's [`short`](/docs/reference/frontmatter) label in the rail and the header trail
 - Its own landing page: a masthead over a register of every section
 - Light and dark mode
 
@@ -107,3 +106,28 @@ Set it in `chronicle.yaml`:
 latest:
   landing: true
 ```
+
+## Recolouring a theme
+
+Every theme draws from a set of colour tokens. Override any of them under
+`theme.colors`:
+
+```yaml
+theme:
+  name: default
+  colors:
+    background-base-primary: "#fbfaf8"
+    foreground-accent-primary: "#0a3793"
+    border-base-primary: "#e6e1d8"
+```
+
+The `--rs-color-` prefix is added for you, so name the token on its own. To
+reach a variable outside that family — the ones a theme defines for itself, like
+`--paper-ink` or `--fan-rule` — write the whole property name instead.
+
+One value covers both light and dark. If a token needs to differ between them,
+leave it out and let the theme decide.
+
+Values have to look like colours: a hex code, `rgb()`, `hsl()`, `color-mix()`, a
+named colour, or a `var()` reference. Anything else is ignored rather than
+written into the page.

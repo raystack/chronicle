@@ -1,0 +1,178 @@
+---
+title: Versioned documentation
+description: Keep docs for old releases online while you write the next one.
+order: 1
+---
+
+When you ship a new major version, the people still on the old one need its docs.
+Chronicle serves every version at once: the current one at the plain URLs, and
+each older one behind its own prefix.
+
+## The layout
+
+The current version lives in `content/`, exactly as it does on an unversioned
+site. Older versions live in `versions/`, one folder each:
+
+```
+my-docs/
+├── chronicle.yaml
+├── content/                  ← the current version
+│   └── docs/
+│       └── index.mdx         → /docs
+└── versions/
+    ├── v2/
+    │   └── docs/
+    │       └── index.mdx     → /v2/docs
+    └── v1/
+        └── docs/
+            └── index.mdx     → /v1/docs
+```
+
+The folder name under `versions/` becomes the URL prefix. Nothing else derives
+from it, so `v1`, `2024-06` and `legacy` are all fine.
+
+## The config
+
+Two keys. `latest` describes the version in `content/`, and `versions` lists the
+older ones:
+
+```yaml
+content:
+  - dir: docs
+    label: Docs
+
+latest:
+  label: "3.0"
+
+versions:
+  - dir: v2
+    label: "2.0"
+    content:
+      - dir: docs
+        label: Docs
+
+  - dir: v1
+    label: "1.0"
+    content:
+      - dir: docs
+        label: Docs
+```
+
+`latest` becomes required the moment you declare `versions` — without it the
+switcher has no name for the current version. The config check will tell you so
+at startup rather than letting the site render a blank entry.
+
+Each version declares its own `content`, because the sections of your docs
+change over releases. A version can rename a section, drop one, or add one that
+the current version does not have.
+
+## Cutting a new version
+
+The move is to copy the current docs sideways, then keep writing in `content/`:
+
+```bash
+# freeze today's docs as 2.0
+cp -r content versions/v2
+```
+
+Then add the entry to `versions`, and change `latest.label` to the new number:
+
+```yaml
+latest:
+  label: "3.0"        # was 2.0
+
+versions:
+  - dir: v2
+    label: "2.0"      # the copy you just made
+    content:
+      - dir: docs
+        label: Docs
+```
+
+`content/` is now 3.0 and `/v2/docs` serves what you froze. No page needed
+editing to make that happen.
+
+## What readers see
+
+A switcher appears in the sidebar, listing `latest` and every version. Picking
+one keeps them on the equivalent page where possible.
+
+Everything else scopes to the version they are in. The sidebar shows that
+version's pages, search only returns that version's results, and previous and
+next links stay inside it. A reader on `/v1/docs` will not be dropped into 3.0
+material by accident.
+
+## Marking a version deprecated
+
+Add a badge and it shows next to the version's name in the switcher:
+
+```yaml
+versions:
+  - dir: v1
+    label: "1.0"
+    badge:
+      label: deprecated
+      variant: warning
+    content:
+      - dir: docs
+        label: Docs
+```
+
+`variant` takes `accent`, `warning`, `danger`, `success`, `neutral` or
+`gradient`. `warning` for something you would rather people left, `danger` for
+one that is no longer supported at all.
+
+## Version landing pages
+
+By default, hitting a version's root redirects to its first content directory —
+`/v1` sends the reader to `/v1/docs`.
+
+Set `landing: true` to render a page listing that version's sections instead:
+
+```yaml
+versions:
+  - dir: v1
+    label: "1.0"
+    landing: true
+    content: [...]
+```
+
+This is worth it for a version with several sections and not worth it for one
+with a single section, where the landing page is a list of one.
+
+`latest.landing` does the same for `/`.
+
+## Versioned API references
+
+A version can carry its own OpenAPI spec, served under its prefix:
+
+```yaml
+versions:
+  - dir: v1
+    label: "1.0"
+    content:
+      - dir: docs
+        label: Docs
+    api:
+      - name: REST API (v1)
+        spec: ./v1-openapi.yaml
+        basePath: /apis
+        server:
+          url: https://api.example.com/v1
+```
+
+That renders at `/v1/apis/...`, pointing at the v1 server. See
+[API reference](/docs/guides/api-reference).
+
+## Things to know
+
+**A version directory name cannot collide with a content directory name.** If
+your content has `dir: docs`, no version may be called `docs` — the URLs would be
+ambiguous. The config check catches this.
+
+**Old versions are frozen by hand, not by git.** Chronicle reads whatever is in
+`versions/`. If you fix a typo in the current docs and want the fix in 2.0 as
+well, you edit both.
+
+**Every version is built and served.** Ten versions of a large site means ten
+sites' worth of pages in one build. Prune the versions nobody reads.

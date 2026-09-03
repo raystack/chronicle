@@ -1,0 +1,117 @@
+---
+title: Project structure
+description: What each file and folder in a Chronicle project is for.
+order: 3
+---
+
+A Chronicle project is a config file and a folder of MDX. Everything else is
+either static files you supply or output Chronicle writes.
+
+```
+my-docs/
+├── chronicle.yaml       # the whole site config
+├── content/             # pages for the current version
+│   ├── docs/
+│   └── dev/
+├── versions/            # only if you declare versions:
+│   ├── v2/
+│   │   └── docs/
+│   └── v1/
+│       ├── docs/
+│       └── dev/
+├── public/              # static files served as-is
+├── .output/             # build output, gitignored
+└── .cache/              # optimized images, gitignored
+```
+
+## chronicle.yaml
+
+Every setting lives here. There is no second config file and no JavaScript
+config. The file is checked against a schema when the server starts, so a typo
+or a wrong type fails immediately with a message naming the field rather than
+breaking a page later.
+
+Only two keys are required: `site.title` and `content`. See
+[chronicle.yaml](/docs/reference/config) for all seventeen.
+
+## content
+
+Pages for the current version. This folder does not become a URL segment — the
+directories inside it do.
+
+Each directory you name in `content:` is a **content directory**, a top-level
+section of the site with its own navigation:
+
+```yaml
+content:
+  - dir: docs
+    label: Docs
+  - dir: dev
+    label: Dev Docs
+```
+
+That maps `content/docs/` to `/docs/...` and `content/dev/` to `/dev/...`. A site
+with two or more content directories gets a switcher for moving between them —
+see [Multiple content sections](/docs/guides/sections).
+
+### Files become URLs
+
+```
+content/docs/index.mdx              → /docs
+content/docs/hello.mdx              → /docs/hello
+content/docs/guides/setup.mdx       → /docs/guides/setup
+```
+
+`index.mdx` is the page for the directory holding it. `readme.mdx` works the same
+way, which is handy when the folder is also read on GitHub.
+
+Folders become groups in the sidebar. See
+[Navigation](/docs/writing/navigation) for naming and ordering them.
+
+## versions
+
+Only present if you declare `versions:` in the config. Each version is a folder,
+and the folder name doubles as the URL prefix:
+
+```
+versions/v1/docs/index.mdx          → /v1/docs
+```
+
+The current version stays in `content/` with no prefix. See
+[Versioned documentation](/docs/guides/versioning).
+
+## public
+
+Static files, served from the root of the site with their paths unchanged.
+`public/logo.svg` is available at `/logo.svg`, which is what a `logo:` entry in
+the config points at.
+
+Use it for logos, favicons, and downloads. Images you reference from a page are
+better placed next to the page — see [Images](/docs/writing/images).
+
+## .output
+
+What `chronicle build` writes. Gitignore it.
+
+For a server build it holds a runnable server that `chronicle start` serves. For
+a static build it holds `.output/public`, a folder of HTML and assets you can
+upload anywhere. Building with the `vercel` preset writes to `.vercel/output`
+instead. See [Build and serve](/docs/deploy/build).
+
+## .cache
+
+Resized and re-encoded images, kept between restarts so the work is done once.
+Gitignore it. See [Images](/docs/writing/images).
+
+## Using it inside a monorepo
+
+Chronicle takes the config path as a flag, so the docs site does not have to sit
+at the repository root:
+
+```bash
+chronicle dev --config docs/chronicle.yaml
+```
+
+Paths inside the config resolve relative to `chronicle.yaml`, not to where you
+ran the command. A `spec: ./openapi.yaml` next to the config is found whichever
+directory you start from.

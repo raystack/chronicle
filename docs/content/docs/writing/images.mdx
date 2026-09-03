@@ -1,14 +1,40 @@
 ---
-title: Image Optimization
-description: Automatic image optimization with on-demand resizing and format conversion.
-order: 5
+title: Images
+description: How images resolve, and the resizing and format conversion Chronicle does for you.
+order: 4
 ---
 
-# Image Optimization
+## Adding an image
 
-Chronicle automatically optimizes content images via an on-demand `/api/image` endpoint. Images are resized, converted to modern formats (WebP/AVIF), and cached on disk.
+Put the file next to the page that uses it and reference it relatively:
 
-## How It Works
+```mdx
+![Architecture overview](./architecture.png)
+```
+
+A path starting with `/` is resolved from the root of the content directory
+instead, which is what you want for an image several pages share:
+
+```mdx
+![Logo](/shared/logo.svg)
+```
+
+Either way Chronicle rewrites the URL at build time and appends a hash of the
+file's contents. That hash is why an image can be cached forever by a browser and
+still update the moment you change the file.
+
+Images in `public/` are different — they are served exactly as you put them
+there, with no rewriting and no optimization. Use `public/` for a favicon or a
+download, and keep content images next to their pages.
+
+## Optimization
+
+Everything below happens on its own. There is nothing to turn on.
+
+Content images are resized, re-encoded to a modern format, and cached on disk,
+through an on-demand `/api/image` endpoint.
+
+## How it works
 
 1. The remark plugin rewrites all image URLs to route through `/api/image`
 2. On first request, the image is resized and converted based on browser support

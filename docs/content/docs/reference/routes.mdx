@@ -1,0 +1,125 @@
+---
+title: Generated routes
+description: The URLs Chronicle serves that you never wrote a page for.
+order: 4
+---
+
+Beyond your pages, a Chronicle site answers at a set of URLs it generates
+itself. None of them need configuring. They are listed here so you know what is
+public and what you can point other tools at.
+
+## For search engines
+
+### /sitemap.xml
+
+Every page on the site, for crawlers.
+
+Absolute URLs need to know the site's address, so set `url` in the config or the
+sitemap has nothing to build them from:
+
+```yaml
+url: https://docs.example.com
+```
+
+On a versioned site, older versions are included alongside the current one.
+
+### /robots.txt
+
+Allows everything, and points at the sitemap:
+
+```
+User-agent: *
+Allow: /
+
+Sitemap: https://docs.example.com/sitemap.xml
+```
+
+The `Sitemap` line appears only when `url` is set.
+
+## For AI tools
+
+### The `.md` URL of any page
+
+Every page answers at its own path plus `.md`, returning the raw markdown with
+the frontmatter stripped:
+
+```bash
+curl https://docs.example.com/docs/quick-start.md
+```
+
+API endpoints do the same, and generate a full markdown document — parameters,
+examples, responses and a cURL command:
+
+```bash
+curl https://docs.example.com/apis/petstore/findPetsByStatus.md
+```
+
+This is what the **Open in AI** menu on each page copies, and what it hands to
+ChatGPT or Claude when a reader picks one.
+
+### /llms.txt
+
+An index of the site in the format AI tools look for: the site title, its
+description, and a link to every page's markdown URL.
+
+```
+# Chronicle
+
+Config-driven documentation framework
+
+- [Introduction](/docs.md)
+- [Quick start](/docs/quick-start.md)
+```
+
+Nothing to turn on. Every page you add appears here.
+
+## For social cards
+
+### /og
+
+Renders a social card as a PNG — the image people see when a page is shared in
+Slack, on a social network, or in a chat app.
+
+Pages point at this themselves in their meta tags, so you rarely call it
+directly. It takes what it draws from the query string:
+
+| Parameter | What it draws |
+|---|---|
+| `title` | The headline. Falls back to the site title |
+| `description` | A line under the headline |
+| `authors` | A `By …` line |
+
+The card also carries your `logo`, or the site's first letter when none is set.
+See [`logo`](/docs/reference/config).
+
+Cards are only referenced when `url` is set, because a social network needs an
+absolute URL to fetch the image from.
+
+## For the site itself
+
+These serve the running site's own front end. They are documented because they
+are reachable, not because you need them.
+
+| Route | What it returns |
+|---|---|
+| `/api/search` | Search results for a query, scoped to a version |
+| `/api/page` | A page's metadata, fetched when navigating |
+| `/api/specs` | The parsed OpenAPI specs for a version |
+| `/api/image` | A resized, re-encoded content image |
+| `/api/authors` | The author index |
+| `/api/health` | Liveness. Always `200` |
+| `/api/ready` | Readiness. `200` once the search index is built, `503` before |
+
+`/api/health` and `/api/ready` are the two worth wiring into a deployment. See
+[Monitoring](/docs/deploy/monitoring).
+
+## In a static build
+
+A static build has no server, so everything that would be computed per request
+is written out as a file during the build instead. `sitemap.xml`, `robots.txt`,
+`llms.txt`, every `.md` file and every social card are all generated then.
+
+The `/api/*` routes have no equivalent. Search reads an index file downloaded
+into the browser, images are resized during the build rather than on demand, and
+the health, readiness and API proxy routes do not exist. See
+[Build and serve](/docs/deploy/build).

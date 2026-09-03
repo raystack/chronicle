@@ -1,0 +1,76 @@
+---
+title: Search
+description: What search indexes, how readers reach it, and how it behaves in a static build.
+order: 3
+---
+
+Search is on by default. There is no service to sign up for and no API key — the
+index is built from your pages when the server starts.
+
+```yaml
+search:
+  enabled: true
+  placeholder: Search docs...
+```
+
+Turn it off with `enabled: false` if your site is small enough that the sidebar
+is faster than typing.
+
+## Reaching it
+
+A reader can click the search button in the sidebar or press <kbd>Cmd</kbd> +
+<kbd>K</kbd> — <kbd>Ctrl</kbd> + <kbd>K</kbd> on Windows and Linux. Results
+appear as they type.
+
+## What gets indexed
+
+Three fields per page, weighted so the best match wins:
+
+| Field | Comes from |
+|---|---|
+| Title | The page's `title` |
+| Headings | Every `##` and below |
+| Body | The page text |
+
+A result tells the reader which of the three matched. A heading match links
+straight to that heading rather than the top of the page, so a hit deep in a
+long page lands where the words actually are.
+
+API endpoints are indexed too, by method, path and summary — so `POST /pets`
+finds the endpoint alongside the guides that mention it.
+
+Pages with `draft: true` are left out, because they are removed from the
+navigation tree before the index is built.
+
+## Scoping to a version and section
+
+On a versioned site the index is per version. A reader on `/v1/docs` searches
+1.0 and does not get 3.0 results. Switching versions switches the index.
+
+Results also carry the content section they came from, so a hit in `Dev Docs` is
+labelled as such rather than looking like a page from the main docs.
+
+## Two engines, same behaviour
+
+Which engine runs depends on how you built the site, and readers should not be
+able to tell.
+
+**Server builds** use SQLite full-text search. The index is built in the
+background when the server starts, which is why `/api/ready` reports not-ready
+until it finishes — see [Monitoring](/docs/deploy/monitoring).
+
+**Static builds** have no server to query, so the index is written to a JSON file
+at build time and searched in the browser. This makes the first search on a
+static site download the index. It is fine for a few hundred pages and gets
+heavy well beyond that, which is a reason to prefer a server build for a large
+site. See [Deploy](/docs/deploy/hosting).
+
+## Things to know
+
+**The index is built once per run.** In development, adding a page updates the
+page tree immediately but the search index is built at startup — restart if a
+new page is not being found.
+
+**There is no ranking you can tune.** No per-page boost, no synonyms, no
+stop-word list. If a page is hard to find, the fix is a clearer `title` and
+better headings, which helps readers who never search anyway.

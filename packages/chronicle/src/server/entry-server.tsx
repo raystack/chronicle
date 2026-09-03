@@ -14,6 +14,7 @@ import { getPage, getPageTree, isDraft, getPageNav, loadPageModule, extractFront
 import { getFirstApiUrl } from '@/lib/api-routes';
 import { StatusCodes } from 'http-status-codes';
 import { resolvePageAndSlug, resolveDocsRedirect, compactTree } from '@/lib/tree-utils';
+import { buildThemeColorCss } from '@/lib/theme-colors';
 import { filterPageTreeByVersion, filterPageTreeByContentDir } from '@/lib/version-source';
 import { getActiveContentDir } from '@/lib/navigation';
 import { getLatestContentRoots, getVersionContentRoots } from '@/lib/config';
@@ -173,6 +174,11 @@ export default {
       ? clientAssets.merge(serverAssets, ...routeAssets)
       : clientAssets.merge(...routeAssets);
 
+    const themeColorCss = buildThemeColorCss(config.theme?.colors);
+    // A configured logo doubles as the favicon. Light first: browser chrome is
+    // usually light, and a site that sets only one gets that one either way.
+    const faviconHref = config.logo?.light ?? config.logo?.dark ?? null;
+
     const renderStart = performance.now();
     // prerender (vs renderToReadableStream) waits for all Suspense content;
     // the huge progressiveChunkSize stops React from "outlining" large completed
@@ -183,14 +189,30 @@ export default {
         <head>
           <meta charSet="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <link rel="icon" href="/favicon.ico" />
-          <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+          {faviconHref ? (
+            <link
+              rel="icon"
+              href={faviconHref}
+              {...(faviconHref.split('?')[0].endsWith('.svg')
+                ? { type: 'image/svg+xml' }
+                : {})}
+            />
+          ) : (
+            <>
+              <link rel="icon" href="/favicon.ico" />
+              <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+            </>
+          )}
           {assets.css.map((attr: { href: string }) => (
             <link key={attr.href} rel="stylesheet" {...attr} />
           ))}
           {assets.js.map((attr: { href: string }) => (
             <link key={attr.href} rel="modulepreload" {...attr} />
           ))}
+          {/* After the stylesheets, so a site's colours win. */}
+          {themeColorCss && (
+            <style dangerouslySetInnerHTML={{ __html: themeColorCss }} />
+          )}
           {[...new Set(pageImages)].map((src: string) => {
             const { base, version } = splitVersion(src);
             const href = isLocalImage(base) && !isSvg(base)

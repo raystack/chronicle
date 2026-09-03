@@ -1,0 +1,134 @@
+---
+title: Move an existing docs site
+description: Point Chronicle at markdown you already have.
+order: 5
+---
+
+If you already have a folder of markdown, you do not need to move or rename any
+of it. Chronicle can read the folder where it sits.
+
+## Point init at your folder
+
+```bash
+chronicle init -c docs
+```
+
+This writes a `chronicle.yaml` that treats your existing `docs/` as the content
+directory. Nothing is moved, and the sample page is skipped because the folder
+already has files.
+
+Then:
+
+```bash
+chronicle dev
+```
+
+Most of a markdown site renders on the first try. What follows is the short list
+of things that usually need a look.
+
+## Add a title to every page
+
+Give every page a `title`. Nothing fails without one — the page renders as
+`Untitled` in the sidebar and the browser tab, which is easy to miss until a
+reader finds it.
+
+If your pages open with an `# H1` and no frontmatter, that heading is the title —
+move it up:
+
+```mdx
+# Installing the CLI          →   ---
+                                  title: Installing the CLI
+The CLI ships as a binary.        ---
+
+                                  The CLI ships as a binary.
+```
+
+Delete the `#` when you do. Every theme prints `title` above the article, so
+leaving both shows the same words twice. See
+[Pages and frontmatter](/docs/writing/pages).
+
+A quick way to find the pages that still need it:
+
+```bash
+grep -rL "^title:" docs --include="*.md" --include="*.mdx"
+```
+
+## Rename .md to .mdx
+
+Both extensions are read, so this is optional. Renaming buys you components —
+callouts, tabs, diagrams — in pages that want them, and costs nothing in pages
+that do not.
+
+MDX is stricter than markdown in one way worth knowing: a bare `<` or `{` is
+read as the start of a component or an expression. If a page fails to parse
+after renaming, that is usually why. Wrap the character in backticks or escape
+it.
+
+## Order the pages
+
+Without `order`, pages sort after every page that has one. Add it to the pages
+whose position matters:
+
+```yaml
+---
+title: Introduction
+order: 1
+---
+```
+
+Folders become sidebar groups named after the folder. Give a folder a better
+name with a `meta.json`:
+
+```json
+{ "title": "Getting started", "order": 2 }
+```
+
+See [Navigation](/docs/writing/navigation).
+
+## Keep your old URLs working
+
+This is the step people skip and regret. If your paths change — a different
+prefix, a renamed folder, a page split in two — add redirects so existing links
+survive:
+
+```yaml
+redirects:
+  - from: /guide/install
+    to: /docs/getting-started/install
+    permanent: true
+```
+
+Check your analytics for the twenty most-visited pages and make sure each one
+still resolves. See [Links and redirects](/docs/writing/links).
+
+## Move your images
+
+Images referenced relatively keep working — put the file next to the page. Ones
+you served from a static folder belong in `public/`, which is served as-is.
+
+Content images get resized and re-encoded for free once they are next to a page,
+which files in `public/` do not. See [Images](/docs/writing/images).
+
+## Coming from a docs site with its own conventions
+
+Chronicle has no plugin system, so anything your previous tool did through
+plugins needs another home:
+
+| You had | In Chronicle |
+|---|---|
+| A sidebar or nav config file | Folders plus `order`. See [Navigation](/docs/writing/navigation) |
+| Custom admonition syntax | The `:::note` directives Chronicle ships. See [Components](/docs/writing/components) |
+| A theme you had customised | One of three themes, plus colour tokens. See [Themes](/docs/themes) |
+| Versioned docs in a plugin | The `versions` key. See [Versioned documentation](/docs/guides/versioning) |
+| A search integration | Built in. See [Search](/docs/guides/search) |
+
+## Check before you ship
+
+```bash
+chronicle build
+```
+
+The build fails on a page that cannot be parsed and names the file, so this is
+the fastest way to find the last few problems. Then look at the sidebar order,
+click through the twenty pages that matter most, and check that search finds
+them.

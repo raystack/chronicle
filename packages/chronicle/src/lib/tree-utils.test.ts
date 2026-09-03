@@ -181,7 +181,7 @@ describe('compactTree', () => {
     expect(result.children[0]).toEqual({ type: 'page', name: 'Intro', url: '/docs/intro' })
   })
 
-  test('strips description and root from folder nodes', () => {
+  test('strips description from folder nodes but keeps root', () => {
     const tree: Root = {
       name: 'root',
       children: [{
@@ -193,7 +193,8 @@ describe('compactTree', () => {
     const result = compactTree(tree)
     const folder = result.children[0] as any
     expect(folder.description).toBeUndefined()
-    expect(folder.root).toBeUndefined()
+    // Layouts scope the tree by `root`, so it has to survive serialisation.
+    expect(folder.root).toBe(true)
     expect(folder.name).toBe('Guides')
     expect(folder.children[0]).toEqual({ type: 'page', name: 'Install', url: '/guides/install' })
   })

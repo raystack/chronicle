@@ -1,5 +1,6 @@
 import type { Folder, Node, Root } from 'fumadocs-core/page-tree'
 import type { ChronicleConfig } from '@/types'
+import { getLatestContentRoots, getVersionContentRoots } from './config'
 
 export interface VersionContext {
   dir: string | null
@@ -66,12 +67,23 @@ function nodeMatchesVersion(
   return urls.every((u) => !prefixes.some((pre) => isUnderPrefix(u, pre)))
 }
 
+/**
+ * True when `tree` has already been narrowed to `prefix`. Both filters run
+ * twice on the same tree — `entry-server` before serialising, then a layout —
+ * so both have to be safe to repeat.
+ */
+function isAlreadyScoped(tree: Root, prefix: string): boolean {
+  const urls = tree.children.flatMap(nodeUrls)
+  return urls.length > 0 && urls.every((u) => isUnderPrefix(u, prefix))
+}
+
 export function filterPageTreeByVersion(
   tree: Root,
   ctx: VersionContext,
   config: ChronicleConfig,
 ): Root {
   if (ctx.dir !== null) {
+    if (isAlreadyScoped(tree, ctx.urlPrefix)) return tree
     const versionFolder = tree.children.find(
       (n): n is Folder =>
         n.type === 'folder' && nodeMatchesVersion(n, ctx, config),
@@ -91,11 +103,36 @@ export function filterPageTreeByContentDir(
 ): Root {
   if (contentDir === null) return tree
   const expectedPrefix = `${ctx.urlPrefix}/${contentDir}`
+
+  // `root` marks a content directory — `buildFiles` sets it on every one. A
+  // sub-folder never carries it, which is what url shapes alone cannot tell us.
   const match = tree.children.find((n): n is Folder => {
-    if (n.type !== 'folder') return false
+    if (n.type !== 'folder' || n.root !== true) return false
     const urls = nodeUrls(n)
     return urls.length > 0 && urls.every((u) => isUnderPrefix(u, expectedPrefix))
   })
-  if (!match) return { ...tree, children: [] }
-  return { ...tree, children: match.children }
+  if (match) return { ...tree, children: match.children }
+
+  if (isAlreadyScoped(tree, expectedPrefix)) return tree
+  return { ...tree, children: [] }
+}
+
+
+/**
+ * Every content section's URL prefix — `/docs`, `/dev`, `/v1/docs` — longest
+ * first, so `/v1/docs` is tested before `/v1` could ever shadow it.
+ */
+export function contentSectionPrefixes(config: ChronicleConfig): string[] {
+  const prefixes = [
+    ...getLatestContentRoots(config).map((r) => r.urlPrefix),
+    ...(config.versions ?? []).flatMap((v) =>
+      getVersionContentRoots(config, v.dir).map((r) => r.urlPrefix),
+    ),
+  ]
+  return prefixes.sort((a, b) => b.length - a.length)
+}
+
+/** The section a page belongs to, or null if it sits outside every one. */
+export function sectionOf(url: string, prefixes: string[]): string | null {
+  return prefixes.find((p) => isUnderPrefix(url, p)) ?? null
 }

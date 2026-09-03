@@ -1,0 +1,91 @@
+---
+title: Quick start
+description: Install Chronicle and get a documentation site running on your machine.
+order: 2
+---
+
+This gets you from nothing to a running site. It takes about two minutes.
+
+## Install
+
+```bash
+bun add @raystack/chronicle
+```
+
+## Create a project
+
+```bash
+chronicle init
+```
+
+That writes three things:
+
+- `chronicle.yaml` — your site config
+- `content/docs/` — a content directory with a sample `index.mdx`
+- `.gitignore` — entries for `node_modules`, `dist` and `.output`
+
+Already have a docs folder you want to keep? Point `init` at it instead of
+letting it make a new one:
+
+```bash
+chronicle init -c docs
+```
+
+Nothing is overwritten. If the directory already has files, the sample page is
+skipped. See [Move an existing docs site](/docs/guides/migrate) for the longer
+version.
+
+## Start the dev server
+
+```bash
+chronicle dev
+```
+
+Your site is at [http://localhost:3000](http://localhost:3000). Edit a page and
+the browser updates without a reload.
+
+## Write a page
+
+Create `content/docs/hello.mdx`:
+
+```mdx
+---
+title: Hello
+description: My first page.
+order: 2
+---
+
+This is a page. It lives at `/docs/hello`.
+
+## A section
+
+Sections use `##` and below. The heading above the article comes from `title`,
+so a page never needs its own `#`.
+```
+
+Reload and it appears in the sidebar, in search, and in the previous and next
+links. Nothing else to register.
+
+## Build for production
+
+```bash
+chronicle build
+chronicle start
+```
+
+Or do both in one step while you are trying things out:
+
+```bash
+chronicle serve
+```
+
+`build` writes to `.output/`. `start` serves what `build` produced — it does not
+build for you, so run them in that order. See
+[Build and serve](/docs/deploy/build) for what the output contains and how
+presets change it.
+
+## Next
+
+- [Project structure](/docs/structure) — what each file and folder is for
+- [Pages and frontmatter](/docs/writing/pages) — every field a page can set
+- [chronicle.yaml](/docs/reference/config) — the full config reference

@@ -141,3 +141,62 @@ describe('remark-resolve-images version stamping', () => {
     expect(firstImageUrl(tree)).toBe(`/_content/docs/img.png?v=${PNG_HASH}`);
   });
 });
+
+describe('versioned pages', () => {
+  function setupVersionsDir(): string {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'chronicle-remark-v-'));
+    const versionsDir = path.join(root, 'versions');
+    fs.mkdirSync(path.join(versionsDir, 'v1', 'docs'), { recursive: true });
+    fs.writeFileSync(path.join(versionsDir, 'v1', 'docs', 'img.png'), PNG_BYTES);
+    return versionsDir;
+  }
+
+  test('exports images for a page under versions/', async () => {
+    // `valueToExport` names `images`, so a page that never sets it fails the
+    // production build with a missing-export error. Every versioned page used
+    // to take that path, which meant no versioned site could be built.
+    const versionsDir = setupVersionsDir();
+    const { file } = await transform(
+      'no images here',
+      undefined,
+      versionsDir,
+      path.join(versionsDir, 'v1', 'docs', 'page.mdx')
+    );
+    expect(file.data.images).toEqual([]);
+  });
+
+  test('resolves a relative image under versions/ against the mirror path', async () => {
+    const versionsDir = setupVersionsDir();
+    const { tree } = await transform(
+      '![alt](./img.png)',
+      { optimize: false },
+      versionsDir,
+      path.join(versionsDir, 'v1', 'docs', 'page.mdx')
+    );
+    expect(firstImageUrl(tree)).toBe(`/_content/v1/docs/img.png?v=${PNG_HASH}`);
+  });
+
+  test('takes the deepest marker when a project sits under a versions dir', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'chronicle-remark-d-'));
+    const nested = path.join(root, 'versions', 'project', 'content');
+    fs.mkdirSync(path.join(nested, 'docs'), { recursive: true });
+    fs.writeFileSync(path.join(nested, 'docs', 'img.png'), PNG_BYTES);
+    const { tree } = await transform(
+      '![alt](./img.png)',
+      { optimize: false },
+      nested,
+      path.join(nested, 'docs', 'page.mdx')
+    );
+    expect(firstImageUrl(tree)).toBe(`/_content/docs/img.png?v=${PNG_HASH}`);
+  });
+
+  test('exports an empty list when the path is outside any content root', async () => {
+    const { file } = await transform(
+      'stray file',
+      undefined,
+      '/tmp',
+      '/tmp/elsewhere/page.mdx'
+    );
+    expect(file.data.images).toEqual([]);
+  });
+});

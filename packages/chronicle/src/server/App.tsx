@@ -80,6 +80,10 @@ function PageFallback() {
   );
 }
 
+/**
+ * Site-wide head tags. No `<title>` — every route renders its own, and one here
+ * would hoist ahead of it, which is the title the browser would then use.
+ */
 function RootHead({ config }: { config: ChronicleConfig }) {
   const siteJsonLd = config.url
     ? {
@@ -91,15 +95,12 @@ function RootHead({ config }: { config: ChronicleConfig }) {
       }
     : null;
 
+  if (!siteJsonLd) return null;
+
   return (
-    <>
-      <title>{config.site.title}</title>
-      {siteJsonLd && (
-        <script
-          type='application/ld+json'
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd, null, 2) }}
-        />
-      )}
-    </>
+    <script
+      type='application/ld+json'
+      dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd, null, 2) }}
+    />
   );
 }

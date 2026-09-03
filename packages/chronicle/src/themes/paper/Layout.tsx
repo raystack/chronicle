@@ -6,6 +6,7 @@ import { cx } from 'class-variance-authority';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router';
 import { ClientThemeSwitcher } from '@/components/ui/client-theme-switcher';
+import { Logo } from '@/components/ui/logo';
 import { SidebarLinks } from '@/components/ui/sidebar-links';
 import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir } from '@/lib/navigation';
@@ -25,9 +26,12 @@ function SidebarHeader({ config }: { config: ThemeLayoutProps['config'] }) {
 
   if (entries.length <= 1) {
     return (
-      <Text size="regular" weight="medium" className={styles.title}>
-        {config.site.title}
-      </Text>
+      <>
+        <Logo config={config} size={20} className={styles.logo} labelled={false} />
+        <Text size="regular" weight="medium" className={styles.title}>
+          {config.site.title}
+        </Text>
+      </>
     );
   }
 
@@ -36,24 +40,30 @@ function SidebarHeader({ config }: { config: ThemeLayoutProps['config'] }) {
     entries.find(e => e.contentDir === activeDir) ?? entries[0];
 
   return (
-    <Select
-      value={activeEntry.contentDir}
-      onValueChange={(val: string) => {
-        const entry = entries.find(e => e.contentDir === val);
-        if (entry) navigate(entry.href);
-      }}
-    >
-      <Select.Trigger size='small' className={styles.contentDirTrigger}>
-        <Select.Value placeholder={activeEntry.label} className={styles.title} />
-      </Select.Trigger>
-      <Select.Content>
-        {entries.map(entry => (
-          <Select.Item key={entry.href} value={entry.contentDir}>
-            {entry.label}
-          </Select.Item>
-        ))}
-      </Select.Content>
-    </Select>
+    <>
+      <Logo config={config} size={20} className={styles.logo} />
+      <Select
+        value={activeEntry.contentDir}
+        onValueChange={(val: string) => {
+          const entry = entries.find(e => e.contentDir === val);
+          if (entry) navigate(entry.href);
+        }}
+      >
+        <Select.Trigger size='small' className={styles.contentDirTrigger}>
+          <Select.Value
+            placeholder={activeEntry.label}
+            className={styles.title}
+          />
+        </Select.Trigger>
+        <Select.Content>
+          {entries.map(entry => (
+            <Select.Item key={entry.href} value={entry.contentDir}>
+              {entry.label}
+            </Select.Item>
+          ))}
+        </Select.Content>
+      </Select>
+    </>
   );
 }
 

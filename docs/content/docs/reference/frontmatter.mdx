@@ -1,14 +1,13 @@
 ---
-title: Frontmatter
-description: Page-level metadata options for MDX files.
-order: 4
+title: Frontmatter fields
+description: Every field a page can set in its frontmatter.
+order: 2
 ---
 
-# Frontmatter
+Every field a page can set. Only `title` is required.
 
-Every MDX file supports YAML frontmatter at the top of the file for page-level configuration.
-
-## Example
+For how to write a page day to day, see
+[Pages and frontmatter](/docs/writing/pages).
 
 ```mdx
 ---
@@ -21,20 +20,39 @@ authors:
   - Jane Doe <jane@example.com>
 ---
 
-# Getting Started
-
 Your content here...
 ```
+
+## Fields at a glance
+
+| Field | Type | What it does |
+|---|---|---|
+| `title` | `string` | Heading, sidebar label, browser tab. Falls back to `Untitled` |
+| `description` | `string` | Line under the heading, meta description, social card |
+| `order` | `number` | Sidebar position. Lower first. Decimals allowed |
+| `draft` | `boolean` | `true` removes the page from the site |
+| `short` | `string` | Shorter sidebar label. Read by `fanfold` |
+| `identifiers` | `string[]` | Extra header lines. Read by `fanfold` |
+| `icon` | `string` | Sidebar icon |
+| `authors` | `string \| string[]` | Byline, author pages, structured data |
+| `lastModified` | `string` | Date the page states as its last update |
 
 ## Fields
 
 ### title
 
-**Required.** The page title used in navigation, browser tab, and page heading.
+The page title used in navigation, the browser tab, and the heading above the
+article. A page without one renders as `Untitled`, so treat it as required even
+though nothing enforces it.
 
 ```yaml
 title: Installation Guide
 ```
+
+Every theme prints this title above the article, so start your content with the
+first section rather than repeating the title as a `#` heading. A page that opens
+with `# Installation Guide` shows the same words twice. Use `##` and below for
+sections — those are what the table of contents lists.
 
 ### short
 
@@ -140,19 +158,6 @@ authors:
   - Sam Patel
 ```
 
-### draft
-
-Set `draft: true` to keep a page out of the site. It is dropped from the
-navigation tree, so it does not appear in the sidebar, in breadcrumbs, in search,
-or in the previous/next links.
-
-```yaml
-draft: true
-```
-
-The file stays where it is, so this is the way to leave a page in the repository
-while it is still being written.
-
 A single author can be written without the list:
 
 ```yaml
@@ -167,7 +172,7 @@ and on the generated social card. Every author also gets a page at
 A byline shows two authors at most, collapsing the rest into a `+N` counter that
 names them on hover. The avatar beside each name is drawn from the author's
 initials unless the author has an `avatar` in the
-[authors registry](/docs/configuration).
+[authors registry](/docs/reference/config).
 
 Registry keys work here too, and bring the author's bio, avatar, and profile
 link along with them:
@@ -176,38 +181,20 @@ link along with them:
 authors: [jane]
 ```
 
-## Navigation Ordering
+### draft
 
-Sidebar navigation is determined by:
+Set `draft: true` to keep a page out of the site. It is dropped from the
+navigation tree, so it does not appear in the sidebar, in breadcrumbs, in search,
+or in the previous/next links.
 
-1. **Frontmatter `order`** — Pages sorted by `order` value (ascending)
-2. **Decimal values** — Use `1`, `1.5`, `2` for fine-grained positioning
-3. **Folders** — Directories become collapsible groups, auto-named from the folder name (capitalized)
-4. **No `meta.json` required** — Ordering is entirely frontmatter-based
-
-### Example structure
-
-```
-content/
-├── index.mdx          # order: 1
-├── quickstart.mdx     # order: 2
-├── guides/
-│   ├── setup.mdx      # order: 1
-│   └── advanced.mdx   # order: 2
-└── reference/
-    ├── cli.mdx        # order: 1
-    └── config.mdx     # order: 2
+```yaml
+draft: true
 ```
 
-This produces sidebar navigation:
+The file stays where it is, so this is the way to leave a page in the repository
+while it is still being written.
 
-```
-Home (order: 1)
-Quickstart (order: 2)
-▸ Guides
-    Setup (order: 1)
-    Advanced (order: 2)
-▸ Reference
-    CLI (order: 1)
-    Config (order: 2)
-```
+## Where ordering is explained
+
+`order`, `short` and folder `meta.json` all shape the sidebar together. See
+[Navigation](/docs/writing/navigation).

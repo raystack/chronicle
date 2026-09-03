@@ -1,30 +1,16 @@
 ---
-title: Configuration
-description: Full chronicle.yaml configuration reference.
-order: 3
+title: chronicle.yaml
+description: Every key the site config accepts.
+order: 1
 ---
-
-# Configuration
 
 All site configuration lives in a single `chronicle.yaml` file in your project root. The config is validated using Zod — invalid fields produce clear errors at startup.
 
-## Project layout
+Only `site.title` and `content` are required. Everything else has a default or
+is optional.
 
-```
-my-docs-site/
-├── chronicle.yaml
-├── content/                     ← latest
-│   ├── docs/
-│   └── dev/
-└── versions/                    ← only if versions: is declared
-    ├── v2/
-    │   └── docs/
-    └── v1/
-        ├── docs/
-        └── dev/
-```
-
-Content dirs declared in top-level `content:` are resolved under `content/<dir>/` for the latest version; each `versions[].content[].dir` is resolved under `versions/<version-dir>/<dir>/`.
+For how the files on disk map to URLs, see
+[Project structure](/docs/structure).
 
 ## Full example
 
@@ -216,28 +202,57 @@ versions:
 | `content` | `{dir, label}[]` | Content dirs for this version. Entries may rename, reorder, or omit top-level content dirs. |
 | `api` | `ApiConfig[]` | Version-scoped API specs, rendered at `/<dir>/apis/...`. Same shape as top-level `api:`. |
 
+See [Versioned documentation](/docs/guides/versioning) for how to cut a new version.
+
 ### preset
 
-Optional deploy preset. Can be overridden by `--preset`.
+Deploy target. Decides what `chronicle build` produces and where it writes.
+Overridden by `--preset`.
 
 ```yaml
-preset: vercel # vercel, cloudflare, or node-server
+preset: vercel
 ```
+
+| Value | Output |
+|-------|--------|
+| — (unset) | A Node server in `.output/` |
+| `node-server` | A Node server in `.output/` |
+| `vercel` | A Vercel function build in `.vercel/output/` |
+| `cloudflare` | A Cloudflare Workers build in `.output/` |
+| `static` | Pre-rendered HTML in `.output/public/` |
+| `vercel-static` | Pre-rendered HTML in `.vercel/output/` |
+| `cloudflare-pages` | Pre-rendered HTML in `.output/public/` |
+| `github-pages` | Pre-rendered HTML in `.output/public/` |
+
+The four static presets pre-render every page at build time and need no server
+to run. See [Deploy](/docs/deploy/hosting).
 
 ### logo
 
-Logo with theme-aware variants.
+The mark shown in the sidebar, used as the favicon, and drawn on social cards.
 
 ```yaml
 logo:
-  light: ./logo-light.png
-  dark: ./logo-dark.png
+  light: /logo.svg
+  dark: /logo-dark.svg
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `light` | `string` | Logo path or URL for light theme |
-| `dark` | `string` | Logo path or URL for dark theme |
+| `light` | `string` | Path or URL used on a light background |
+| `dark` | `string` | Path or URL used on a dark background |
+
+Files live in `public/`, so `public/logo.svg` is written as `/logo.svg`. Setting
+one is enough — the other falls back to it, which is what you want for a mark
+that reads on either background.
+
+Set neither and every theme shows the site's first letter in a tinted box. It is
+deliberately plain, so a site without a logo looks unfinished rather than
+borrowed.
+
+The same image becomes the favicon, replacing `public/favicon.ico` and
+`public/favicon.svg`. Those two are still used when no logo is set, so an
+explicit favicon keeps working.
 
 ### theme
 
@@ -251,9 +266,25 @@ theme:
 | Field | Type | Description | Default |
 |-------|------|-------------|---------|
 | `name` | `'default' \| 'paper' \| 'fanfold'` | Theme to use | `default` |
-| `colors` | `Record<string, string>` | Custom color overrides | — |
+| `colors` | `Record<string, string>` | Colour overrides, keyed by design token | — |
 
-See [Themes](/docs/themes) for details on each theme.
+```yaml
+theme:
+  name: default
+  colors:
+    background-base-primary: "#fbfaf8"
+    foreground-accent-primary: "#0a3793"
+```
+
+Each key names an Apsara colour token, and the `--rs-color-` prefix is added for
+you. Write the whole custom property yourself — `--paper-ink` — to reach one
+outside that family.
+
+A value applies in both light and dark, since the config holds one value per
+token. Leave a token alone if the two themes should differ.
+
+See [Choosing a theme](/docs/themes) for which one to pick and
+[Theme options](/docs/themes/options) for what each gives you.
 
 ### navigation
 
@@ -318,7 +349,7 @@ Any query string already on `href` is preserved, and a `utm_*` param you set you
 
 ### search
 
-Search functionality powered by Fumadocs. Automatically scoped to the active version.
+Full-text search over titles, headings and page bodies. Scoped to the active version.
 
 ```yaml
 search:
@@ -332,6 +363,8 @@ search:
 | `placeholder` | `string` | Search input placeholder | `Search...` |
 
 When enabled, search is accessible via the navbar button or keyboard shortcut `Cmd+K` / `Ctrl+K`. Active version comes from the URL; switching versions scopes the index.
+
+See [Search](/docs/guides/search) for what gets indexed.
 
 ### api
 
@@ -363,6 +396,8 @@ api:
 | `auth.header` | `string` | Header name for auth token |
 | `auth.placeholder` | `string` | Placeholder text in auth input |
 
+See [API reference](/docs/guides/api-reference) for what readers get from a spec.
+
 ### redirects
 
 URL redirects for migrating old routes to new ones. Checked before all other routes.
@@ -384,6 +419,8 @@ redirects:
 
 Use `permanent: true` when the old URL should never be used again — search engines and browsers will cache the redirect.
 
+See [Links and redirects](/docs/writing/links) for when to use each status.
+
 ### analytics
 
 Analytics integration for tracking page views.
@@ -399,6 +436,8 @@ analytics:
 |-------|------|-------------|---------|
 | `enabled` | `boolean` | Enable/disable analytics | `false` |
 | `googleAnalytics.measurementId` | `string` | Google Analytics measurement ID | — |
+
+See [Monitoring](/docs/deploy/monitoring) for what else a running site reports.
 
 ### authors
 
@@ -430,8 +469,10 @@ authors: [jane]
 
 A frontmatter string that matches no key is still valid — it renders as a plain
 name, so occasional contributors need no registry entry. See
-[Frontmatter](/docs/frontmatter) for the field itself, and browse the people
+[Frontmatter](/docs/reference/frontmatter) for the field itself, and browse the people
 writing a site at `/authors`.
+
+See [Authors and bylines](/docs/writing/authors) for how bylines and author pages work.
 
 ### telemetry
 
@@ -451,6 +492,8 @@ telemetry:
 | `port` | `number` | Port for Prometheus metrics endpoint | `9090` |
 
 Metrics are available at `http://localhost:<port>/metrics` in Prometheus exposition format.
+
+See [Monitoring](/docs/deploy/monitoring) for the health and readiness endpoints.
 
 ## Defaults
 

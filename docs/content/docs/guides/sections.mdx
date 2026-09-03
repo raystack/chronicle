@@ -1,0 +1,125 @@
+---
+title: Multiple content sections
+description: Split a site into separate sections with their own navigation.
+order: 4
+---
+
+Some docs serve two audiences that share nothing. A product guide for people
+using the thing, and a developer guide for people building against it. Putting
+both in one sidebar makes each harder to read.
+
+A content directory is a section: its own folder, its own URL prefix, its own
+navigation tree.
+
+## Declaring sections
+
+Each entry in `content` is a section:
+
+```yaml
+content:
+  - dir: docs
+    label: Docs
+  - dir: dev
+    label: Dev Docs
+```
+
+```
+content/
+├── docs/          → /docs/...
+└── dev/           → /dev/...
+```
+
+The directory name is the URL prefix. The label is what readers see.
+
+## What changes with two or more
+
+A switcher appears at the top of the sidebar. The tree below it shows only the
+section you are in, so a reader in `Dev Docs` sees developer pages and nothing
+else. Previous and next links stay inside the section too.
+
+Search still covers everything, but each result is labelled with the section it
+came from — so a reader who searches across both can tell which is which.
+
+## Descriptions and icons
+
+On a landing page each section becomes a card, and these two fields are what
+make the card worth reading:
+
+```yaml
+content:
+  - dir: docs
+    label: Docs
+    description: Install it, configure it, and get your first site running.
+    icon: /icons/book.svg
+  - dir: dev
+    label: Dev Docs
+    description: Build against the API, extend the themes, run it in CI.
+    icon: /icons/code.svg
+```
+
+`icon` takes a path to a file in `public/`, or inline SVG markup.
+
+## The landing page
+
+With one section, `/` redirects straight into it — a landing page listing one
+thing is a wasted click.
+
+With several, you probably want the choice. Turn it on:
+
+```yaml
+latest:
+  label: "3.0"
+  landing: true
+```
+
+Now `/` lists the sections as cards. Leave it off and `/` redirects to the first
+section in the list.
+
+The `fanfold` theme prints its own landing page here instead of the card grid —
+see [Theme options](/docs/themes/options).
+
+## Where a section's root lands
+
+Visiting `/docs` normally serves `content/docs/index.mdx`. Set `index_page` to
+send it to a different page instead:
+
+```yaml
+content:
+  - dir: docs
+    label: Docs
+    index_page: overview
+```
+
+Now `/docs` resolves to `/docs/overview`. Useful when the page you want readers
+to start on is not the one called `index`.
+
+## Sections and versions
+
+Each version declares its own sections, so they can change over releases:
+
+```yaml
+content:
+  - dir: docs
+    label: Docs
+  - dir: dev
+    label: Dev Docs
+
+versions:
+  - dir: v1
+    label: "1.0"
+    content:
+      - dir: docs
+        label: Docs          # 1.0 had no developer guide
+```
+
+A version may rename a section, drop one, or add one the current version does
+not have. See [Versioned documentation](/docs/guides/versioning).
+
+## Things to know
+
+**Section names must be unique**, and cannot collide with a version directory
+name. The config check catches both.
+
+**Two sections is usually enough.** Every section you add is another thing a
+reader has to choose between before they start reading. Folders inside one
+section are cheaper — see [Navigation](/docs/writing/navigation).

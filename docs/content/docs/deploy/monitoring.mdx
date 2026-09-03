@@ -1,0 +1,120 @@
+---
+title: Monitoring
+description: Health checks, Prometheus metrics, and page analytics for a running site.
+order: 4
+---
+
+Everything here applies to a server build. A static site has no server, so it has
+nothing to report — see [Build and serve](/docs/deploy/build).
+
+## Health and readiness
+
+Two endpoints, and they answer different questions. Most platforms want both.
+
+### /api/health
+
+Is the process alive? Always returns `200` while the server is running. Wire
+your platform's liveness check here — if this stops answering, restart the
+process.
+
+```bash
+curl -i https://docs.example.com/api/health
+```
+
+### /api/ready
+
+Is it ready to serve properly? Returns `200` once the search index has finished
+building, and `503` before that.
+
+```json
+{ "status": "ready", "search": true }
+```
+
+```json
+{ "status": "not_ready", "search": false }
+```
+
+The first request to this endpoint is what starts the index building, in the
+background. A large site is briefly up but not ready. Point your readiness or
+startup check here and a rolling deploy will not send traffic to an instance
+whose search is still empty — and will get the indexing under way.
+
+Using `/api/health` for both is the common mistake. It reports success
+immediately, so traffic arrives before search works.
+
+## Prometheus metrics
+
+Off by default. Turn it on and metrics are exported on a separate port:
+
+```yaml
+telemetry:
+  enabled: true
+  serviceName: my-docs
+  port: 9090
+```
+
+```bash
+curl http://localhost:9090/metrics
+```
+
+The output is standard Prometheus exposition format, carrying request counts,
+status codes and durations by route.
+
+The separate port is deliberate — it lets you scrape metrics from inside your
+network without exposing them on the public site. Do not publish port 9090.
+
+A scrape config:
+
+```yaml
+scrape_configs:
+  - job_name: docs
+    static_configs:
+      - targets: ['docs-internal:9090']
+```
+
+`serviceName` is the name your traces and metrics are tagged with. Set it if you
+run more than one docs site, or every one of them reports as `chronicle`.
+
+## Page analytics
+
+Separate from the above, and about readers rather than the server:
+
+```yaml
+analytics:
+  enabled: true
+  googleAnalytics:
+    measurementId: G-XXXXXXXXXX
+```
+
+Both fields are needed — `enabled: true` on its own does nothing without a
+measurement ID.
+
+Page views are tracked as readers navigate, including navigation within the site
+that never reloads the page.
+
+### Outbound link tracking
+
+Links in the sidebar footer, set through `links`, are tagged with UTM parameters
+so the destination can see where the visit came from:
+
+| Parameter | Value |
+|---|---|
+| `utm_source` | The docs site's hostname |
+| `utm_medium` | Your site title, slugified |
+| `utm_content` | The path the reader clicked from |
+
+This needs nothing turned on and works whether or not analytics is enabled. It
+is the destination's analytics that benefits. See
+[`links`](/docs/reference/config).
+
+## What to watch
+
+For a docs site, the numbers worth an alert are few:
+
+- `/api/health` failing — the process is gone
+- `/api/ready` stuck at `503` well past startup — the index is failing to build
+- A rise in 404s — usually a moved page with no redirect. See
+  [Links and redirects](/docs/writing/links)
+
+Response times rarely need watching. Pages are rendered from files already in
+memory, and there is no database behind them.

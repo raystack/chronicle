@@ -2,6 +2,7 @@ import { defineHandler } from 'nitro';
 import React from 'react';
 import satori from 'satori';
 import { loadConfig } from '@/lib/config';
+import { siteInitial } from '@/lib/site-initial';
 import { loadFont, loadLogo } from './og-utils';
 
 let fontData: ArrayBuffer | null = null;
@@ -16,8 +17,11 @@ export default defineHandler(async event => {
 
   if (!fontData) fontData = await loadFont(__CHRONICLE_PACKAGE_ROOT__);
   if (cachedLogo === undefined) {
-    cachedLogo = config.logo?.dark
-      ? await loadLogo(__CHRONICLE_PROJECT_ROOT__, config.logo.dark)
+    // The card is dark, so prefer the dark variant — but a site that sets only
+    // one should still get a mark rather than nothing.
+    const logoPath = config.logo?.dark ?? config.logo?.light;
+    cachedLogo = logoPath
+      ? await loadLogo(__CHRONICLE_PROJECT_ROOT__, logoPath)
       : null;
   }
 
@@ -35,13 +39,31 @@ export default defineHandler(async event => {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', marginBottom: 16 }}>
-        {cachedLogo && (
+        {cachedLogo ? (
           <img
             src={cachedLogo}
             width={48}
             height={48}
             style={{ marginRight: 16 }}
           />
+        ) : (
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 48,
+              height: 48,
+              marginRight: 16,
+              borderRadius: 10,
+              backgroundColor: '#26262a',
+              color: '#fafafa',
+              fontSize: 24,
+              fontWeight: 700,
+            }}
+          >
+            {siteInitial(siteName)}
+          </div>
         )}
         <div style={{ fontSize: 32, color: '#888' }}>
           {siteName}

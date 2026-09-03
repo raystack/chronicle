@@ -57,18 +57,40 @@ function finalizeUrl(url: string, optimize: boolean, version?: string): string {
 
 const IMG_SRC_PATTERN = /(<img\b[^>]*\bsrc=["'])([^"']+)(["'])/gi
 
+/**
+ * Splits a page's path at its content root. The part below the split is also
+ * its path under `/_content/`, which is what image URLs are built from —
+ * `content/docs/` mirrors as `docs/`, `versions/v1/docs/` as `v1/docs/`.
+ *
+ * Takes the deepest marker, since a project can sit inside a directory named
+ * `versions` and still keep its pages under `content/`.
+ */
+function splitContentRoot(
+  filePath: string,
+): { root: string; relative: string } | null {
+  let end = -1
+  for (const marker of ['/versions/', '/content/']) {
+    const idx = filePath.lastIndexOf(marker)
+    if (idx !== -1) end = Math.max(end, idx + marker.length)
+  }
+  if (end === -1) return null
+  return { root: filePath.slice(0, end), relative: filePath.slice(end) }
+}
+
 const remarkResolveImages: Plugin<[RemarkResolveImagesOptions?]> = (options) => {
   const optimize = options?.optimize ?? true
   return async (tree, file) => {
+    // `valueToExport` names `images`, so returning without it fails the build.
+    file.data.images = []
+
     const filePath = file.path?.replace(/\\/g, '/')
     if (!filePath) return
 
-    const contentIdx = filePath.lastIndexOf('/content/')
-    if (contentIdx === -1) return
+    const split = splitContentRoot(filePath)
+    if (!split) return
 
-    const relative = filePath.slice(contentIdx + '/content/'.length)
+    const { root: contentRoot, relative } = split
     const dir = path.posix.dirname(relative)
-    const contentRoot = filePath.slice(0, contentIdx + '/content/'.length)
 
     const seen = new Set<string>()
     const images: string[] = []

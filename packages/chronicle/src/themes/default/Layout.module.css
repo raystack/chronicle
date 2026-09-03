@@ -82,6 +82,9 @@
   display: flex;
   flex-direction: column;
   gap: 0;
+  /* Separates the site's sections from the tree below, which may start with a
+     plain page carrying no margin of its own. */
+  margin-bottom: var(--rs-space-4);
 }
 
 .topLinkItem {
@@ -203,8 +206,10 @@
   margin-top: 0;
 }
 
-.navGroup[data-depth='0'] {
-  margin-top: var(--rs-space-7);
+/* Apsara skips the first group's margin, which is what we want; `.topLinks`
+   carries the separation when a group follows it. */
+.navGroup[data-depth='0']:first-child {
+  margin-top: 0;
 }
 
 .navGroup :global([data-slot='sidebar-group-header']) {
