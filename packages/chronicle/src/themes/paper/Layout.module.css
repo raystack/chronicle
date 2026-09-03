@@ -41,7 +41,6 @@
 /* Never squeezed by a long site title. */
 .logo {
   flex-shrink: 0;
-  color: var(--rs-color-foreground-accent-primary);
 }
 
 .contentDirTrigger {

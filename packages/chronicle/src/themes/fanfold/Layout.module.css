@@ -257,9 +257,10 @@
 /* Above the name, not beside it — the rail is 240px and the display face is
    wide, so sharing a line breaks titles mid-word. */
 .brandLogo {
-  display: block;
+  /* Block-level so the name sits under it, but still a flex box so a letter
+     mark stays centred. */
+  display: flex;
   margin-bottom: 10px;
-  color: var(--fan-ink);
 }
 
 .brandName {

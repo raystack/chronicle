@@ -175,6 +175,9 @@ export default {
       : clientAssets.merge(...routeAssets);
 
     const themeColorCss = buildThemeColorCss(config.theme?.colors);
+    // A configured logo doubles as the favicon. Light first: browser chrome is
+    // usually light, and a site that sets only one gets that one either way.
+    const faviconHref = config.logo?.light ?? config.logo?.dark ?? null;
 
     const renderStart = performance.now();
     // prerender (vs renderToReadableStream) waits for all Suspense content;
@@ -186,8 +189,20 @@ export default {
         <head>
           <meta charSet="UTF-8" />
           <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-          <link rel="icon" href="/favicon.ico" />
-          <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+          {faviconHref ? (
+            <link
+              rel="icon"
+              href={faviconHref}
+              {...(faviconHref.split('?')[0].endsWith('.svg')
+                ? { type: 'image/svg+xml' }
+                : {})}
+            />
+          ) : (
+            <>
+              <link rel="icon" href="/favicon.ico" />
+              <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+            </>
+          )}
           {assets.css.map((attr: { href: string }) => (
             <link key={attr.href} rel="stylesheet" {...attr} />
           ))}

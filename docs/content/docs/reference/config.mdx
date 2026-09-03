@@ -229,18 +229,30 @@ to run. See [Deploy](/docs/deploy/hosting).
 
 ### logo
 
-Logo with theme-aware variants.
+The mark shown in the sidebar, used as the favicon, and drawn on social cards.
 
 ```yaml
 logo:
-  light: ./logo-light.png
-  dark: ./logo-dark.png
+  light: /logo.svg
+  dark: /logo-dark.svg
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `light` | `string` | Logo path or URL for light theme |
-| `dark` | `string` | Logo path or URL for dark theme |
+| `light` | `string` | Path or URL used on a light background |
+| `dark` | `string` | Path or URL used on a dark background |
+
+Files live in `public/`, so `public/logo.svg` is written as `/logo.svg`. Setting
+one is enough — the other falls back to it, which is what you want for a mark
+that reads on either background.
+
+Set neither and every theme shows the site's first letter in a tinted box. It is
+deliberately plain, so a site without a logo looks unfinished rather than
+borrowed.
+
+The same image becomes the favicon, replacing `public/favicon.ico` and
+`public/favicon.svg`. Those two are still used when no logo is set, so an
+explicit favicon keeps working.
 
 ### theme
 

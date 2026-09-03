@@ -1,0 +1,17 @@
+/* Explicit tokens rather than `currentColor`: Apsara colours its text
+   components, not their containers, so the inherited colour is black in both
+   themes and a mark drawn from it disappears on a dark ground. */
+.initial {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--rs-radius-3);
+  background: var(--rs-color-background-neutral-secondary);
+  color: var(--rs-color-foreground-base-primary);
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0;
+  text-transform: none;
+  user-select: none;
+}
