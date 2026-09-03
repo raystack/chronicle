@@ -14,6 +14,10 @@ const KEEP_FIELDS = new Set([
   'index',
 ]);
 
+// `root` marks a content directory, which layouts scope the tree by. Folders
+// only — it means nothing on a page or a separator.
+const FOLDER_FIELDS = new Set([...KEEP_FIELDS, 'root']);
+
 function compactLeaf(node: Node): Node {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(node)) {
@@ -27,7 +31,7 @@ function compactNode(node: Node): Node {
   if (node.type !== 'folder') return compactLeaf(node);
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(node)) {
-    if (!KEEP_FIELDS.has(k)) continue;
+    if (!FOLDER_FIELDS.has(k)) continue;
     if (k === 'children') out.children = (v as Node[]).map(compactNode);
     else if (k === 'index') out.index = compactLeaf(v as Node);
     else out[k] = v;

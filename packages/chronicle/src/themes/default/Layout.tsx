@@ -17,7 +17,7 @@ import { getLandingEntries } from '@/lib/config';
 import { getActiveContentDir } from '@/lib/navigation';
 import { usePageContext } from '@/lib/page-context';
 import { isAuthorRoute, resolveRoute } from '@/lib/route-resolver';
-import type { Node, Root } from 'fumadocs-core/page-tree';
+import type { Folder, Node, Root } from 'fumadocs-core/page-tree';
 import { NodeType } from '@/lib/tree-utils';
 import type { ThemeLayoutProps } from '@/types';
 import styles from './Layout.module.css';
@@ -327,6 +327,52 @@ function hasActiveDescendant(node: Node, pathname: string): boolean {
   return false;
 }
 
+function SidebarGroupNode({
+  item,
+  pathname,
+  depth
+}: {
+  item: Folder;
+  pathname: string;
+  depth: number;
+}) {
+  const icon = typeof item.icon === 'string' ? iconMap[item.icon] : item.icon;
+  const hasActiveChild = hasActiveDescendant(item, pathname);
+  const [open, setOpen] = useState(depth === 0 || hasActiveChild);
+
+  // Client-side navigation does not remount the tree, so a group the reader
+  // collapsed would stay shut over the page they just opened.
+  useEffect(() => {
+    if (hasActiveChild) setOpen(true);
+  }, [hasActiveChild]);
+
+  return (
+    <Sidebar.Group
+      className={styles.navGroup}
+      data-depth={depth}
+      label={item.name?.toString() ?? ''}
+      leadingIcon={icon ?? undefined}
+      collapsible
+      open={open}
+      onOpenChange={setOpen}
+    >
+      {/* The group label is a collapse trigger, not a link, so a folder's index
+          page needs a row of its own. */}
+      {item.index ? (
+        <SidebarNode item={item.index} pathname={pathname} depth={depth + 1} />
+      ) : null}
+      {item.children.map((child, i) => (
+        <SidebarNode
+          key={child.type === 'page' ? child.url : (child.name?.toString() ?? i)}
+          item={child}
+          pathname={pathname}
+          depth={depth + 1}
+        />
+      ))}
+    </Sidebar.Group>
+  );
+}
+
 function SidebarNode({
   item,
   pathname,
@@ -342,40 +388,7 @@ function SidebarNode({
 
   if (item.type === 'folder') {
     if (depth > MAX_SIDEBAR_DEPTH) return null;
-    const icon = typeof item.icon === 'string' ? iconMap[item.icon] : item.icon;
-    const hasActiveChild = hasActiveDescendant(item, pathname);
-    return (
-      <Sidebar.Group
-        className={styles.navGroup}
-        data-depth={depth}
-        label={item.name?.toString() ?? ''}
-        leadingIcon={icon ?? undefined}
-        // Every group can be collapsed. Top-level ones start open so the whole
-        // site is visible on arrival; nested ones open only when they hold the
-        // page being read.
-        collapsible
-        defaultOpen={depth === 0 || hasActiveChild}
-      >
-        {/* A folder's own index page. The group label is a collapse trigger,
-            not a link, so without this row the index page has no way into it
-            from the sidebar at all. */}
-        {item.index ? (
-          <SidebarNode
-            item={item.index}
-            pathname={pathname}
-            depth={depth + 1}
-          />
-        ) : null}
-        {item.children.map((child, i) => (
-          <SidebarNode
-            key={child.type === 'page' ? child.url : (child.name?.toString() ?? i)}
-            item={child}
-            pathname={pathname}
-            depth={depth + 1}
-          />
-        ))}
-      </Sidebar.Group>
-    );
+    return <SidebarGroupNode item={item} pathname={pathname} depth={depth} />;
   }
 
   const isActive = pathname === item.url;

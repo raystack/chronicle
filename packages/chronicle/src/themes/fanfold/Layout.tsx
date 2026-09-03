@@ -83,7 +83,7 @@ function Brand() {
 
   return (
     <RouterLink to={version.urlPrefix || '/'} className={styles.brand}>
-      <Logo config={config} size={20} className={styles.brandLogo} />
+      <Logo config={config} size={20} className={styles.brandLogo} labelled={false} />
       <span className={styles.brandName}>{config.site.title}</span>
       {label ? <span className={styles.brandVersion}>~/{label}</span> : null}
     </RouterLink>

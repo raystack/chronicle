@@ -34,9 +34,10 @@ building, and `503` before that.
 { "status": "not_ready", "search": false }
 ```
 
-The index is built in the background at startup, so a large site is briefly up
-but not ready. Point your readiness or startup check here and a rolling deploy
-will not send traffic to an instance whose search is still empty.
+The first request to this endpoint is what starts the index building, in the
+background. A large site is briefly up but not ready. Point your readiness or
+startup check here and a rolling deploy will not send traffic to an instance
+whose search is still empty — and will get the indexing under way.
 
 Using `/api/health` for both is the common mistake. It reports success
 immediately, so traffic arrives before search works.

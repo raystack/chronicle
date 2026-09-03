@@ -27,7 +27,7 @@ function SidebarHeader({ config }: { config: ThemeLayoutProps['config'] }) {
   if (entries.length <= 1) {
     return (
       <>
-        <Logo config={config} size={20} className={styles.logo} />
+        <Logo config={config} size={20} className={styles.logo} labelled={false} />
         <Text size="regular" weight="medium" className={styles.title}>
           {config.site.title}
         </Text>

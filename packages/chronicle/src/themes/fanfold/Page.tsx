@@ -77,14 +77,8 @@ export function Page({ page, config, tree }: ThemePageProps) {
   const contentDir = getActiveContentDir(pathname, config);
   const section = config.content?.find(c => c.dir === contentDir)?.label;
 
-  /**
-   * The printed header reads as a report on one section, so the trail and the
-   * page counter are both scoped to the content directory being read.
-   *
-   * The tree handed here may already be scoped — `entry-server` narrows it when
-   * a site has a single content directory — but both filters recognise that and
-   * hand such a tree back untouched.
-   */
+  // The trail and the counter both describe one section. Safe to narrow a tree
+  // `entry-server` may already have narrowed — the filters handle that.
   const sectionTree = useMemo(
     () =>
       filterPageTreeByContentDir(

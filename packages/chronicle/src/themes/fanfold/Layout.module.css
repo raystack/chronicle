@@ -254,9 +254,8 @@
   text-decoration: none;
 }
 
-/* The mark sits above the name, letterhead fashion, rather than beside it. The
-   rail is a fixed 240px and the display face is wide: put the mark on the
-   name's line and a title of any length starts breaking mid-word. */
+/* Above the name, not beside it — the rail is 240px and the display face is
+   wide, so sharing a line breaks titles mid-word. */
 .brandLogo {
   display: block;
   margin-bottom: 10px;
@@ -271,8 +270,7 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--fan-ink);
-  /* The rail is a fixed 240px, so a title with one long word has to break
-     rather than run off the edge. */
+  /* A single long word has to break rather than run off the 240px rail. */
   overflow-wrap: break-word;
 }
 

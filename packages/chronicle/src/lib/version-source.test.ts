@@ -40,6 +40,15 @@ function folder(name: string, children: (Item | Folder)[]): Folder {
   return { type: 'folder', name, children }
 }
 
+/** A content directory. `buildFiles` marks every one of these with `root`. */
+function contentRoot(
+  name: string,
+  children: (Item | Folder)[],
+  index?: Item,
+): Folder {
+  return { type: 'folder', name, root: true, children, ...(index ? { index } : {}) }
+}
+
 describe('resolveVersionFromUrl', () => {
   const config = makeConfig()
 
@@ -142,8 +151,8 @@ describe('filterPageTreeByVersion', () => {
 })
 
 describe('filterPageTreeByContentDir', () => {
-  const latestDocs = folder('docs', [page('/docs/a'), page('/docs/b')])
-  const latestDev = folder('dev', [page('/dev/x')])
+  const latestDocs = contentRoot('docs', [page('/docs/a'), page('/docs/b')])
+  const latestDev = contentRoot('dev', [page('/dev/x')])
   const latestTree: Root = {
     name: 'root',
     children: [latestDocs, latestDev],
@@ -165,8 +174,8 @@ describe('filterPageTreeByContentDir', () => {
   })
 
   test('uses version urlPrefix to disambiguate within a version', () => {
-    const v1Docs = folder('docs', [page('/v1/docs/a')])
-    const v1Dev = folder('dev', [page('/v1/dev/x')])
+    const v1Docs = contentRoot('docs', [page('/v1/docs/a')])
+    const v1Dev = contentRoot('dev', [page('/v1/dev/x')])
     const ctx = { dir: 'v1', urlPrefix: '/v1' }
     const tree: Root = { name: 'root', children: [v1Docs, v1Dev] }
     expect(
@@ -180,14 +189,7 @@ describe('filterPageTreeByContentDir', () => {
     // label then shows as a heading above every page in the sidebar.
     const wrapped: Root = {
       name: 'root',
-      children: [
-        {
-          type: 'folder',
-          name: 'Docs',
-          index: page('/docs'),
-          children: [page('/docs/a'), page('/docs/b')],
-        } as Folder,
-      ],
+      children: [contentRoot('Docs', [page('/docs/a'), page('/docs/b')], page('/docs'))],
     }
     const out = filterPageTreeByContentDir(wrapped, LATEST_CONTEXT, 'docs')
     expect(out.children).toEqual([page('/docs/a'), page('/docs/b')])
@@ -202,6 +204,16 @@ describe('filterPageTreeByContentDir', () => {
     }
     const out = filterPageTreeByContentDir(scoped, LATEST_CONTEXT, 'docs')
     expect(out.children).toEqual(scoped.children)
+  })
+
+  test('unwraps a section that holds only sub-folders', () => {
+    // No index page and no page directly under the prefix. Identifying the
+    // wrapper by url shape alone got this wrong and emptied the sidebar.
+    const docs = contentRoot('Docs', [folder('guides', [page('/docs/guides/a')])])
+    const dev = contentRoot('Dev', [page('/dev/x')])
+    const tree: Root = { name: 'root', children: [docs, dev] }
+    const out = filterPageTreeByContentDir(tree, LATEST_CONTEXT, 'docs')
+    expect(out.children).toEqual(docs.children)
   })
 
   test('leaves an already scoped flat tree alone', () => {

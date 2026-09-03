@@ -9,8 +9,7 @@ export function NotFound() {
 
   return (
     <div className={styles.emptyStateHost}>
-      {/* The page that was asked for renders no `<Head>` of its own, so
-          without this the tab would carry whatever the last page set. */}
+      {/* The requested page renders no `<Head>`, so name the tab here. */}
       <Head title='Page not found' config={config} />
       <EmptyState
         icon={<FileTextIcon width={32} height={32} />}

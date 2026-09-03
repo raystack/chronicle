@@ -373,7 +373,7 @@ function computeNavigation(
 ): Map<string, { prev: PageNavLink | null; next: PageNavLink | null }> {
   const navMap = new Map<string, { prev: PageNavLink | null; next: PageNavLink | null }>();
 
-  // Chained per section, matching the dev server. See `getNavMap` in source.ts.
+  // Chained per section, matching `getNavMap` in source.ts.
   const prefixes = contentSectionPrefixes(config);
   const bySection = new Map<string, ReturnType<typeof flattenTreeUrls>>();
   for (const entry of flattenTreeUrls(tree)) {

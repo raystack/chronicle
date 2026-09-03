@@ -4,21 +4,20 @@ import { useTheme } from '@raystack/apsara';
 import type { ChronicleConfig } from '@/types';
 
 /**
- * The Raystack mark, from `raystack/website` (`public/brand/logo.svg`).
- *
- * Drawn with `currentColor` rather than the brand navy so it reads on a dark
- * page as well as a light one, and so a theme can tint it by setting a text
- * colour on the element around it. The single path is the shape as the brand
- * file draws it, with its flat radial gradient replaced by that fill.
+ * The Raystack mark, from `raystack/website` (`public/brand/logo.svg`). Drawn
+ * with `currentColor` so it reads on either ground and a theme can tint it.
  */
 export function RaystackMark({
   width = 28,
   height = 28,
   className,
+  label,
 }: {
   width?: number;
   height?: number;
   className?: string;
+  /** Omit to hide the mark from assistive technology. */
+  label?: string;
 }) {
   return (
     <svg
@@ -27,8 +26,9 @@ export function RaystackMark({
       width={width}
       height={height}
       className={className}
-      role='img'
-      aria-label='Raystack'
+      role={label ? 'img' : undefined}
+      aria-label={label}
+      aria-hidden={label ? undefined : true}
       fill='currentColor'
     >
       <path d='M1.0995468,30.0536799 L101.718938,88.1466179 C100.73439,89.5383643 99.4491496,90.7266003 97.9230485,91.6076952 L57.9615242,114.679492 C54.2487113,116.823085 49.6743371,116.823085 45.9615242,114.679492 L6,91.6076952 C2.28718708,89.4641016 0,85.5025774 0,81.2153903 L0,35.0717968 C0,33.3095155 0.386462402,31.6022611 1.0995468,30.0536799 Z M18.757,17.313 L103.923,66.483 L103.923048,81.2153903 C103.923048,81.7371223 103.889176,82.2540313 103.822983,82.7634277 L4.70864397,25.540743 C5.11691976,25.2284994 5.54789032,24.9405176 6,24.6794919 L18.757,17.313 Z M35.253,7.789 L103.923,47.435 L103.923,59.885 L24.471,14.014 L35.253,7.789 Z M57.9615242,1.60769515 L97.9230485,24.6794919 C101.635861,26.8230855 103.923048,30.7846097 103.923048,35.0717968 L103.923,40.838 L40.967,4.49 L45.9615242,1.60769515 C49.6743371,-0.535898385 54.2487113,-0.535898385 57.9615242,1.60769515 Z' />
@@ -41,16 +41,18 @@ interface LogoProps {
   /** Box the logo is drawn in, in px. Square. */
   size?: number;
   className?: string;
+  /**
+   * Whether assistive technology should announce the logo. Pass `false` where
+   * the site name is already rendered beside it, or it is read out twice.
+   */
+  labelled?: boolean;
 }
 
 /**
  * A site's logo: whichever of `logo.light` / `logo.dark` suits the active
- * theme, falling back to the Raystack mark when a site declares neither.
- *
- * Shared by every theme so the fallback is the same picture everywhere, and so
- * a site that sets one logo gets it in all three.
+ * theme, falling back to the Raystack mark when a site sets neither.
  */
-export function Logo({ config, size = 28, className }: LogoProps) {
+export function Logo({ config, size = 28, className, labelled = true }: LogoProps) {
   const { resolvedTheme } = useTheme();
   const logo = config.logo;
 
@@ -63,7 +65,7 @@ export function Logo({ config, size = 28, className }: LogoProps) {
     return (
       <img
         src={src}
-        alt={config.site.title}
+        alt={labelled ? config.site.title : ''}
         width={size}
         height={size}
         className={className}
@@ -71,5 +73,14 @@ export function Logo({ config, size = 28, className }: LogoProps) {
     );
   }
 
-  return <RaystackMark width={size} height={size} className={className} />;
+  // The fallback is Raystack's mark, not the site's, so it never speaks for a
+  // site that is not theirs — it is named only where nothing else names it.
+  return (
+    <RaystackMark
+      width={size}
+      height={size}
+      className={className}
+      label={labelled ? config.site.title : undefined}
+    />
+  );
 }

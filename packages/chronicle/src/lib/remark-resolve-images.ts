@@ -58,34 +58,29 @@ function finalizeUrl(url: string, optimize: boolean, version?: string): string {
 const IMG_SRC_PATTERN = /(<img\b[^>]*\bsrc=["'])([^"']+)(["'])/gi
 
 /**
- * Where a page's own tree starts on disk, and where it sits inside it.
+ * Splits a page's path at its content root. The part below the split is also
+ * its path under `/_content/`, which is what image URLs are built from —
+ * `content/docs/` mirrors as `docs/`, `versions/v1/docs/` as `v1/docs/`.
  *
- * The current version lives under `content/`, and older versions under
- * `versions/`. Both are mirrored into `.content/` — `content/docs/` as `docs/`
- * and `versions/v1/docs/` as `v1/docs/` — so the path below the split is also
- * the path under `/_content/`, which is what image URLs are built from.
- *
- * `versions/` used to be unrecognised, so every versioned page returned before
- * exporting `images` and the production build failed on the first one it hit.
+ * Takes the deepest marker, since a project can sit inside a directory named
+ * `versions` and still keep its pages under `content/`.
  */
 function splitContentRoot(
   filePath: string,
 ): { root: string; relative: string } | null {
+  let end = -1
   for (const marker of ['/versions/', '/content/']) {
     const idx = filePath.lastIndexOf(marker)
-    if (idx === -1) continue
-    const end = idx + marker.length
-    return { root: filePath.slice(0, end), relative: filePath.slice(end) }
+    if (idx !== -1) end = Math.max(end, idx + marker.length)
   }
-  return null
+  if (end === -1) return null
+  return { root: filePath.slice(0, end), relative: filePath.slice(end) }
 }
 
 const remarkResolveImages: Plugin<[RemarkResolveImagesOptions?]> = (options) => {
   const optimize = options?.optimize ?? true
   return async (tree, file) => {
-    // Always export something. `valueToExport` names `images`, so a page that
-    // returns before setting it fails the build with a missing-export error
-    // rather than simply having no images.
+    // `valueToExport` names `images`, so returning without it fails the build.
     file.data.images = []
 
     const filePath = file.path?.replace(/\\/g, '/')

@@ -88,14 +88,16 @@ If the spec declares `securitySchemes`, Chronicle reads those instead and offers
 the schemes it finds — API key, bearer token or basic auth. The `auth` config
 above is for a spec that does not say.
 
-Whatever a reader types stays in their browser. It is never sent anywhere except
-to the API they are testing against.
-
 ### The request tester and CORS
 
 Requests go through a proxy on your docs server rather than straight from the
 browser. That is deliberate: most APIs do not allow cross-origin requests from a
 docs site, so a direct call would fail before it left the page.
+
+It also means the token a reader types reaches your docs server on its way to
+the API. It is not stored or logged, but the server does handle it — so tell
+readers to use a test credential on a docs site you do not control, and treat
+your own docs host as something that needs the same trust as the API behind it.
 
 This means the API has to be reachable from wherever your docs are hosted. An
 API on a private network works when you run `chronicle dev` on the same network

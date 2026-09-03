@@ -27,7 +27,7 @@ Your content here...
 
 | Field | Type | What it does |
 |---|---|---|
-| `title` | `string` | **Required.** Heading, sidebar label, browser tab |
+| `title` | `string` | Heading, sidebar label, browser tab. Falls back to `Untitled` |
 | `description` | `string` | Line under the heading, meta description, social card |
 | `order` | `number` | Sidebar position. Lower first. Decimals allowed |
 | `draft` | `boolean` | `true` removes the page from the site |
@@ -41,7 +41,9 @@ Your content here...
 
 ### title
 
-**Required.** The page title used in navigation, browser tab, and page heading.
+The page title used in navigation, the browser tab, and the heading above the
+article. A page without one renders as `Untitled`, so treat it as required even
+though nothing enforces it.
 
 ```yaml
 title: Installation Guide

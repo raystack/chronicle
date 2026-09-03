@@ -194,8 +194,7 @@ export default {
           {assets.js.map((attr: { href: string }) => (
             <link key={attr.href} rel="modulepreload" {...attr} />
           ))}
-          {/* After the stylesheets, so a site's own colours win over the
-              theme's defaults. */}
+          {/* After the stylesheets, so a site's colours win. */}
           {themeColorCss && (
             <style dangerouslySetInnerHTML={{ __html: themeColorCss }} />
           )}

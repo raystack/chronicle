@@ -176,6 +176,20 @@ describe('versioned pages', () => {
     expect(firstImageUrl(tree)).toBe(`/_content/v1/docs/img.png?v=${PNG_HASH}`);
   });
 
+  test('takes the deepest marker when a project sits under a versions dir', async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'chronicle-remark-d-'));
+    const nested = path.join(root, 'versions', 'project', 'content');
+    fs.mkdirSync(path.join(nested, 'docs'), { recursive: true });
+    fs.writeFileSync(path.join(nested, 'docs', 'img.png'), PNG_BYTES);
+    const { tree } = await transform(
+      '![alt](./img.png)',
+      { optimize: false },
+      nested,
+      path.join(nested, 'docs', 'page.mdx')
+    );
+    expect(firstImageUrl(tree)).toBe(`/_content/docs/img.png?v=${PNG_HASH}`);
+  });
+
   test('exports an empty list when the path is outside any content root', async () => {
     const { file } = await transform(
       'stray file',

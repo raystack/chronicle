@@ -306,9 +306,7 @@ async function getNavMap(): Promise<Map<string, PageNav>> {
         : titleFromUrl(p.url)
   });
 
-  // Chain within a section, not across the whole site. The last page of "Docs"
-  // used to offer the first page of the next content directory as its next
-  // link, dropping the reader into a different audience's material.
+  // Chained per section: the last page of one should not lead into another.
   const prefixes = contentSectionPrefixes(loadConfig());
   const bySection = new Map<string, typeof pages>();
   for (const page of pages) {
