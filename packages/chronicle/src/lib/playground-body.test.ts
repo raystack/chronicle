@@ -28,6 +28,11 @@ describe('coerceValue', () => {
     expect(coerceValue('integer', '1.5')).toBe('1.5');
   });
 
+  test('keeps the raw text when the number cannot be represented', () => {
+    expect(coerceValue('number', '1e309')).toBe('1e309');
+    expect(coerceValue('integer', '9007199254740993')).toBe('9007199254740993');
+  });
+
   test('keeps empty number text as empty', () => {
     expect(coerceValue('number', '')).toBe('');
     expect(coerceValue('integer', '  ')).toBe('');
@@ -71,6 +76,23 @@ describe('initBodyValues', () => {
       },
     });
     expect(initBodyValues(fields)).toEqual({ active: true, count: 10 });
+  });
+
+  test('sets nested object children, including booleans and defaults', () => {
+    const fields = flattenSchema({
+      type: 'object',
+      properties: {
+        settings: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+            limit: { type: 'integer', default: 5 },
+            label: { type: 'string' },
+          },
+        },
+      },
+    });
+    expect(initBodyValues(fields)).toEqual({ settings: { enabled: false, limit: 5 } });
   });
 });
 

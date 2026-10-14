@@ -5,8 +5,8 @@ export function coerceValue(kind: SchemaFieldKind, raw: string): unknown {
   if (kind === 'number' || kind === 'integer') {
     if (raw.trim() === '') return ''
     const n = Number(raw)
-    if (Number.isNaN(n)) return raw
-    if (kind === 'integer' && !Number.isInteger(n)) return raw
+    if (!Number.isFinite(n)) return raw
+    if (kind === 'integer' && !Number.isSafeInteger(n)) return raw
     return n
   }
   return raw
@@ -20,7 +20,7 @@ export function arrayItemKind(field: SchemaField): SchemaFieldKind {
 export function initFieldValue(field: SchemaField): unknown {
   if (field.default !== undefined) return field.default
   if (field.kind === 'array') return []
-  if (field.kind === 'object' || field.children) return {}
+  if (field.kind === 'object' || field.children) return initBodyValues(field.children ?? [])
   if (field.kind === 'boolean') return false
   return undefined
 }
