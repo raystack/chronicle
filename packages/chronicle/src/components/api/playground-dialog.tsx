@@ -2,10 +2,11 @@
 
 import { useState, useCallback, useMemo, useEffect } from 'react'
 import type { OpenAPIV3 } from 'openapi-types'
-import { Dialog, Button, Badge, IconButton, Input, CopyButton, Select, Menu } from '@raystack/apsara'
+import { Dialog, Button, Badge, IconButton, Input, CopyButton, Select, Menu, Switch } from '@raystack/apsara'
 import { ChevronDownIcon, ChevronUpIcon, CodeIcon, HistoryIcon, PlayIcon, PlusIcon, XIcon } from '@/components/ui/icons';
 import { MethodBadge } from '@/components/api/method-badge'
-import { flattenSchema, generateExampleJson, toKind, type SchemaField } from '@/lib/schema'
+import { flattenSchema, generateExampleJson, toKind, type SchemaField, type SchemaFieldKind } from '@/lib/schema'
+import { arrayItemKind, coerceValue, initBodyValues, pruneBody } from '@/lib/playground-body'
 import { generateCurl } from '@/lib/snippet-generators'
 import { isStaticMode } from '@/lib/static-mode'
 import { JsonEditor } from '@/components/api/json-editor'
@@ -143,16 +144,7 @@ export function PlaygroundDialog({
   const [pathValues, setPathValues] = useState<Record<string, string>>({})
   const [queryValues, setQueryValues] = useState<Record<string, string>>({})
   const [jsonMode, setJsonMode] = useState(false)
-  const [bodyValues, setBodyValues] = useState<Record<string, unknown>>(() => {
-    if (!body) return {}
-    const init: Record<string, unknown> = {}
-    for (const f of body.fields) {
-      if (f.kind === 'array') init[f.name] = []
-      else if (f.kind === 'object' || f.children) init[f.name] = {}
-      else init[f.name] = ''
-    }
-    return init
-  })
+  const [bodyValues, setBodyValues] = useState<Record<string, unknown>>(() => body ? initBodyValues(body.fields) : {})
   const [bodyJsonStr, setBodyJsonStr] = useState(() => body ? body.jsonExample : '{}')
 
   useEffect(() => {
@@ -200,16 +192,7 @@ export function PlaygroundDialog({
     setHeaderValues({})
     setPathValues({})
     setQueryValues({})
-    setBodyValues(() => {
-      if (!body) return {}
-      const init: Record<string, unknown> = {}
-      for (const f of body.fields) {
-        if (f.kind === 'array') init[f.name] = []
-        else if (f.kind === 'object' || f.children) init[f.name] = {}
-        else init[f.name] = ''
-      }
-      return init
-    })
+    setBodyValues(body ? initBodyValues(body.fields) : {})
     setResponseData(null)
   }
 
@@ -244,7 +227,7 @@ export function PlaygroundDialog({
           return
         }
       } else {
-        reqBody = bodyValues
+        reqBody = pruneBody(bodyValues)
       }
     }
 
@@ -260,7 +243,7 @@ export function PlaygroundDialog({
     } finally {
       setLoading(false)
     }
-  }, [specName, method, path, serverUrl, pathValues, queryValues, getAuthHeaders, headerValues, bodyValues, body])
+  }, [specName, method, path, serverUrl, pathValues, queryValues, getAuthHeaders, headerValues, bodyValues, bodyJsonStr, jsonMode, body])
 
   const responseJson = responseData
     ? (typeof responseData.body === 'string' ? responseData.body : JSON.stringify(responseData.body, null, 2))
@@ -275,7 +258,7 @@ export function PlaygroundDialog({
   const curlSnippet = useMemo(() => {
     const headers: Record<string, string> = { ...getAuthHeaders(), ...headerValues }
     if (body) headers['Content-Type'] = body.contentType ?? 'application/json'
-    const bodyStr = body ? (jsonMode ? bodyJsonStr : JSON.stringify(bodyValues)) : undefined
+    const bodyStr = body ? (jsonMode ? bodyJsonStr : JSON.stringify(pruneBody(bodyValues))) : undefined
     return generateCurl({ method, url: serverUrl + path, headers, body: bodyStr })
   }, [method, path, serverUrl, getAuthHeaders, headerValues, bodyValues, bodyJsonStr, jsonMode, body])
 
@@ -428,7 +411,7 @@ export function PlaygroundDialog({
                     <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--rs-space-3)' }}>
                       <IconButton size={2} onClick={() => {
                         if (!jsonMode) {
-                          setBodyJsonStr(JSON.stringify(bodyValues, null, 2))
+                          setBodyJsonStr(JSON.stringify(pruneBody(bodyValues), null, 2))
                         } else {
                           try { setBodyValues(JSON.parse(bodyJsonStr)) } catch { /* ignore */ }
                         }
@@ -561,23 +544,24 @@ function BodyFieldRow({ field, value, onChange }: {
   const hasChildren = field.children && field.children.length > 0
 
   if (field.kind === 'array' && !hasChildren) {
-    const items = Array.isArray(value) ? value as string[] : []
+    const items = Array.isArray(value) ? value : []
+    const itemKind = arrayItemKind(field)
     return (
       <div className={styles.arrayField}>
         <div className={styles.fieldRow}>
           <span className={styles.fieldLabel}>{field.name} {field.required && <Badge variant="danger" size="micro">required</Badge>}</span>
-          <IconButton size={2} onClick={() => onChange([...items, ''])} aria-label="Add item">
+          <IconButton size={2} onClick={() => onChange([...items, itemKind === 'boolean' ? false : ''])} aria-label="Add item">
             <PlusIcon />
           </IconButton>
         </div>
         {items.map((item, i) => (
           <div key={i} className={styles.arrayItemRow}>
             <div className={styles.fieldInput}>
-              <Input
-                size="small"
+              <ScalarInput
+                kind={itemKind}
                 placeholder={`${field.name}[${i}]`}
-                value={String(item)}
-                onValueChange={(v) => {
+                value={item}
+                onChange={(v) => {
                   const updated = [...items]
                   updated[i] = v
                   onChange(updated)
@@ -618,14 +602,44 @@ function BodyFieldRow({ field, value, onChange }: {
     <div className={styles.fieldRow}>
       <span className={styles.fieldLabel}>{field.name} {field.required && <Badge variant="danger" size="micro">required</Badge>}</span>
       <div className={styles.fieldInput}>
-        <Input
-          size="small"
+        <ScalarInput
+          kind={field.kind}
           placeholder={field.description ?? 'Enter value'}
-          value={String(value ?? '')}
-          onValueChange={(v) => onChange(v)}
+          value={value}
+          onChange={onChange}
         />
       </div>
     </div>
+  )
+}
+
+function ScalarInput({ kind, placeholder, value, onChange }: {
+  kind: SchemaFieldKind
+  placeholder: string
+  value: unknown
+  onChange: (val: unknown) => void
+}) {
+  const [text, setText] = useState(() => String(value ?? ''))
+
+  useEffect(() => {
+    if (coerceValue(kind, text) !== value) setText(String(value ?? ''))
+  }, [kind, value, text])
+
+  if (kind === 'boolean') {
+    return <Switch size="small" checked={value === true} onCheckedChange={(checked) => onChange(checked)} />
+  }
+
+  return (
+    <Input
+      size="small"
+      type={kind === 'number' || kind === 'integer' ? 'number' : undefined}
+      placeholder={placeholder}
+      value={text}
+      onValueChange={(v) => {
+        setText(v)
+        onChange(coerceValue(kind, v))
+      }}
+    />
   )
 }
 
